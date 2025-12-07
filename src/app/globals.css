@@ -1,0 +1,295 @@
+/* Updated: 2025-11-25T10:39:58.995Z */
+/* Updated: 2025-11-25T09:48:12.284Z */
+/* Updated: 2025-11-25T08:11:04.551Z */
+/* Updated: 2025-11-25T06:35:35.911Z */
+/* Updated: 2025-11-25T06:00:14.370Z */
+/* Updated: 2025-11-24T18:55:35.198Z */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --radius: 0.75rem;
+  
+  /* WaveGroww Light Mode Colors */
+  --background: #F9FAFB;
+  --foreground: #0E1116;
+  --card: #FFFFFF;
+  --card-foreground: #0E1116;
+  --popover: #FFFFFF;
+  --popover-foreground: #0E1116;
+  
+  /* Primary - Green */
+  --primary: #00B67A;
+  --primary-foreground: #FFFFFF;
+  
+  /* Secondary - Golden */
+  --secondary: #FFD54F;
+  --secondary-foreground: #0E1116;
+  
+  /* Accent - Blue */
+  --accent: #2196F3;
+  --accent-foreground: #FFFFFF;
+  
+  /* Success - Green */
+  --success: #4CAF50;
+  --success-foreground: #FFFFFF;
+  
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #00B67A;
+  
+  /* Chart Colors - Green to Blue Gradient */
+  --chart-1: #00B67A;
+  --chart-2: #2196F3;
+  --chart-3: #FFD54F;
+  --chart-4: #4CAF50;
+  --chart-5: #1E88E5;
+}
+
+.dark {
+  /* WaveGroww Dark Mode Colors */
+  --background: #0E1116;
+  --foreground: #FFFFFF;
+  --card: #1A1F25;
+  --card-foreground: #FFFFFF;
+  --popover: #1A1F25;
+  --popover-foreground: #FFFFFF;
+  
+  /* Primary - Neon Green */
+  --primary: #00FFAA;
+  --primary-foreground: #0E1116;
+  
+  /* Secondary - Bright Golden */
+  --secondary: #FFC107;
+  --secondary-foreground: #0E1116;
+  
+  /* Accent - Bright Blue */
+  --accent: #1E88E5;
+  --accent-foreground: #FFFFFF;
+  
+  /* Success - Bright Green */
+  --success: #69F0AE;
+  --success-foreground: #0E1116;
+  
+  --muted: #252A30;
+  --muted-foreground: #9CA3AF;
+  --destructive: #F87171;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #00FFAA;
+  
+  /* Chart Colors - Bright Gradient */
+  --chart-1: #00FFAA;
+  --chart-2: #1E88E5;
+  --chart-3: #FFC107;
+  --chart-4: #69F0AE;
+  --chart-5: #2196F3;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  /* Gradient Text Effect */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+  
+  /* Glow Effects for Dark Mode */
+  .glow-green {
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+  }
+  
+  .glow-golden {
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+  }
+  
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply backdrop-blur-lg bg-card/80 border border-border/50;
+  }
+  
+  /* Keyframe Animations for Product Page */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes scale-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Hero Color Animations */
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  @keyframes color-pulse {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  
+  @keyframes gradient-rotate {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(1.1);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 40px rgba(0, 182, 122, 0.3), 0 0 80px rgba(33, 150, 243, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 60px rgba(0, 182, 122, 0.5), 0 0 120px rgba(33, 150, 243, 0.3);
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
+  /* Utility classes for hero animations */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+  
+  .animate-color-pulse {
+    animation: color-pulse 4s ease-in-out infinite;
+  }
+  
+  .animate-gradient-rotate {
+    animation: gradient-rotate 20s linear infinite;
+  }
+  
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+  
+  .animate-shimmer {
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+  
+  /* Logo strip scroll animation */
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
+  }
+  
+  .pause-animation:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Hide Next.js error overlay portal */
+nextjs-portal {
+  display: none !important;
+}

@@ -1,0 +1,20 @@
+CREATE TABLE `orders` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` text NOT NULL,
+	`lead_id` integer,
+	`product_id` integer NOT NULL,
+	`product_name` text NOT NULL,
+	`quantity` integer NOT NULL,
+	`unit_price` integer NOT NULL,
+	`total_amount` integer NOT NULL,
+	`status` text DEFAULT 'pending' NOT NULL,
+	`order_date` text NOT NULL,
+	`payment_method` text,
+	`customer_name` text NOT NULL,
+	`customer_phone` text NOT NULL,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`lead_id`) REFERENCES `leads`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE cascade
+);
