@@ -41,6 +41,7 @@ import {
 import { toast } from "sonner";
 import { BillingTab } from "@/components/BillingTab";
 import { Footer } from "@/components/home/Footer";
+import { BusinessHours } from "@/components/settings/BusinessHours";
 
 type TabId =
   | "account"
@@ -87,11 +88,7 @@ export default function SettingsPage() {
     whatsappNumber: "",
   });
 
-  const [hoursConfig, setHoursConfig] = useState({
-    monFri: { start: "09:00", end: "18:00" },
-    sat: { start: "10:00", end: "16:00" },
-    sun: { status: "closed", start: "10:00", end: "16:00" }
-  });
+  const [hoursConfig, setHoursConfig] = useState("");
 
   const [mounted, setMounted] = useState(false);
 
@@ -100,15 +97,10 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (mounted && businessSettings.businessHours) {
-      try {
-        const parsed = JSON.parse(businessSettings.businessHours);
-        setHoursConfig(prev => ({ ...prev, ...parsed }));
-      } catch (e) {
-        // If not JSON, maybe it's a simple string or empty, keep defaults
-      }
+    if (businessSettings.businessHours) {
+      setHoursConfig(businessSettings.businessHours);
     }
-  }, [mounted, businessSettings.businessHours]);
+  }, [businessSettings.businessHours]);
 
   // Chatbot settings state
   const [chatbotSettings, setChatbotSettings] = useState({
@@ -223,6 +215,7 @@ export default function SettingsPage() {
 
       // 3. Fetch other settings in the background
       Promise.all([
+        fetch("/api/business-settings", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/chatbot-settings", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/settings/catalog", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/settings/analytics", { headers: { Authorization: `Bearer ${token}` } }),
@@ -230,7 +223,20 @@ export default function SettingsPage() {
         fetch("/api/settings/security", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/settings/export", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/settings/backup", { headers: { Authorization: `Bearer ${token}` } }),
-      ]).then(async ([chatbotRes, catalogRes, analyticsRes, teamRes, securityRes, exportRes, backupRes]) => {
+      ]).then(async ([bizSettingsRes, chatbotRes, catalogRes, analyticsRes, teamRes, securityRes, exportRes, backupRes]) => {
+        if (bizSettingsRes.ok) {
+          const data = await bizSettingsRes.json();
+          setBusinessSettings(prev => ({
+            ...prev,
+            businessName: data.businessName || prev.businessName,
+            businessCategory: data.businessCategory || prev.businessCategory,
+            whatsappNumber: data.whatsappNumber || prev.whatsappNumber,
+            shortBio: data.businessDescription || "",
+            storeUrl: data.catalogUrl || "",
+            businessHours: data.businessHours || "",
+          }));
+        }
+
         if (chatbotRes.ok) {
           const data = await chatbotRes.json();
           if (data.data && data.data.length > 0) {
@@ -323,24 +329,20 @@ export default function SettingsPage() {
       setIsSaving(true);
       const token = localStorage.getItem("bearer_token");
 
-      const response = await fetch("/api/business-profile/draft", {
-        method: "PATCH",
+      // Update Business Settings via dedicated endpoint
+      const response = await fetch("/api/business-settings", {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          businessName: accountSettings.businessName, // Ensure consistent name
           businessCategory: businessSettings.businessCategory,
-          shortBio: businessSettings.shortBio,
-          storeUrl: businessSettings.storeUrl,
-          businessHours: JSON.stringify(hoursConfig),
-          street: businessSettings.street,
-          city: businessSettings.city,
-          state: businessSettings.state,
-          pincode: businessSettings.pincode,
-          gstNumber: businessSettings.gstNumber,
+          businessDescription: businessSettings.shortBio,
+          catalogUrl: businessSettings.storeUrl,
+          businessHours: hoursConfig,
           whatsappNumber: businessSettings.whatsappNumber,
-          madeInIndia: businessSettings.madeInIndia,
         }),
       });
 
@@ -976,66 +978,16 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
+                  <div className="col-span-1 md:col-span-2">
                     <label className="block text-sm font-medium mb-3 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
                       Business Hours
                     </label>
-                    <div className="space-y-3 p-4 border border-border rounded-lg bg-muted/30">
-                      <div className="grid grid-cols-1 gap-3">
-                        {/* Monday to Friday */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 text-sm font-medium">Mon - Fri</div>
-                          <input
-                            type="time"
-                            value={hoursConfig.monFri.start}
-                            onChange={(e) => setHoursConfig({ ...hoursConfig, monFri: { ...hoursConfig.monFri, start: e.target.value } })}
-                            className="w-[130px] px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                          />
-                          <span className="text-muted-foreground">to</span>
-                          <input
-                            type="time"
-                            value={hoursConfig.monFri.end}
-                            onChange={(e) => setHoursConfig({ ...hoursConfig, monFri: { ...hoursConfig.monFri, end: e.target.value } })}
-                            className="w-[130px] px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                          />
-                        </div>
-
-                        {/* Saturday */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 text-sm font-medium">Saturday</div>
-                          <input
-                            type="time"
-                            value={hoursConfig.sat.start}
-                            onChange={(e) => setHoursConfig({ ...hoursConfig, sat: { ...hoursConfig.sat, start: e.target.value } })}
-                            className="w-[130px] px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                          />
-                          <span className="text-muted-foreground">to</span>
-                          <input
-                            type="time"
-                            value={hoursConfig.sat.end}
-                            onChange={(e) => setHoursConfig({ ...hoursConfig, sat: { ...hoursConfig.sat, end: e.target.value } })}
-                            className="w-[130px] px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                          />
-                        </div>
-
-                        {/* Sunday */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 text-sm font-medium">Sunday</div>
-                          <select
-                            value={hoursConfig.sun.status}
-                            onChange={(e) => setHoursConfig({ ...hoursConfig, sun: { ...hoursConfig.sun, status: e.target.value } })}
-                            className="w-[130px] px-3 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
-                          >
-                            <option value="closed">Closed</option>
-                            <option value="open">Open</option>
-                          </select>
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Set your regular business hours. Customers will see when you're available.
-                      </p>
-                    </div>
+                    <BusinessHours
+                      initialData={hoursConfig}
+                      onChange={(data) => setHoursConfig(data)}
+                      disabled={isSaving}
+                    />
                   </div>
 
                   <div>

@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
       whatsappNumber,
       businessCategory,
       businessDescription,
-      catalogUrl
+      catalogUrl,
+      businessHours
     } = body;
 
     if (!businessName || typeof businessName !== 'string' || businessName.trim() === '') {
@@ -97,6 +98,7 @@ export async function POST(request: NextRequest) {
         businessCategory: businessCategory ? businessCategory.trim() : null,
         businessDescription: businessDescription ? businessDescription.trim() : null,
         catalogUrl: catalogUrl ? catalogUrl.trim() : null,
+        businessHours: businessHours ? (typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours)) : null,
         maintenanceMode: false,
         createdAt: now,
         updatedAt: now,
@@ -148,7 +150,8 @@ export async function PUT(request: NextRequest) {
       whatsappNumber,
       businessCategory,
       businessDescription,
-      catalogUrl
+      catalogUrl,
+      businessHours
     } = body;
 
     const updates: Record<string, any> = {
@@ -185,6 +188,14 @@ export async function PUT(request: NextRequest) {
 
     if (catalogUrl !== undefined) {
       updates.catalogUrl = catalogUrl ? catalogUrl.trim() : null;
+    }
+
+    if (businessHours !== undefined) {
+      if (businessHours === null) {
+        updates.businessHours = null;
+      } else {
+        updates.businessHours = typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours);
+      }
     }
 
     const updated = await db.update(businessSettings)
