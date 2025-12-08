@@ -466,17 +466,67 @@ export default function NewProductPage() {
                             return;
                           }
 
-                          // Convert to data URL for preview
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            const dataUrl = event.target?.result as string;
-                            setFormData((prev) => ({ ...prev, imageUrl: dataUrl }));
-                            toast.success("Image uploaded successfully");
+                          // Convert to Cloudflare Direct Upload
+                          const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+                          if (file.size > MAX_SIZE) {
+                            toast.error("Image size must be less than 5MB");
+                            return;
+                          }
+
+                          // 1. Get Upload URL
+                          const uploadPromise = async () => {
+                            // Temporary preview
+                            const reader = new FileReader();
+                            reader.onload = (e) => setFormData(prev => ({ ...prev, imageUrl: e.target?.result as string }));
+                            reader.readAsDataURL(file);
+
+                            try {
+                              const res = await fetch('/api/upload/image', { method: 'POST' });
+                              if (!res.ok) throw new Error('Failed to get upload URL');
+                              const { uploadURL, id } = await res.json();
+
+                              // 2. Upload to Cloudflare
+                              const formData = new FormData();
+                              formData.append('file', file);
+
+                              const uploadRes = await fetch(uploadURL, {
+                                method: 'POST',
+                                body: formData
+                              });
+
+                              if (!uploadRes.ok) throw new Error('Failed to upload image');
+                              const uploadData = await uploadRes.json();
+
+                              // 3. Set Final URL (Variant: public)
+                              // Cloudflare usually returns variants, but we can construct the public URL
+                              // format: https://imagedelivery.net/<account_hash>/<id>/<variant>
+                              // We'll trust the ID returned and client-side construction, or use the variant if returned.
+                              // Check uploadData.result.variants
+
+                              // Actually, easiest way is to use the ID. 
+                              // BUT, we need the account hash. 
+                              // For now, let's assume the success result contains the variants.
+                              const variants = uploadData.result?.variants as string[];
+                              if (variants && variants.length > 0) {
+                                // Prefer 'public' variant, or first one
+                                const publicUrl = variants.find(v => v.endsWith('public')) || variants[0];
+                                setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+                                return "Image uploaded successfully";
+                              } else {
+                                throw new Error("No image URL returned");
+                              }
+
+                            } catch (err) {
+                              console.error(err);
+                              throw new Error("Image upload failed");
+                            }
                           };
-                          reader.onerror = () => {
-                            toast.error("Failed to read image file");
-                          };
-                          reader.readAsDataURL(file);
+
+                          toast.promise(uploadPromise(), {
+                            loading: 'Uploading image...',
+                            success: (msg) => msg,
+                            error: 'Failed to upload image'
+                          });
                         }}
                       />
                       <label
