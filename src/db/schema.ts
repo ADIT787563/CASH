@@ -798,6 +798,13 @@ export const pricingPlans = sqliteTable('pricing_plans', {
   monthlyPrice: integer('monthly_price').notNull(), // in paise (₹999 = 99900)
   yearlyPrice: integer('yearly_price'), // in paise, null if not applicable
   features: text('features', { mode: 'json' }).notNull().$type<string[]>(), // Array of feature strings
+  limits: text('limits', { mode: 'json' }).notNull().$type<Record<string, any>>(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  isPopular: integer('is_popular', { mode: 'boolean' }).default(false),
+  icon: text('icon'),
+  color: text('color'),
+  bgColor: text('bg_color'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });

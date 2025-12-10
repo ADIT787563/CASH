@@ -230,7 +230,6 @@ export default function SettingsPage() {
           const data = await bizSettingsRes.json();
           setBusinessSettings(prev => ({
             ...prev,
-            businessName: data.businessName || prev.businessName,
             businessCategory: data.businessCategory || prev.businessCategory,
             whatsappNumber: data.whatsappNumber || prev.whatsappNumber,
             shortBio: data.businessDescription || "",

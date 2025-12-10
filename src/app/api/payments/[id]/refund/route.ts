@@ -15,15 +15,16 @@ const razorpay = new Razorpay({
 // Button 11b: Refund paid order
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const paymentId = params.id;
+        const paymentId = id;
         const body = await request.json();
         const { amount_paise, reason } = body;
 

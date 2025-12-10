@@ -9,9 +9,10 @@ import { headers } from 'next/headers';
 // Button 12: Admin Manual Resolve
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,7 +21,7 @@ export async function POST(
         // TODO: Strict Admin Role Check
         // if (session.user.role !== 'admin') return 403...
 
-        const orderId = parseInt(params.id);
+        const orderId = parseInt(id);
         const body = await request.json();
         const { action, note } = body;
 

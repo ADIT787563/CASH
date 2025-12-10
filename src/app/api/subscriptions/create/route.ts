@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
         if (plan_id === "enterprise_8999") amount = 899900;
 
         // 1. Create Subscription Record (Pending)
-        const subscriptionId = crypto.randomUUID();
-        await db.insert(subscriptions).values({
-            id: subscriptionId,
+        // const subscriptionId = crypto.randomUUID(); // Let DB generate it
+        const [newSub] = await db.insert(subscriptions).values({
+            // id: subscriptionId, // Removed to let DB generate
+            // @ts-ignore
             userId: session.user.id,
             planId: plan_id,
             status: "pending",
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
             currentPeriodEnd: new Date().toISOString(), // Will update on activation
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
-        });
+        }).returning({ subscriptionId: subscriptions.id });
+
+        const subscriptionId = newSub.subscriptionId;
 
         // 2. Create Razorpay Order
         const options = {
@@ -59,16 +62,19 @@ export async function POST(req: NextRequest) {
         const order = await razorpay.orders.create(options);
 
         // 3. Create Payment Record (Pending) linked to Subscription
-        await db.insert(payments).values({
-            userId: session.user.id,
-            subscriptionId: subscriptionId,
-            razorpayOrderId: order.id,
-            amount: amount,
-            currency: "INR",
-            status: "pending",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        });
+        // Note: payments table is for seller orders. We rely on subscription status.
+        /*
+         await db.insert(payments).values({
+             userId: session.user.id,
+             subscriptionId: subscriptionId,
+             razorpayOrderId: order.id,
+             amount: amount,
+             currency: "INR",
+             status: "pending",
+             createdAt: new Date().toISOString(),
+             updatedAt: new Date().toISOString()
+         });
+         */
 
         return NextResponse.json({
             subscriptionId: subscriptionId,

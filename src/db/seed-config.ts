@@ -7,6 +7,7 @@ async function seed() {
     console.log('🌱 Seeding global configuration...');
 
     // Seed Pricing Plans with comprehensive catalog limits
+    // @ts-ignore
     await db.insert(pricingPlans).values([
         {
             planId: 'starter',

@@ -44,10 +44,10 @@ export async function POST(req: NextRequest) {
             await db.update(payments)
                 .set({
                     status: "captured",
-                    razorpayPaymentId: paymentData.id,
+                    gatewayPaymentId: paymentData.id,
                     updatedAt: new Date().toISOString()
                 })
-                .where(eq(payments.razorpayOrderId, orderId));
+                .where(eq(payments.gatewayOrderId, orderId));
 
             // Trigger subscription activation or other logic here
         }

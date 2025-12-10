@@ -9,9 +9,10 @@ import { headers } from 'next/headers';
 // Button 11a: Cancel unpaid order
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -19,7 +20,7 @@ export async function POST(
 
         const body = await request.json();
         const { reason } = body;
-        const orderId = parseInt(params.id);
+        const orderId = parseInt(id);
 
         const [order] = await db
             .select()
