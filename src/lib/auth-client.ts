@@ -76,16 +76,16 @@ export function useSession(): SessionData {
       }
    }, []);
 
-   const refetch = useCallback(() => {
+   const refetch = useCallback(async () => {
       setIsPending(true);
       setError(null);
       sessionCache = null; // Clear cache on manual refetch
-      fetchSession();
+      await fetchSession();
    }, [fetchSession]);
 
    useEffect(() => {
       fetchSession();
    }, []); // Empty dependency - only fetch once per mount
 
-   return { data: session, isPending, error, refetch };
+   return { data: session, isPending, isRefetching: false, error, refetch };
 }

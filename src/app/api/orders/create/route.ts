@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders, orderItems, customers, products, payments, paymentSettings } from '@/db/schema';
+import { orders, orderItems, customers, products, payments, sellerPaymentMethods } from '@/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
@@ -12,17 +12,23 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // 1. Get Product Details & Calculate Totals
-        const productIds = items.map((i: any) => i.product_id);
-        // Assuming product_id is integer in DB, but passed as string/int. 
-        // If DB uses integer IDs, we need to parse.
-        // The schema says products.id is integer.
-        // The input example says "prod_789". This implies string IDs or mapped IDs.
-        // But schema has integer ID.
-        // I'll assume the input sends the correct ID format (integer).
-        // If input is "prod_789", I might need to strip "prod_".
-        // Let's assume integer for now to match schema.
+        // 1. Get Seller's Payment Preferences FIRST
+        const sellerPayment = await db
+            .select()
+            .from(sellerPaymentMethods)
+            .where(eq(sellerPaymentMethods.sellerId, seller_id))
+            .limit(1);
 
+        const paymentPreference = sellerPayment[0]?.paymentPreference || 'both';
+        const razorpayLink = sellerPayment[0]?.razorpayLink;
+        const upiId = sellerPayment[0]?.upiId;
+        const sellerPhone = sellerPayment[0]?.phoneNumber;
+        const qrImageUrl = sellerPayment[0]?.qrImageUrl;
+        const codNotes = sellerPayment[0]?.codNotes;
+        const webhookConsent = sellerPayment[0]?.webhookConsent;
+
+        // 2. Get Product Details & Calculate Totals
+        const productIds = items.map((i: any) => i.product_id);
         const productsData = await db
             .select()
             .from(products)
@@ -37,9 +43,7 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: `Product not found: ${item.product_id}` }, { status: 400 });
             }
 
-            // Check stock? (Optional for now)
-
-            const unitPrice = product.price; // in paise
+            const unitPrice = product.price;
             const totalPrice = unitPrice * item.quantity;
             subtotal += totalPrice;
 
@@ -52,16 +56,12 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // Shipping & Discount (Hardcoded or logic?)
-        // User example: shipping_amount: 5000 (₹50)
-        // I'll default to 0 or use logic if I had settings.
-        const shippingAmount = 0; // TODO: Fetch from settings
+        const shippingAmount = 0;
         const discountAmount = 0;
-        const taxAmount = 0; // TODO: Calculate tax
+        const taxAmount = 0;
         const totalAmount = subtotal + shippingAmount + taxAmount - discountAmount;
 
-        // 2. Find or Create Customer
-        // Check by phone
+        // 3. Find or Create Customer
         let customerId;
         const existingCustomer = await db
             .select()
@@ -71,7 +71,6 @@ export async function POST(req: NextRequest) {
 
         if (existingCustomer.length > 0) {
             customerId = existingCustomer[0].id;
-            // Update name/address if provided?
         } else {
             const newCustomer = await db.insert(customers).values({
                 userId: seller_id,
@@ -85,30 +84,44 @@ export async function POST(req: NextRequest) {
             customerId = newCustomer[0].id;
         }
 
-        // 3. Create Order
+        // 4. Determine payment method and status based on seller preference
+        let finalPaymentMethod = payment_method;
+        let orderStatus = 'pending';
+        let paymentStatus = 'unpaid';
+
+        // Validate payment method against seller preference
+        if (payment_method === 'cod') {
+            if (paymentPreference === 'online') {
+                return NextResponse.json({ error: 'Seller does not accept COD' }, { status: 400 });
+            }
+            orderStatus = 'pending';
+            paymentStatus = 'pending_cod';
+        } else if (payment_method === 'razorpay' || payment_method === 'upi') {
+            if (paymentPreference === 'cod') {
+                return NextResponse.json({ error: 'Seller accepts COD only' }, { status: 400 });
+            }
+        }
+
+        // 5. Create Order
         const newOrder = await db.insert(orders).values({
             userId: seller_id,
-            leadId: null, // Optional
+            leadId: null,
             customerName: customer.name,
             customerPhone: customer.phone,
             customerEmail: customer.email,
             shippingAddress: customer.address ? JSON.stringify(customer.address) : null,
-
             subtotal,
             discountAmount,
             shippingAmount,
             taxAmount,
             totalAmount,
             currency: 'INR',
-
             channel: channel || 'whatsapp',
             source: source || 'ai_chat',
             notesFromCustomer: notes_from_customer,
-
-            status: 'pending',
-            paymentStatus: 'unpaid',
-            paymentMethod: payment_method || 'UPI',
-
+            status: orderStatus,
+            paymentStatus: paymentStatus,
+            paymentMethod: finalPaymentMethod || null,
             orderDate: new Date().toISOString(),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -116,7 +129,7 @@ export async function POST(req: NextRequest) {
 
         const orderId = newOrder[0].id;
 
-        // 4. Create Order Items
+        // 6. Create Order Items
         for (const item of lineItems) {
             await db.insert(orderItems).values({
                 orderId,
@@ -129,11 +142,11 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // 5. Create Payment Record (Pending)
+        // 7. Create Payment Record
         await db.insert(payments).values({
             orderId,
             sellerId: seller_id,
-            method: payment_method || 'UPI',
+            method: finalPaymentMethod || 'PENDING',
             amount: totalAmount,
             currency: 'INR',
             status: 'PENDING',
@@ -141,30 +154,78 @@ export async function POST(req: NextRequest) {
             updatedAt: new Date().toISOString(),
         });
 
-        // 6. Fetch Payment Settings for Response
-        const settings = await db
-            .select()
-            .from(paymentSettings)
-            .where(eq(paymentSettings.userId, seller_id))
-            .limit(1);
-
-        const response: any = {
-            order_id: orderId,
-            total_amount: totalAmount,
-            currency: 'INR',
-            payment_method: payment_method || 'UPI',
+        // 8. Build Payment Options Response
+        const paymentOptions: any = {
+            preference: paymentPreference,
+            available: [],
         };
 
-        if (payment_method === 'UPI' && settings.length > 0 && settings[0].upiEnabled) {
-            response.upi_details = {
-                upi_id: settings[0].upiId,
-                upi_account_name: settings[0].upiAccountName,
-                upi_qr_image_url: settings[0].upiQrImageUrl,
-            };
-        }
-        // Add Razorpay logic later
+        // Online payment options
+        if (paymentPreference === 'online' || paymentPreference === 'both') {
+            // Razorpay
+            if (razorpayLink) {
+                paymentOptions.available.push({
+                    method: 'razorpay',
+                    type: 'online',
+                    link: razorpayLink,
+                    autoVerify: webhookConsent === true,
+                    instructions: 'Pay securely online. Payment will be confirmed automatically.',
+                });
+            }
 
-        return NextResponse.json(response);
+            // UPI
+            if (upiId || qrImageUrl) {
+                const upiDeepLink = upiId
+                    ? `upi://pay?pa=${upiId}&pn=Order${orderId}&am=${(totalAmount / 100).toFixed(2)}&cu=INR&tn=Order_${orderId}`
+                    : null;
+
+                paymentOptions.available.push({
+                    method: 'upi',
+                    type: 'online',
+                    upiId: upiId || null,
+                    deepLink: upiDeepLink,
+                    qrImageUrl: qrImageUrl || null,
+                    autoVerify: false,
+                    requiresManualConfirmation: true,
+                    instructions: 'Pay via UPI (GPay/PhonePe/Paytm). After payment, upload screenshot for seller confirmation.',
+                });
+            }
+        }
+
+        // COD option
+        if (paymentPreference === 'cod' || paymentPreference === 'both') {
+            paymentOptions.available.push({
+                method: 'cod',
+                type: 'offline',
+                autoVerify: false,
+                notes: codNotes || 'Pay cash on delivery',
+                instructions: 'Pay when you receive your order. No advance payment needed.',
+            });
+        }
+
+        // Verification policy
+        paymentOptions.verificationPolicy = {
+            razorpay: 'Automatic verification via Razorpay webhook',
+            upi: 'Manual confirmation required - upload payment proof, seller confirms',
+            cod: 'Confirmed on delivery by seller/delivery person',
+        };
+
+        return NextResponse.json({
+            success: true,
+            order_id: orderId,
+            status: orderStatus,
+            payment_status: paymentStatus,
+            total_amount: totalAmount,
+            total_amount_display: `₹${(totalAmount / 100).toFixed(2)}`,
+            currency: 'INR',
+            payment_options: paymentOptions,
+            items: lineItems.map(item => ({
+                name: item.productName,
+                quantity: item.quantity,
+                unit_price: item.unitPrice,
+                total: item.totalPrice,
+            })),
+        });
 
     } catch (error) {
         console.error('Error creating order:', error);

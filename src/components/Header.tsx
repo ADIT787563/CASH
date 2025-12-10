@@ -69,8 +69,7 @@ export const Header = () => {
   const landingNavItems: { name: string; href: string }[] = content?.header_menu || [
     { name: "Product", href: "/product" },
     { name: "Pricing", href: "/plans" },
-    { name: "Features", href: "/plans" },
-    { name: "Reviews", href: "/reviews" },
+    { name: "Features", href: "/features" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];

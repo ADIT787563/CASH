@@ -798,21 +798,8 @@ export const pricingPlans = sqliteTable('pricing_plans', {
   monthlyPrice: integer('monthly_price').notNull(), // in paise (₹999 = 99900)
   yearlyPrice: integer('yearly_price'), // in paise, null if not applicable
   features: text('features', { mode: 'json' }).notNull().$type<string[]>(), // Array of feature strings
-  limits: text('limits', { mode: 'json' }).notNull().$type<{
-    messages?: number;
-    whatsappNumbers?: number;
-    templates?: number;
-    leads?: number;
-    [key: string]: any;
-  }>(),
-  icon: text('icon'), // Icon name from lucide-react
-  color: text('color'), // Tailwind color class
-  bgColor: text('bg_color'), // Tailwind bg color class
-  isPopular: integer('is_popular', { mode: 'boolean' }).default(false),
-  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
-  sortOrder: integer('sort_order').default(0).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
 });
 
 // Content Settings (Global Content Store)
@@ -948,6 +935,35 @@ export const paymentRecords = sqliteTable('payment_records', {
   metadata: text('metadata', { mode: 'json' }),
 
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
+});
+
+// Seller Payment Methods - For seller-side Razorpay onboarding
+export const sellerPaymentMethods = sqliteTable('seller_payment_methods', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  sellerId: text('seller_id').notNull().unique().references(() => user.id, { onDelete: 'cascade' }),
+
+  // Payment Preference
+  paymentPreference: text('payment_preference').notNull().default('both'), // 'online', 'cod', 'both'
+
+  // Razorpay Configuration
+  razorpayLink: text('razorpay_link'),
+  razorpayConnectedAccountId: text('razorpay_connected_account_id'),
+
+  // Webhook Configuration
+  webhookConsent: integer('webhook_consent', { mode: 'boolean' }).notNull().default(false),
+  webhookUrl: text('webhook_url'), // Generated WaveGroww webhook URL for display
+  webhookSecretHash: text('webhook_secret_hash'), // Hashed secret if seller provided
+
+  // UPI Configuration
+  upiId: text('upi_id'),
+  phoneNumber: text('phone_number'),
+  qrImageUrl: text('qr_image_url'),
+
+  // COD Configuration
+  codNotes: text('cod_notes'),
+
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
 
 // ============================================

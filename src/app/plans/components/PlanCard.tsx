@@ -37,7 +37,7 @@ const PlanCard = memo(({
       router.push('/dashboard');
     } else {
       // Paid plan - go to payment page
-      router.push(`/payment?plan=${plan.id}`);
+      router.push(`/payment/checkout?plan=${plan.id}`);
     }
   };
 

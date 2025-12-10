@@ -54,6 +54,13 @@ type TabId =
   | "security"
   | "export";
 
+const getAuthHeaders = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem("bearer_token") : null;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+};
+
 export default function SettingsPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
@@ -175,27 +182,23 @@ export default function SettingsPage() {
   const fetchAllSettings = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = getAuthHeaders();
 
-      // 1. Fetch unified profile data FIRST (Critical for initial render)
-      const profileRes = await fetch("/api/business-profile", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // 1. Fetch unified profile data FIRST
+      const profileRes = await fetch("/api/business-profile", { headers });
 
       if (profileRes.ok) {
         const profile = await profileRes.json();
         if (profile) {
-          // Populate Account Settings from Profile
           setAccountSettings(prev => ({
             ...prev,
             fullName: profile.fullName || "",
-            businessName: profile.businessName || "", // Also in business settings, but kept here for UI consistency if needed
-            email: session?.user?.email || "", // Email from session (non-editable)
+            businessName: profile.businessName || "",
+            email: session?.user?.email || "",
             phone: profile.phoneNumber || "",
-            phoneVerified: true, // Assuming verified if in profile
+            phoneVerified: true,
           }));
 
-          // Populate Business Settings from Profile
           setBusinessSettings(prev => ({
             ...prev,
             businessCategory: profile.businessCategory || "",
@@ -205,24 +208,23 @@ export default function SettingsPage() {
             pincode: profile.pincode || "",
             gstNumber: profile.gstNumber || "",
             businessEmail: profile.businessEmail || "",
-            whatsappNumber: profile.phoneNumber || "", // Default to phone number
+            whatsappNumber: profile.phoneNumber || "",
           }));
         }
       }
 
-      // 2. STOP LOADING HERE - Let the user interact with the first tab immediately
       setIsLoading(false);
 
-      // 3. Fetch other settings in the background
+      // 3. Fetch other settings
       Promise.all([
-        fetch("/api/business-settings", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/chatbot-settings", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/catalog", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/analytics", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/team", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/security", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/export", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/settings/backup", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/business-settings", { headers }),
+        fetch("/api/chatbot-settings", { headers }),
+        fetch("/api/settings/catalog", { headers }),
+        fetch("/api/settings/analytics", { headers }),
+        fetch("/api/settings/team", { headers }),
+        fetch("/api/settings/security", { headers }),
+        fetch("/api/settings/export", { headers }),
+        fetch("/api/settings/backup", { headers }),
       ]).then(async ([bizSettingsRes, chatbotRes, catalogRes, analyticsRes, teamRes, securityRes, exportRes, backupRes]) => {
         if (bizSettingsRes.ok) {
           const data = await bizSettingsRes.json();
@@ -275,7 +277,6 @@ export default function SettingsPage() {
         }
       }).catch(err => {
         console.error("Error fetching background settings:", err);
-        // Don't show error toast here to avoid disrupting the user flow
       });
 
     } catch (error) {
@@ -293,15 +294,12 @@ export default function SettingsPage() {
 
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       // Use PATCH draft endpoint for partial updates
       const response = await fetch("/api/business-profile/draft", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           fullName: accountSettings.fullName,
           businessName: accountSettings.businessName,
@@ -327,15 +325,12 @@ export default function SettingsPage() {
   const handleSaveBusiness = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       // Update Business Settings via dedicated endpoint
       const response = await fetch("/api/business-settings", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           businessName: accountSettings.businessName, // Ensure consistent name
           businessCategory: businessSettings.businessCategory,
@@ -364,15 +359,12 @@ export default function SettingsPage() {
   const handleSaveChatbot = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       // Try PUT first (update existing settings)
       let response = await fetch("/api/chatbot-settings", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(chatbotSettings),
       });
 
@@ -380,10 +372,7 @@ export default function SettingsPage() {
       if (response.status === 404) {
         response = await fetch("/api/chatbot-settings", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers,
           body: JSON.stringify(chatbotSettings),
         });
       }
@@ -405,13 +394,10 @@ export default function SettingsPage() {
 
   const handleTestChatbot = async () => {
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/chatbot-settings/test", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({ message: "Hello, this is a test message" }),
       });
 
@@ -429,14 +415,11 @@ export default function SettingsPage() {
   const handleSaveCatalog = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       const response = await fetch("/api/settings/catalog", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(catalogSettings),
       });
 
@@ -456,14 +439,11 @@ export default function SettingsPage() {
   const handleSaveAnalytics = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       const response = await fetch("/api/settings/analytics", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(analyticsSettings),
       });
 
@@ -487,13 +467,10 @@ export default function SettingsPage() {
     }
 
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/settings/analytics/test-webhook", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           webhookUrl: analyticsSettings.webhookUrl,
           webhookSecret: analyticsSettings.webhookSecret,
@@ -518,13 +495,10 @@ export default function SettingsPage() {
     }
 
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/settings/team", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(newMember),
       });
 
@@ -543,10 +517,10 @@ export default function SettingsPage() {
 
   const handleDeleteTeamMember = async (id: number) => {
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = getAuthHeaders();
       const response = await fetch(`/api/settings/team?id=${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers,
       });
 
       if (response.ok) {
@@ -562,13 +536,10 @@ export default function SettingsPage() {
 
   const handleSetup2FA = async (method: "sms" | "authenticator") => {
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/settings/security/2fa-setup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({ method }),
       });
 
@@ -604,13 +575,10 @@ export default function SettingsPage() {
     }
 
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/settings/security/change-password", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -632,13 +600,10 @@ export default function SettingsPage() {
 
   const handleCreateExport = async (jobType: string) => {
     try {
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
       const response = await fetch("/api/settings/export", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({ jobType }),
       });
 
@@ -656,14 +621,11 @@ export default function SettingsPage() {
   const handleSaveBackup = async () => {
     try {
       setIsSaving(true);
-      const token = localStorage.getItem("bearer_token");
+      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
 
       const response = await fetch("/api/settings/backup", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(backupSchedule),
       });
 

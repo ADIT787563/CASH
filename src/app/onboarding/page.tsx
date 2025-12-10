@@ -26,12 +26,27 @@ export default function OnboardingPage() {
         gstNumber: ''
     });
 
-    // Step 2 Form Data
+    // Step 2 Form Data - WhatsApp Settings
     const [whatsappData, setWhatsappData] = useState({
         phoneNumberId: '',
         wabaId: '',
         accessToken: ''
     });
+
+    // Step 2 Form Data - Payment Settings
+    const [paymentData, setPaymentData] = useState({
+        paymentPreference: 'both' as 'online' | 'cod' | 'both',
+        razorpayAccountType: 'razorpay' as 'razorpay' | 'upi',
+        razorpayLink: '',
+        upiId: '',
+        phoneNumber: '',
+        qrImageUrl: '',
+        codAvailable: true,
+        codNotes: '',
+        webhookConsent: false,
+    });
+
+    const [showWebhookModal, setShowWebhookModal] = useState(false);
 
     useEffect(() => {
         loadState();
@@ -74,13 +89,35 @@ export default function OnboardingPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const res = await onboardingService.submitStep2(whatsappData);
-            if (res.success) {
-                setStep(res.nextStep);
-                toast.success('WhatsApp settings saved!');
+            // Save WhatsApp settings
+            const whatsappRes = await onboardingService.submitStep2(whatsappData);
+            if (!whatsappRes.success) {
+                throw new Error('Failed to save WhatsApp settings');
             }
+
+            // Save payment settings
+            const paymentRes = await fetch('/api/sellers/payment-methods', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paymentPreference: paymentData.paymentPreference,
+                    razorpayLink: paymentData.razorpayLink,
+                    upiId: paymentData.upiId,
+                    phoneNumber: paymentData.phoneNumber,
+                    qrImageUrl: paymentData.qrImageUrl,
+                    codNotes: paymentData.codNotes,
+                    webhookConsent: paymentData.webhookConsent,
+                }),
+            });
+
+            if (!paymentRes.ok) {
+                throw new Error('Failed to save payment settings');
+            }
+
+            setStep(whatsappRes.nextStep);
+            toast.success('Settings saved successfully!');
         } catch (error) {
-            toast.error('Failed to save WhatsApp settings');
+            toast.error('Failed to save settings');
         } finally {
             setSubmitting(false);
         }
@@ -279,6 +316,228 @@ export default function OnboardingPage() {
                                     />
                                 </div>
                             </div>
+
+                            {/* Payment Settings Section */}
+                            <div className="border-t pt-6 mt-6">
+                                <h3 className="text-xl font-semibold mb-2">Payment & Payout Settings</h3>
+                                <p className="text-sm text-muted-foreground mb-6">
+                                    Configure how you want to receive payments from buyers. You can accept online payments via Razorpay, UPI apps, or Cash on Delivery.
+                                </p>
+
+                                {/* Payment Preference */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-3">Payment Preference *</label>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {(['online', 'cod', 'both'] as const).map((pref) => (
+                                            <button
+                                                key={pref}
+                                                type="button"
+                                                onClick={() => setPaymentData({ ...paymentData, paymentPreference: pref })}
+                                                className={`p-4 border-2 rounded-lg transition-colors ${paymentData.paymentPreference === pref
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <div className="font-medium capitalize">{pref === 'both' ? 'Online & COD' : pref}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Online Payment Options */}
+                                {(paymentData.paymentPreference === 'online' || paymentData.paymentPreference === 'both') && (
+                                    <div className="space-y-4 mb-6">
+                                        <h4 className="font-medium">Online Payment Configuration</h4>
+
+                                        {/* Razorpay or UPI */}
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="radio"
+                                                    checked={paymentData.razorpayAccountType === 'razorpay'}
+                                                    onChange={() => setPaymentData({ ...paymentData, razorpayAccountType: 'razorpay' })}
+                                                />
+                                                <span>I have a Razorpay account</span>
+                                            </label>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="radio"
+                                                    checked={paymentData.razorpayAccountType === 'upi'}
+                                                    onChange={() => setPaymentData({ ...paymentData, razorpayAccountType: 'upi' })}
+                                                />
+                                                <span>I will use UPI/Other apps</span>
+                                            </label>
+                                        </div>
+
+                                        {/* Razorpay Fields */}
+                                        {paymentData.razorpayAccountType === 'razorpay' && (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Razorpay Payment Link</label>
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://rzp.io/l/your-link"
+                                                        className="w-full p-3 border rounded-md"
+                                                        value={paymentData.razorpayLink}
+                                                        onChange={e => setPaymentData({ ...paymentData, razorpayLink: e.target.value })}
+                                                    />
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        Optional - WaveGroww can auto-detect payments via webhook if you configure it
+                                                    </p>
+                                                </div>
+
+                                                {/* Webhook Consent */}
+                                                <label className="flex items-start gap-3 p-4 border rounded-lg">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="mt-1"
+                                                        checked={paymentData.webhookConsent}
+                                                        onChange={e => setPaymentData({ ...paymentData, webhookConsent: e.target.checked })}
+                                                    />
+                                                    <div>
+                                                        <div className="font-medium">Allow WaveGroww to receive payment webhooks</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            We'll provide webhook URL and instructions. No money is routed through WaveGroww.
+                                                        </div>
+                                                    </div>
+                                                </label>
+
+                                                {paymentData.webhookConsent && (
+                                                    <div className="bg-blue-50 p-4 rounded-md text-sm">
+                                                        <p className="font-medium mb-2">Webhook Setup Instructions:</p>
+                                                        <ol className="list-decimal list-inside space-y-1 text-xs">
+                                                            <li>Go to Razorpay Dashboard  Settings  Webhooks</li>
+                                                            <li>Add this URL: <code className="bg-white px-2 py-0.5 rounded">{process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/seller-payments/razorpay</code></li>
+                                                            <li>Enable events: payment.link.paid, payment.captured, payment.failed</li>
+                                                        </ol>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* UPI Fields */}
+                                        {paymentData.razorpayAccountType === 'upi' && (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">UPI ID</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="seller@upi"
+                                                        className="w-full p-3 border rounded-md"
+                                                        value={paymentData.upiId}
+                                                        onChange={e => setPaymentData({ ...paymentData, upiId: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Mobile Number (for UPI deep-links)</label>
+                                                    <input
+                                                        type="tel"
+                                                        placeholder="+91XXXXXXXXXX"
+                                                        className="w-full p-3 border rounded-md"
+                                                        value={paymentData.phoneNumber}
+                                                        onChange={e => setPaymentData({ ...paymentData, phoneNumber: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">UPI QR Code (Optional)</label>
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                                        {paymentData.qrImageUrl ? (
+                                                            <div className="flex items-center gap-4">
+                                                                <img
+                                                                    src={paymentData.qrImageUrl}
+                                                                    alt="QR Code"
+                                                                    className="w-24 h-24 object-contain border rounded"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={async () => {
+                                                                        await fetch('/api/sellers/payment-methods/qr-upload', { method: 'DELETE' });
+                                                                        setPaymentData({ ...paymentData, qrImageUrl: '' });
+                                                                    }}
+                                                                    className="text-red-600 text-sm hover:underline"
+                                                                >
+                                                                    Remove QR
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center">
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/png,image/jpeg,image/webp"
+                                                                    id="qr-upload"
+                                                                    className="hidden"
+                                                                    onChange={async (e) => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (!file) return;
+                                                                        const formData = new FormData();
+                                                                        formData.append('file', file);
+                                                                        try {
+                                                                            const res = await fetch('/api/sellers/payment-methods/qr-upload', {
+                                                                                method: 'POST',
+                                                                                body: formData,
+                                                                            });
+                                                                            const data = await res.json();
+                                                                            if (data.success) {
+                                                                                setPaymentData({ ...paymentData, qrImageUrl: data.qrImageUrl });
+                                                                                toast.success('QR code uploaded!');
+                                                                            } else {
+                                                                                toast.error(data.error || 'Upload failed');
+                                                                            }
+                                                                        } catch (err) {
+                                                                            toast.error('Failed to upload QR');
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <label
+                                                                    htmlFor="qr-upload"
+                                                                    className="cursor-pointer text-primary hover:underline"
+                                                                >
+                                                                    Click to upload QR code
+                                                                </label>
+                                                                <p className="text-xs text-muted-foreground mt-1">
+                                                                    PNG, JPEG, or WebP. Max 2MB.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        Buyers can scan this QR to pay via any UPI app
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* COD Options */}
+                                {(paymentData.paymentPreference === 'cod' || paymentData.paymentPreference === 'both') && (
+                                    <div className="space-y-4">
+                                        <h4 className="font-medium">Cash on Delivery Configuration</h4>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">COD Notes (Optional)</label>
+                                            <textarea
+                                                placeholder="E.g., Cash only, extra charges ₹50, card on delivery not available"
+                                                className="w-full p-3 border rounded-md"
+                                                rows={2}
+                                                value={paymentData.codNotes}
+                                                onChange={e => setPaymentData({ ...paymentData, codNotes: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Payment Verification Policy */}
+                                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <h4 className="font-semibold text-amber-800 mb-2">⚠️ Payment Verification Policy</h4>
+                                    <ul className="text-xs text-amber-700 space-y-1">
+                                        <li>• <strong>Razorpay:</strong> Automatic verification via webhook</li>
+                                        <li>• <strong>UPI (GPay/PhonePe/Paytm):</strong> Cannot be auto-verified. Buyer uploads proof, seller confirms.</li>
+                                        <li>• <strong>COD:</strong> Confirmed on delivery by seller/delivery person</li>
+                                        <li>• WaveGroww does not process UPI refunds; seller is responsible.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={submitting}

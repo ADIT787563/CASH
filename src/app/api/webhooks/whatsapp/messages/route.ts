@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { chatbotSettings, messages, leads, customers, orders, orderItems } from '@/db/schema';
+import { chatbotSettings, messages, leads, customers, orders, orderItems, sellerPaymentMethods, payments } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
 import { WhatsAppClient } from '@/lib/whatsapp';
@@ -170,11 +170,27 @@ export async function POST(request: NextRequest) {
             // Parse details using OpenAI helper
             const parsed: OrderDetails | null = await parseOrderDetails(messageText);
             if (parsed && parsed.name && parsed.phone && parsed.email && parsed.address) {
+                // Fetch seller's payment preferences
+                const sellerPayment = await db
+                    .select()
+                    .from(sellerPaymentMethods)
+                    .where(eq(sellerPaymentMethods.sellerId, userId))
+                    .limit(1);
+
+                const paymentPreference = sellerPayment[0]?.paymentPreference || 'both';
+                const razorpayLink = sellerPayment[0]?.razorpayLink;
+                const upiId = sellerPayment[0]?.upiId;
+                const qrImageUrl = sellerPayment[0]?.qrImageUrl;
+                const codNotes = sellerPayment[0]?.codNotes;
+
                 // Create order record
                 const orderNumber = `INV-${Date.now()}`;
                 const subtotal = 1000; // placeholder – in real code calculate based on product selection
                 const tax = Math.round(subtotal * 0.18);
                 const total = subtotal + tax;
+
+                // Determine initial payment status based on preference
+                const initialPaymentStatus = paymentPreference === 'cod' ? 'pending_cod' : 'unpaid';
 
                 const orderInsert = await db.insert(orders).values({
                     userId,
@@ -186,9 +202,9 @@ export async function POST(request: NextRequest) {
                     subtotal,
                     taxAmount: tax,
                     totalAmount: total,
-                    status: 'confirmed',
-                    paymentStatus: 'unpaid',
-                    paymentMethod: 'cod',
+                    status: 'pending',
+                    paymentStatus: initialPaymentStatus,
+                    paymentMethod: null, // Will be set when payment method is chosen
                     invoiceNumber: orderNumber,
                     invoiceUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/invoice/${orderNumber}`,
                     orderDate: new Date().toISOString(),
@@ -196,15 +212,29 @@ export async function POST(request: NextRequest) {
                     updatedAt: new Date().toISOString(),
                 }).returning();
 
+                const orderId = orderInsert[0].id;
+
                 // Insert a single line‑item (placeholder)
                 await db.insert(orderItems).values({
-                    orderId: orderInsert[0].id,
+                    orderId,
                     productId: 1,
                     productName: 'Sample Product',
                     quantity: 1,
                     unitPrice: subtotal,
                     totalPrice: subtotal,
                     createdAt: new Date().toISOString(),
+                });
+
+                // Create payment record
+                await db.insert(payments).values({
+                    orderId,
+                    sellerId: userId,
+                    method: 'PENDING',
+                    amount: total,
+                    currency: 'INR',
+                    status: 'PENDING',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                 });
 
                 // Reset conversation state
@@ -216,15 +246,47 @@ export async function POST(request: NextRequest) {
                     })
                     .where(eq(customers.id, customer.id));
 
-                // Send confirmation via system WhatsApp number
-                const systemClient = WhatsAppClient.getSystemClient();
-                await systemClient.sendTextMessage(
-                    from,
-                    `Your order has been created successfully.\nInvoice: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/invoice/${orderNumber}\nA copy has been emailed to you.`
-                );
+                // Build payment options message based on seller preferences
+                let paymentMessage = `✅ *Order Created Successfully!*\n\n`;
+                paymentMessage += `Order ID: ${orderId}\n`;
+                paymentMessage += `Total: ₹${(total / 100).toFixed(2)}\n\n`;
+                paymentMessage += `*Payment Options:*\n`;
 
-                // TODO: send email with invoice attachment using SendGrid/Resend
-                console.log('Order created and confirmation sent');
+                const hasOnline = paymentPreference === 'online' || paymentPreference === 'both';
+                const hasCod = paymentPreference === 'cod' || paymentPreference === 'both';
+
+                if (hasOnline) {
+                    if (razorpayLink) {
+                        paymentMessage += `\n💳 *Pay Online (Razorpay)*\n`;
+                        paymentMessage += `Click to pay securely: ${razorpayLink}\n`;
+                        paymentMessage += `✓ Automatic confirmation\n`;
+                    }
+
+                    if (upiId) {
+                        const upiDeepLink = `upi://pay?pa=${upiId}&pn=Order${orderId}&am=${(total / 100).toFixed(2)}&cu=INR`;
+                        paymentMessage += `\n📱 *Pay via UPI*\n`;
+                        paymentMessage += `UPI ID: ${upiId}\n`;
+                        paymentMessage += `Pay Link: ${upiDeepLink}\n`;
+                        if (qrImageUrl) {
+                            paymentMessage += `QR Code: ${qrImageUrl}\n`;
+                        }
+                        paymentMessage += `⚠️ After payment, reply "I have paid" with screenshot\n`;
+                    }
+                }
+
+                if (hasCod) {
+                    paymentMessage += `\n💵 *Cash on Delivery*\n`;
+                    paymentMessage += codNotes || 'Pay when you receive your order\n';
+                    paymentMessage += `Reply "COD" to confirm cash on delivery\n`;
+                }
+
+                paymentMessage += `\n📄 Invoice: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/invoice/${orderNumber}`;
+
+                // Send payment options via WhatsApp
+                const systemClient = WhatsAppClient.getSystemClient();
+                await systemClient.sendTextMessage(from, paymentMessage);
+
+                console.log('Order created with payment options sent');
                 return NextResponse.json({ ok: true });
             } else {
                 // Missing fields – ask user to resend full details

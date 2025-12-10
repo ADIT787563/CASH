@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { auth } from '@/lib/auth';
 import { db } from '@/db';
-import { user } from '@/db/schema';
+import { user, subscriptions, invoices, paymentRecords } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
             razorpay_signature,
             planId,
             billingCycle,
+            amount // Assuming amount is passed from frontend or we should fetch order amount
         } = body;
 
         // Get user session
@@ -56,27 +57,65 @@ export async function POST(request: NextRequest) {
             endDate.setMonth(endDate.getMonth() + 1);
         }
 
-        // Update user plan in database
-        await db.update(user)
-            .set({
-                plan: planId,
-                updatedAt: new Date()
-            })
-            .where(eq(user.id, session.user.id));
+        const paymentAmount = amount ? parseInt(amount) * 100 : 0; // Convert to paise if needed, assume amount is in INR if passed
 
-        console.log('Payment verified successfully:', {
+        // TRANSACTION: Update User, Create Subscription, Invoice, Payment Record
+        await db.transaction(async (tx) => {
+            // 1. Update User Plan
+            await tx.update(user)
+                .set({
+                    plan: planId,
+                    updatedAt: new Date()
+                })
+                .where(eq(user.id, session.user.id));
+
+            // 2. Create Subscription Record
+            const [newSubscription] = await tx.insert(subscriptions).values({
+                userId: session.user.id,
+                planId: planId,
+                status: 'active',
+                provider: 'razorpay',
+                providerSubscriptionId: razorpay_order_id, // Using order_id as ref for prepaid
+                currentPeriodStart: startDate,
+                currentPeriodEnd: endDate,
+            }).returning();
+
+            // 3. Create Invoice
+            const [newInvoice] = await tx.insert(invoices).values({
+                userId: session.user.id,
+                subscriptionId: newSubscription.id,
+                amount: paymentAmount,
+                currency: 'INR',
+                status: 'paid',
+                paidAt: new Date(),
+            }).returning();
+
+            // 4. Create Payment Record
+            await tx.insert(paymentRecords).values({
+                userId: session.user.id,
+                invoiceId: newInvoice.id,
+                amount: paymentAmount,
+                currency: 'INR',
+                status: 'success',
+                method: 'razorpay',
+                providerPaymentId: razorpay_payment_id,
+                metadata: {
+                    order_id: razorpay_order_id,
+                    signature: razorpay_signature,
+                    billing_cycle: billingCycle
+                }
+            });
+        });
+
+        console.log('Payment verified and records created:', {
             userId: session.user.id,
-            orderId: razorpay_order_id,
-            paymentId: razorpay_payment_id,
             planId,
-            billingCycle,
-            startDate,
-            endDate,
+            orderId: razorpay_order_id
         });
 
         return NextResponse.json({
             success: true,
-            message: 'Payment verified successfully',
+            message: 'Payment verified and subscription activated',
             subscription: {
                 planId,
                 billingCycle,
