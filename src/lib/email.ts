@@ -293,3 +293,161 @@ export async function sendOtpEmail(
     html,
   });
 }
+
+/**
+ * Send order confirmation email to customer
+ */
+export async function sendOrderConfirmationEmail(
+  userEmail: string,
+  customerName: string,
+  orderDetails: { id: string; amount: number; date: string }
+): Promise<boolean> {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #00B67A 0%, #009664 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 30px; background: #00B67A; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          .order-details { background: white; padding: 15px; border-radius: 5px; border: 1px solid #eee; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Order Confirmed! ✅</h1>
+          </div>
+          <div class="content">
+            <h2>Hi ${customerName},</h2>
+            <p>Thank you for your order! We have received it and are processing it.</p>
+            
+            <div class="order-details">
+              <h3>Order Details</h3>
+              <p><strong>Order ID:</strong> ${orderDetails.id}</p>
+              <p><strong>Amount:</strong> ₹${orderDetails.amount}</p>
+              <p><strong>Date:</strong> ${orderDetails.date}</p>
+            </div>
+
+            <p>We will notify you once it's shipped.</p>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}" class="button">View Order</a>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} Wavegroww. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: userEmail,
+    subject: `Order Confirmation #${orderDetails.id}`,
+    html,
+  });
+}
+
+/**
+ * Send new order notification to seller
+ */
+export async function sendNewOrderNotification(
+  sellerEmail: string,
+  orderDetails: { id: string; amount: number; customerName: string }
+): Promise<boolean> {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 30px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>New Order Received! 💰</h1>
+          </div>
+          <div class="content">
+            <h2>You have a new order!</h2>
+            <p><strong>Customer:</strong> ${orderDetails.customerName}</p>
+            <p><strong>Amount:</strong> ₹${orderDetails.amount}</p>
+            <p><strong>Order ID:</strong> ${orderDetails.id}</p>
+            
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/dashboard/orders" class="button">Manage Order</a>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} Wavegroww. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: sellerEmail,
+    subject: `New Order Received: #${orderDetails.id}`,
+    html,
+  });
+}
+
+/**
+ * Send payment receipt for subscription
+ */
+export async function sendPaymentReceiptEmail(
+  userEmail: string,
+  paymentDetails: { amount: number; planName: string; date: string; invoiceId: string }
+): Promise<boolean> {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          .receipt { background: white; padding: 15px; border-radius: 5px; border: 1px solid #eee; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Payment Receipt 🧾</h1>
+          </div>
+          <div class="content">
+            <h2>Payment Successful!</h2>
+            <p>Here is your receipt for your Wavegroww subscription.</p>
+            
+            <div class="receipt">
+              <p><strong>Plan:</strong> ${paymentDetails.planName}</p>
+              <p><strong>Amount:</strong> ₹${paymentDetails.amount}</p>
+              <p><strong>Date:</strong> ${paymentDetails.date}</p>
+              <p><strong>Invoice ID:</strong> ${paymentDetails.invoiceId}</p>
+            </div>
+
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/dashboard/billing" class="button">View Billing</a>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} Wavegroww. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: userEmail,
+    subject: `Payment Receipt - ${paymentDetails.invoiceId}`,
+    html,
+  });
+}

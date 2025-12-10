@@ -204,15 +204,21 @@ export async function POST(request: NextRequest) {
                     totalAmount: total,
                     status: 'pending',
                     paymentStatus: initialPaymentStatus,
-                    paymentMethod: null, // Will be set when payment method is chosen
+                    paymentMethod: null,
                     invoiceNumber: orderNumber,
-                    invoiceUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/invoice/${orderNumber}`,
+                    invoiceUrl: '', // Will update after ID generation
                     orderDate: new Date().toISOString(),
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                 }).returning();
 
                 const orderId = orderInsert[0].id;
+                const finalInvoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://wavegroww.online'}/invoices/${orderId}`;
+
+                // Update with correct URL
+                await db.update(orders)
+                    .set({ invoiceUrl: finalInvoiceUrl })
+                    .where(eq(orders.id, orderId));
 
                 // Insert a single line‑item (placeholder)
                 await db.insert(orderItems).values({
@@ -280,7 +286,7 @@ export async function POST(request: NextRequest) {
                     paymentMessage += `Reply "COD" to confirm cash on delivery\n`;
                 }
 
-                paymentMessage += `\n📄 Invoice: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/invoice/${orderNumber}`;
+                paymentMessage += `\n📄 Invoice: ${finalInvoiceUrl}`;
 
                 // Send payment options via WhatsApp
                 const systemClient = WhatsAppClient.getSystemClient();

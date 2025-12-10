@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders, orderItems, customers, products, payments, sellerPaymentMethods } from '@/db/schema';
+import { orders, orderItems, customers, products, payments, sellerPaymentMethods, user } from '@/db/schema';
+import { sendOrderConfirmationEmail, sendNewOrderNotification } from '@/lib/email';
 import { eq, inArray } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
@@ -141,6 +142,39 @@ export async function POST(req: NextRequest) {
                 createdAt: new Date().toISOString(),
             });
         }
+
+        // 6.5 Send Emails (Async - don't block too long)
+        (async () => {
+            try {
+                // Customer Email
+                if (customer.email) {
+                    await sendOrderConfirmationEmail(
+                        customer.email,
+                        customer.name,
+                        {
+                            id: orderId.toString(),
+                            amount: totalAmount / 100,
+                            date: new Date().toLocaleDateString()
+                        }
+                    );
+                }
+
+                // Seller Email
+                const seller = await db.select().from(user).where(eq(user.id, seller_id)).limit(1);
+                if (seller[0]?.email) {
+                    await sendNewOrderNotification(
+                        seller[0].email,
+                        {
+                            id: orderId.toString(),
+                            amount: totalAmount / 100,
+                            customerName: customer.name
+                        }
+                    );
+                }
+            } catch (err) {
+                console.error("Failed to send order emails", err);
+            }
+        })();
 
         // 7. Create Payment Record
         await db.insert(payments).values({

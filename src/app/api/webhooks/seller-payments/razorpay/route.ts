@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
         // Assuming payment link contains seller info in notes or reference_id
         const notes = entity?.notes || {};
         const referenceId = entity?.reference_id;
-        const orderId = notes.order_id || referenceId;
+        // Prioritize wavegroww_order_id from notes, then order_id, then reference_id
+        const orderId = notes.wavegroww_order_id || notes.order_id || referenceId;
 
         if (!orderId) {
             console.error('No order ID found in webhook payload');

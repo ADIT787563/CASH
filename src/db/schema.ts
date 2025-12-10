@@ -1,4 +1,5 @@
 import { sqliteTable, integer, text, index } from 'drizzle-orm/sqlite-core';
+import crypto from 'crypto';
 
 
 
@@ -15,6 +16,7 @@ export const user = sqliteTable("user", {
   plan: text("plan").notNull().default('starter'), // 'starter', 'growth', 'pro', 'enterprise'
   authProvider: text("auth_provider").notNull().default('email'), // 'email', 'google'
   onboardingStep: integer("onboarding_step").notNull().default(1), // 1: Profile, 2: WhatsApp, 3: Complete
+  subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'past_due'
   createdAt: integer("created_at", { mode: "timestamp" })
     .$defaultFn(() => new Date())
     .notNull(),
@@ -305,6 +307,7 @@ export const campaigns = sqliteTable('campaigns', {
   name: text('name').notNull(),
   templateId: integer('template_id').references(() => templates.id, { onDelete: 'set null' }),
   status: text('status').notNull().default('draft'),
+  audienceConfig: text('audience_config', { mode: 'json' }), // { type: 'all' | 'tag', value: string }
   scheduledAt: text('scheduled_at'),
   targetCount: integer('target_count').notNull().default(0),
   sentCount: integer('sent_count').notNull().default(0),
@@ -895,21 +898,23 @@ export const subscriptions = sqliteTable('subscriptions', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   planId: text('plan_id').notNull(), // references pricingPlans.planId
-  status: text('status').notNull(), // 'active', 'canceled', 'past_due', 'incomplete'
+  status: text('status').notNull().default('pending'), // 'active', 'canceled', 'past_due', 'incomplete'
+
+  startDate: text('start_date'),
 
   // Provider details (Stripe/Razorpay)
-  provider: text('provider').notNull(), // 'stripe', 'razorpay'
+  provider: text('provider'), // 'stripe', 'razorpay'
   providerSubscriptionId: text('provider_subscription_id').unique(),
   providerCustomerId: text('provider_customer_id'),
 
   // Period tracking
-  currentPeriodStart: integer('current_period_start', { mode: 'timestamp' }),
-  currentPeriodEnd: integer('current_period_end', { mode: 'timestamp' }),
+  currentPeriodStart: text('current_period_start'),
+  currentPeriodEnd: text('current_period_end'),
   cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).default(false),
-  canceledAt: integer('canceled_at', { mode: 'timestamp' }),
+  canceledAt: text('canceled_at'),
 
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
+  createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
+  updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
 
 export const invoices = sqliteTable('invoices', {
@@ -955,6 +960,8 @@ export const sellerPaymentMethods = sqliteTable('seller_payment_methods', {
   // Razorpay Configuration
   razorpayLink: text('razorpay_link'),
   razorpayConnectedAccountId: text('razorpay_connected_account_id'),
+  razorpayKeyId: text('razorpay_key_id'),
+  razorpayKeySecret: text('razorpay_key_secret'),
 
   // Webhook Configuration
   webhookConsent: integer('webhook_consent', { mode: 'boolean' }).notNull().default(false),

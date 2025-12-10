@@ -33,7 +33,7 @@ interface Stats {
 }
 
 interface RecentActivity {
-  id: number;
+  id: string | number;
   type: string;
   message: string;
   time: string;
@@ -105,13 +105,17 @@ function DashboardContent() {
           conversionChange: 3.1,
         });
 
-        // Mock activities for now - in real app this would come from API
-        setActivities([
-          { id: 1, type: "message", message: "New customer inquiry received", time: "2 mins ago", status: "success" },
-          { id: 2, type: "lead", message: "Lead converted to customer", time: "15 mins ago", status: "success" },
-          { id: 3, type: "product", message: "New product added to catalog", time: "1 hour ago", status: "success" },
-          { id: 4, type: "campaign", message: "Campaign scheduled for tomorrow", time: "2 hours ago", status: "pending" },
-        ]);
+
+        // Fetch recent activity
+        const activitiesRes = await fetch("/api/dashboard/activity", { headers: { Authorization: `Bearer ${token}` } });
+        if (activitiesRes.ok) {
+          const activitiesData = await activitiesRes.json();
+          setActivities(activitiesData);
+        } else {
+          console.error("Failed to fetch activities");
+          // Fallback to empty or previous state, simply don't set mock data
+          setActivities([]);
+        }
 
       } catch (error) {
         console.error("Data fetch error:", error);
@@ -335,7 +339,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">Analytics</h2>
               <Link
-                href="/analytics"
+                href="/dashboard/analytics"
                 className="text-sm text-primary hover:underline flex items-center gap-1"
               >
                 View All
@@ -375,7 +379,7 @@ function DashboardContent() {
               </div>
 
               <Link
-                href="/analytics"
+                href="/dashboard/analytics"
                 className="block w-full mt-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-center hover:bg-primary/90 transition-colors"
               >
                 <div className="flex items-center justify-center gap-2">

@@ -123,30 +123,7 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
     return (
         <div className="space-y-6">
             {/* Header / Global Controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-xl border border-border">
-                <div>
-                    <h3 className="font-semibold flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-primary" />
-                        Weekly Schedule
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                        Set your regular availability.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={copyToWeekdays}
-                        disabled={disabled}
-                        className="text-sm font-medium flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
-                        title="Copy Monday's hours to Tuesday through Friday"
-                    >
-                        <Copy className="w-3.5 h-3.5" />
-                        Apply Mon-Fri
-                    </button>
-                </div>
-            </div>
+            {/* Header / Global Controls removed as per request */}
 
             {/* Days List */}
             <div className="space-y-4">
@@ -165,8 +142,8 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
                             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
 
                                 {/* Day Switch */}
-                                <div className="w-32 flex-shrink-0 flex items-center gap-3">
-                                    <div className="relative inline-flex items-center cursor-pointer">
+                                <label className="w-32 flex-shrink-0 flex items-center gap-3 cursor-pointer">
+                                    <div className="relative inline-flex items-center">
                                         <input
                                             type="checkbox"
                                             className="sr-only peer"
@@ -180,7 +157,7 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
                                     <span className={cn("font-medium", schedule.isOpen ? "text-foreground" : "text-muted-foreground")}>
                                         {DAY_LABELS[day]}
                                     </span>
-                                </div>
+                                </label>
 
                                 {/* Shifts or Closed Label */}
                                 <div className="flex-1 w-full sm:w-auto">
@@ -196,7 +173,7 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
                                                             value={shift.start}
                                                             onChange={(e) => handleShiftChange(day, shift.id, 'start', e.target.value)}
                                                             disabled={disabled}
-                                                            className="bg-transparent text-sm font-medium focus:outline-none w-24 p-1 text-center"
+                                                            className="bg-transparent text-sm font-medium focus:outline-none w-24 p-1 text-center dark:[color-scheme:dark]"
                                                             aria-label={`Start time for ${DAY_LABELS[day]}`}
                                                         />
                                                         <span className="text-muted-foreground text-xs">to</span>
@@ -205,7 +182,7 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
                                                             value={shift.end}
                                                             onChange={(e) => handleShiftChange(day, shift.id, 'end', e.target.value)}
                                                             disabled={disabled}
-                                                            className="bg-transparent text-sm font-medium focus:outline-none w-24 p-1 text-center"
+                                                            className="bg-transparent text-sm font-medium focus:outline-none w-24 p-1 text-center dark:[color-scheme:dark]"
                                                             aria-label={`End time for ${DAY_LABELS[day]}`}
                                                         />
                                                     </div>
@@ -226,16 +203,7 @@ export function BusinessHours({ initialData, onChange, disabled }: BusinessHours
                                             ))}
 
                                             {/* Add Shift Button */}
-                                            {schedule.shifts.length < 3 && (
-                                                <button
-                                                    onClick={() => handleAddShift(day)}
-                                                    disabled={disabled}
-                                                    className="text-xs font-medium text-primary hover:underline flex items-center gap-1 mt-2"
-                                                >
-                                                    <Plus className="w-3 h-3" />
-                                                    Add hours
-                                                </button>
-                                            )}
+                                            {/* Add Shift Button Removed */}
                                         </div>
                                     )}
                                 </div>

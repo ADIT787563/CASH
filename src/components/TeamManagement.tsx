@@ -66,7 +66,7 @@ export function TeamManagement() {
         }
 
         try {
-            const response = await fetch('/api/team/invite', {
+            const response = await fetch('/api/settings/team', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: inviteEmail, role: inviteRole }),

@@ -2,36 +2,56 @@ import { NextResponse } from "next/server";
 
 const PLANS = [
     {
-        id: "starter_999",
-        name: "Starter",
+        id: "starter",
+        name: "Basic",
         price_paise: 99900,
         currency: "INR",
         billing_cycle: "monthly",
-        features: ["1 User", "Basic Analytics", "1000 Messages/mo"]
+        features: [
+            "📦 Add up to 20 products",
+            "🤖 250 automated replies/mo",
+            "📱 1 WhatsApp Number",
+            "📊 Basic Analytics"
+        ]
     },
     {
-        id: "growth_1699",
+        id: "growth",
         name: "Growth",
         price_paise: 169900,
         currency: "INR",
         billing_cycle: "monthly",
-        features: ["3 Users", "Advanced Analytics", "Unlimited Messages"]
+        features: [
+            "📦 Add up to 40 products",
+            "🤖 800 automated replies/mo",
+            "📱 3 WhatsApp Numbers",
+            "🧾 GST Invoices"
+        ]
     },
     {
-        id: "pro_3999",
-        name: "Pro",
+        id: "pro",
+        name: "Pro / Agency",
         price_paise: 399900,
         currency: "INR",
         billing_cycle: "monthly",
-        features: ["10 Users", "Custom Domain", "24/7 Support"]
+        features: [
+            "📦 130 products",
+            "🤖 Unlimited replies",
+            "📱 10 WhatsApp Numbers",
+            "👥 Team Roles"
+        ]
     },
     {
-        id: "enterprise_8999",
+        id: "scale",
         name: "Enterprise",
         price_paise: 899900,
         currency: "INR",
         billing_cycle: "monthly",
-        features: ["Unlimited Users", "Dedicated Account Manager", "SLA"]
+        features: [
+            "📦 Unlimited Catalog",
+            "🤖 AI Chatbot (NLP)",
+            "📱 Unlimited Numbers",
+            "🏢 White-label"
+        ]
     }
 ];
 

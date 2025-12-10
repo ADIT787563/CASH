@@ -107,6 +107,6 @@ export const DEFAULT_WEEKLY_HOURS: WeeklyHours = {
     wed: { isOpen: true, shifts: [{ ...DEFAULT_SHIFT, id: 'wed-1' }] },
     thu: { isOpen: true, shifts: [{ ...DEFAULT_SHIFT, id: 'thu-1' }] },
     fri: { isOpen: true, shifts: [{ ...DEFAULT_SHIFT, id: 'fri-1' }] },
-    sat: { isOpen: false, shifts: [] },
-    sun: { isOpen: false, shifts: [] },
+    sat: { isOpen: true, shifts: [{ ...DEFAULT_SHIFT, id: 'sat-1' }] },
+    sun: { isOpen: true, shifts: [{ ...DEFAULT_SHIFT, id: 'sun-1' }] },
 };

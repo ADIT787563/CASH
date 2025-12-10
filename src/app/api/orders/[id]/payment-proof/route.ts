@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: 'Payment proof submitted. Waiting for seller confirmation.',
+            message: 'Waiting for seller to confirm your payment.',
             order_id: orderId,
             status: 'pending_verification',
         });

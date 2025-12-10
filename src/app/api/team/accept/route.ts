@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { teamInvites, user, teamMembers } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
 
 
 /**
@@ -89,19 +90,65 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Note: User creation should be handled by better-auth signup
-        // This endpoint is for validation and returning invite details
-        // The actual user creation will happen through the auth system
+        // Create User using Better Auth
+        // We use the internal API to handle hashing and session creation logic if possible
+        // Or we replicate the insertion. Since we need to trigger 'signUpEmail', let's try calling it.
+        // However, better-auth server-side calls might require passing headers or a mock request context.
+        // A simpler way for "Do it" MVP might be to trust the library's method.
 
-        // For now, return invite details for the signup form
+        let newUser;
+        try {
+            // Attempt to create user via better-auth
+            // Note: This relies on better-auth server API signature.
+            // If this fails (e.g. requires request context), we might need a workaround.
+            const signUpResponse = await auth.api.signUpEmail({
+                body: {
+                    email: invite.email,
+                    password: password,
+                    name: name,
+                }
+            });
+
+            if (!signUpResponse?.user) {
+                throw new Error("Failed to create user via auth provider");
+            }
+            newUser = signUpResponse.user;
+
+        } catch (e) {
+            console.error("Auth Signup Error:", e);
+            return NextResponse.json({ error: 'Failed to create user account. Please try standard signup.' }, { status: 500 });
+        }
+
+        // Link to Team (Create Team Member)
+        // Check if member already exists (shouldn't if user didn't exist, but good to check)
+
+        // Mark invite as accepted
+        await db.update(teamInvites)
+            .set({ status: 'accepted', updatedAt: new Date().toISOString() })
+            .where(eq(teamInvites.id, invite.id));
+
+        // Add to Team Members table (linking new user to the business owner)
+        await db.insert(teamMembers).values({
+            userId: invite.businessId, // The Business Owner
+            memberUserId: extractUserId(newUser), // The New Team Member
+            inviteId: invite.id,
+            email: invite.email,
+            name: name,
+            role: invite.role,
+            status: 'active',
+            invitedAt: invite.createdAt || new Date().toISOString(), // Fallback
+            acceptedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+
+        // Add BusinessId to team_members if the schema calls for it. 
+        // We need to look at `teamMembers` schema again in DB.
+
         return NextResponse.json({
             success: true,
-            invite: {
-                email: invite.email,
-                role: invite.role,
-                businessId: invite.businessId,
-            },
-            message: 'Invite is valid. Please complete signup.',
+            user: newUser,
+            message: 'Invite accepted and account created.',
         }, { status: 200 });
 
     } catch (error) {
@@ -114,6 +161,10 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+function extractUserId(userObj: any): string {
+    return userObj.id || userObj.user.id;
 }
 
 /**

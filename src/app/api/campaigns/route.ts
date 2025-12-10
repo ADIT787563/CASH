@@ -1,371 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { campaigns } from '@/db/schema';
-import { eq, like, and, desc } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { campaigns, templates } from '@/db/schema';
+import { eq, desc } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
-// Helper to get userId from headers (for testing/demo)
-function getUserId(request: NextRequest): string {
-  return request.headers.get('x-user-id') || 'demo-user-1';
-}
-
-export async function GET(request: NextRequest) {
+// GET /api/campaigns - List campaigns
+export async function GET(req: NextRequest) {
   try {
-    const userId = getUserId(request);
+    const session = await auth.api.getSession({
+      headers: await headers()
+    });
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    // Single campaign fetch
-    if (id) {
-      if (!id || isNaN(parseInt(id))) {
-        return NextResponse.json(
-          { error: 'Valid ID is required', code: 'INVALID_ID' },
-          { status: 400 }
-        );
-      }
-
-      const campaign = await db
-        .select()
-        .from(campaigns)
-        .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, userId)))
-        .limit(1);
-
-      if (campaign.length === 0) {
-        return NextResponse.json(
-          { error: 'Campaign not found', code: 'NOT_FOUND' },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(campaign[0], { status: 200 });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // List campaigns with filters
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 100);
-    const offset = parseInt(searchParams.get('offset') ?? '0');
-    const search = searchParams.get('search');
-    const status = searchParams.get('status');
-
-    // Build filter conditions
-    const conditions = [eq(campaigns.userId, userId)];
-
-    if (search) {
-      conditions.push(like(campaigns.name, `%${search}%`));
-    }
-
-    if (status) {
-      conditions.push(eq(campaigns.status, status));
-    }
-
-    const results = await db.select()
+    const userCampaigns = await db.select()
       .from(campaigns)
-      .where(and(...conditions))
-      .orderBy(desc(campaigns.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .where(eq(campaigns.userId, session.user.id))
+      .orderBy(desc(campaigns.createdAt));
 
-
-
-    return NextResponse.json(results, { status: 200 });
+    return NextResponse.json(userCampaigns);
   } catch (error) {
-    console.error('GET error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error: ' + (error as Error).message },
-      { status: 500 }
-    );
+    console.error('Fetch Campaigns Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST /api/campaigns - Create campaign
+export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      );
+    const session = await auth.api.getSession({
+      headers: await headers()
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
+    const { name, templateId, audienceConfig, scheduledAt } = body;
 
-    // Security check: reject if userId provided in body
-    if ('userId' in body || 'user_id' in body) {
-      return NextResponse.json(
-        {
-          error: 'User ID cannot be provided in request body',
-          code: 'USER_ID_NOT_ALLOWED',
-        },
-        { status: 400 }
-      );
+    if (!name || !templateId) {
+      return NextResponse.json({ error: 'Name and Template are required' }, { status: 400 });
     }
 
-    const { name, templateId, scheduledAt } = body;
+    // Validate template ownership
+    const template = await db.query.templates.findFirst({
+      where: (t, { and, eq }) => and(eq(t.id, templateId), eq(t.userId, session.user.id))
+    });
 
-    // Validate required fields
-    if (!name || typeof name !== 'string' || name.trim() === '') {
-      return NextResponse.json(
-        { error: 'Name is required and must not be empty', code: 'MISSING_NAME' },
-        { status: 400 }
-      );
+    if (!template) {
+      return NextResponse.json({ error: 'Invalid Template' }, { status: 400 });
     }
 
-    // Prepare insert data
-    const now = new Date().toISOString();
-    const insertData: any = {
-      userId: user.id,
-      name: name.trim(),
-      status: 'draft',
-      targetCount: 0,
-      sentCount: 0,
-      deliveredCount: 0,
-      readCount: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    // Add optional fields if provided
-    if (templateId !== undefined && templateId !== null) {
-      if (isNaN(parseInt(templateId))) {
-        return NextResponse.json(
-          { error: 'Template ID must be a valid integer', code: 'INVALID_TEMPLATE_ID' },
-          { status: 400 }
-        );
-      }
-      insertData.templateId = parseInt(templateId);
-    }
-
-    if (scheduledAt !== undefined && scheduledAt !== null) {
-      insertData.scheduledAt = scheduledAt;
-    }
-
-    const newCampaign = await db.insert(campaigns).values(insertData).returning();
-
-    return NextResponse.json(newCampaign[0], { status: 201 });
-  } catch (error) {
-    console.error('POST error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error: ' + (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json(
-        { error: 'Valid ID is required', code: 'INVALID_ID' },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-
-    // Security check: reject if userId provided in body
-    if ('userId' in body || 'user_id' in body) {
-      return NextResponse.json(
-        {
-          error: 'User ID cannot be provided in request body',
-          code: 'USER_ID_NOT_ALLOWED',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if campaign exists and belongs to user
-    const existingCampaign = await db
-      .select()
-      .from(campaigns)
-      .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, user.id)))
-      .limit(1);
-
-    if (existingCampaign.length === 0) {
-      return NextResponse.json(
-        { error: 'Campaign not found', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    // Prepare update data
-    const updateData: any = {
+    const newCampaign = await db.insert(campaigns).values({
+      userId: session.user.id,
+      name,
+      templateId,
+      audienceConfig: audienceConfig || { type: 'all' },
+      scheduledAt: scheduledAt || null,
+      status: scheduledAt ? 'scheduled' : 'draft', // Logic for 'sending' would be in a background worker
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    };
+    }).returning();
 
-    // Add updatable fields if provided
-    if (body.name !== undefined) {
-      if (typeof body.name !== 'string' || body.name.trim() === '') {
-        return NextResponse.json(
-          { error: 'Name must not be empty', code: 'INVALID_NAME' },
-          { status: 400 }
-        );
-      }
-      updateData.name = body.name.trim();
-    }
+    return NextResponse.json(newCampaign[0]);
 
-    if (body.templateId !== undefined) {
-      if (body.templateId === null) {
-        updateData.templateId = null;
-      } else if (!isNaN(parseInt(body.templateId))) {
-        updateData.templateId = parseInt(body.templateId);
-      } else {
-        return NextResponse.json(
-          { error: 'Template ID must be a valid integer or null', code: 'INVALID_TEMPLATE_ID' },
-          { status: 400 }
-        );
-      }
-    }
-
-    if (body.status !== undefined) {
-      const validStatuses = ['draft', 'scheduled', 'running', 'completed', 'paused'];
-      if (!validStatuses.includes(body.status)) {
-        return NextResponse.json(
-          {
-            error: `Status must be one of: ${validStatuses.join(', ')}`,
-            code: 'INVALID_STATUS',
-          },
-          { status: 400 }
-        );
-      }
-      updateData.status = body.status;
-    }
-
-    if (body.scheduledAt !== undefined) {
-      updateData.scheduledAt = body.scheduledAt;
-    }
-
-    if (body.targetCount !== undefined) {
-      if (isNaN(parseInt(body.targetCount))) {
-        return NextResponse.json(
-          { error: 'Target count must be a valid integer', code: 'INVALID_TARGET_COUNT' },
-          { status: 400 }
-        );
-      }
-      updateData.targetCount = parseInt(body.targetCount);
-    }
-
-    if (body.sentCount !== undefined) {
-      if (isNaN(parseInt(body.sentCount))) {
-        return NextResponse.json(
-          { error: 'Sent count must be a valid integer', code: 'INVALID_SENT_COUNT' },
-          { status: 400 }
-        );
-      }
-      updateData.sentCount = parseInt(body.sentCount);
-    }
-
-    if (body.deliveredCount !== undefined) {
-      if (isNaN(parseInt(body.deliveredCount))) {
-        return NextResponse.json(
-          { error: 'Delivered count must be a valid integer', code: 'INVALID_DELIVERED_COUNT' },
-          { status: 400 }
-        );
-      }
-      updateData.deliveredCount = parseInt(body.deliveredCount);
-    }
-
-    if (body.readCount !== undefined) {
-      if (isNaN(parseInt(body.readCount))) {
-        return NextResponse.json(
-          { error: 'Read count must be a valid integer', code: 'INVALID_READ_COUNT' },
-          { status: 400 }
-        );
-      }
-      updateData.readCount = parseInt(body.readCount);
-    }
-
-    const updated = await db
-      .update(campaigns)
-      .set(updateData)
-      .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, user.id)))
-      .returning();
-
-    if (updated.length === 0) {
-      return NextResponse.json(
-        { error: 'Campaign not found', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(updated[0], { status: 200 });
   } catch (error) {
-    console.error('PUT error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error: ' + (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const user = await getCurrentUser(request);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'UNAUTHORIZED' },
-        { status: 401 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json(
-        { error: 'Valid ID is required', code: 'INVALID_ID' },
-        { status: 400 }
-      );
-    }
-
-    // Check if campaign exists and belongs to user
-    const existingCampaign = await db
-      .select()
-      .from(campaigns)
-      .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, user.id)))
-      .limit(1);
-
-    if (existingCampaign.length === 0) {
-      return NextResponse.json(
-        { error: 'Campaign not found', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    const deleted = await db
-      .delete(campaigns)
-      .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, user.id)))
-      .returning();
-
-    if (deleted.length === 0) {
-      return NextResponse.json(
-        { error: 'Campaign not found', code: 'NOT_FOUND' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        message: 'Campaign deleted successfully',
-        campaign: deleted[0],
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('DELETE error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error: ' + (error as Error).message },
-      { status: 500 }
-    );
+    console.error('Create Campaign Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

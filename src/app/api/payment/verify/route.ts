@@ -76,8 +76,9 @@ export async function POST(request: NextRequest) {
                 status: 'active',
                 provider: 'razorpay',
                 providerSubscriptionId: razorpay_order_id, // Using order_id as ref for prepaid
-                currentPeriodStart: startDate,
-                currentPeriodEnd: endDate,
+                startDate: startDate.toISOString(),
+                currentPeriodStart: startDate.toISOString(),
+                currentPeriodEnd: endDate.toISOString(),
             }).returning();
 
             // 3. Create Invoice

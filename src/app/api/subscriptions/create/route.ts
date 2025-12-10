@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { razorpay } from "@/lib/razorpay";
 import { db } from "@/db";
 import { subscriptions, payments } from "@/db/schema";
 import { auth } from "@/lib/auth"; // Assuming better-auth setup
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
     try {
@@ -31,10 +35,7 @@ export async function POST(req: NextRequest) {
         if (plan_id === "enterprise_8999") amount = 899900;
 
         // 1. Create Subscription Record (Pending)
-        // const subscriptionId = crypto.randomUUID(); // Let DB generate it
         const [newSub] = await db.insert(subscriptions).values({
-            // id: subscriptionId, // Removed to let DB generate
-            // @ts-ignore
             userId: session.user.id,
             planId: plan_id,
             status: "pending",
@@ -43,15 +44,15 @@ export async function POST(req: NextRequest) {
             currentPeriodEnd: new Date().toISOString(), // Will update on activation
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
-        }).returning({ subscriptionId: subscriptions.id });
+        }).returning({ id: subscriptions.id });
 
-        const subscriptionId = newSub.subscriptionId;
+        const subscriptionId = newSub.id;
 
         // 2. Create Razorpay Order
         const options = {
             amount: amount,
             currency: "INR",
-            receipt: `sub_${subscriptionId.substring(0, 8)}`,
+            receipt: `sub_${String(subscriptionId).substring(0, 8)}`,
             notes: {
                 userId: session.user.id,
                 subscriptionId: subscriptionId,

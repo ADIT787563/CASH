@@ -45,10 +45,10 @@ async function assignPlan() {
             .set({
                 planId: planId,
                 status: 'active',
-                currentPeriodStart: new Date(),
-                currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+                currentPeriodStart: new Date().toISOString(),
+                currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
                 cancelAtPeriodEnd: false,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(subscriptions.userId, targetUser.id));
 
@@ -62,11 +62,11 @@ async function assignPlan() {
             planId: planId,
             status: 'active',
             provider: 'manual', // Manual assignment
-            currentPeriodStart: new Date(),
-            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+            currentPeriodStart: new Date().toISOString(),
+            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
             cancelAtPeriodEnd: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         });
 
         console.log(`✅ New subscription created with '${planId}' plan`);

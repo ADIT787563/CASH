@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { teamMembers } from '@/db/schema';
+import { teamMembers, teamInvites } from '@/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { requirePermission } from '@/lib/rbac';
+import crypto from 'crypto';
+import { sendTeamInvitationEmail } from '@/lib/email';
 
 // Utility function to validate email
 function isValidEmail(email: string): boolean {
@@ -137,6 +139,40 @@ export async function POST(request: NextRequest) {
 
     const now = new Date().toISOString();
 
+    // Generate Invite Token
+    const inviteToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days (Date Object)
+
+    // Create Invite Record
+    const newInvite = await db.insert(teamInvites)
+      .values({
+        email: email.trim().toLowerCase(),
+        token: inviteToken, // Assuming schema has this column
+        role: teamRole,
+        businessId: session.user.id,
+        status: 'pending',
+        expiresAt: expiresAt, // Passed as Date
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+
+    const inviteId = newInvite[0].id;
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://wavegroww.online'}/accept-invite?token=${inviteToken}`;
+
+    // Send Invitation Email
+    // Fetch inviter name (session user name)
+    const inviterName = session.user.name || 'A WaveGroww User';
+
+    // We don't await email to block response, but for reliability we log error
+    sendTeamInvitationEmail(
+      email.trim().toLowerCase(),
+      inviterName,
+      'Your Business Team',
+      inviteLink
+    ).catch(err => console.error("Failed to send invite email", err));
+
+    // Create Pending Team Member Linked to Invite
     const newTeamMember = await db.insert(teamMembers)
       .values({
         userId: session.user.id,
@@ -146,6 +182,7 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         permissions: permissions || null,
         memberUserId: null,
+        inviteId: inviteId, // Linked!
         invitedAt: now,
         acceptedAt: null,
         createdAt: now,
@@ -153,7 +190,12 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    return NextResponse.json(newTeamMember[0], { status: 201 });
+    return NextResponse.json({
+      ...newTeamMember[0],
+      invite: {
+        inviteUrl: inviteLink
+      }
+    }, { status: 201 });
 
   } catch (error) {
     console.error('POST error:', error);

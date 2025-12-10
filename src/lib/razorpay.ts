@@ -2,13 +2,13 @@ import Razorpay from 'razorpay';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-export const RAZORPAY_KEY_ID = isProduction
-    ? process.env.RAZORPAY_KEY_ID_LIVE!
-    : process.env.RAZORPAY_KEY_ID_TEST!;
+export const RAZORPAY_KEY_ID = (isProduction
+    ? process.env.RAZORPAY_KEY_ID_LIVE
+    : process.env.RAZORPAY_KEY_ID_TEST) || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
 
-export const RAZORPAY_KEY_SECRET = isProduction
-    ? process.env.RAZORPAY_KEY_SECRET_LIVE!
-    : process.env.RAZORPAY_KEY_SECRET_TEST!;
+export const RAZORPAY_KEY_SECRET = (isProduction
+    ? process.env.RAZORPAY_KEY_SECRET_LIVE
+    : process.env.RAZORPAY_KEY_SECRET_TEST) || process.env.RAZORPAY_KEY_SECRET || "";
 
 if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
     console.warn("Razorpay keys are missing. Please check your .env file.");

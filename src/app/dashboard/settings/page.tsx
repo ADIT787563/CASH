@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import {
   User,
   Building2,
@@ -574,24 +575,20 @@ export default function SettingsPage() {
     }
 
     try {
-      const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
-      const response = await fetch("/api/settings/security/change-password", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
+      await authClient.changePassword({
+        newPassword: passwordData.newPassword,
+        currentPassword: passwordData.currentPassword,
+        revokeOtherSessions: true,
+      }, {
+        onSuccess: () => {
+          toast.success("Password changed successfully!");
+          setShowPasswordChange(false);
+          setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || "Failed to change password");
+        }
       });
-
-      if (response.ok) {
-        toast.success("Password changed successfully!");
-        setShowPasswordChange(false);
-        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to change password");
-      }
     } catch (error) {
       toast.error("Error changing password");
     }
@@ -665,8 +662,7 @@ export default function SettingsPage() {
     { id: "catalog" as TabId, label: "Catalog", icon: Package },
     { id: "analytics" as TabId, label: "Analytics & Data", icon: BarChart3 },
     { id: "team" as TabId, label: "Team & Roles", icon: Users },
-    { id: "billing" as TabId, label: "Billing & Plans", icon: CreditCard },
-    { id: "security" as TabId, label: "Security & Privacy", icon: Shield },
+
     { id: "export" as TabId, label: "Export & Backup", icon: Download },
   ];
 
@@ -868,6 +864,92 @@ export default function SettingsPage() {
                   )}
                   {isSaving ? "Saving..." : "Save Account Settings"}
                 </button>
+
+                {/* Password Change */}
+                <div className="p-4 border border-border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Key className="w-5 h-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Password</div>
+                        <div className="text-sm text-muted-foreground">
+                          Change your account password
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowPasswordChange(!showPasswordChange)}
+                      className="px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-all"
+                    >
+                      Change
+                    </button>
+                  </div>
+                  {showPasswordChange && (
+                    <div className="mt-4 pt-4 border-t border-border space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Current Password
+                        </label>
+                        <input
+                          type="password"
+                          autoComplete="off"
+                          value={passwordData.currentPassword}
+                          onChange={(e) =>
+                            setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                          }
+                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">New Password</label>
+                        <input
+                          type="password"
+                          autoComplete="off"
+                          value={passwordData.newPassword}
+                          onChange={(e) =>
+                            setPasswordData({ ...passwordData, newPassword: e.target.value })
+                          }
+                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Confirm New Password
+                        </label>
+                        <input
+                          type="password"
+                          autoComplete="off"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) =>
+                            setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                          }
+                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <button
+                        onClick={handleChangePassword}
+                        className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
+                      >
+                        Update Password
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Delete Account */}
+                <div className="p-4 border-2 border-destructive/20 rounded-lg bg-destructive/5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-destructive">Delete Account</div>
+                      <div className="text-sm text-muted-foreground">
+                        Permanently delete your account and all data
+                      </div>
+                    </div>
+                    <button className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-all text-sm">
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1653,160 +1735,7 @@ export default function SettingsPage() {
 
             {activeTab === "billing" && <BillingTab currentPlan={userPlan} />}
 
-            {activeTab === "security" && (
-              <div className="glass-card p-6 rounded-2xl space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Security & Privacy</h2>
-                  <p className="text-muted-foreground text-sm">
-                    Manage your security settings and data privacy
-                  </p>
-                </div>
 
-                {/* 2FA */}
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-5 h-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Two-Factor Authentication</div>
-                        <div className="text-sm text-muted-foreground">
-                          {securitySettings.twoFactorEnabled ? "Enabled" : "Add extra layer of security"}
-                        </div>
-                      </div>
-                    </div>
-                    {!securitySettings.twoFactorEnabled ? (
-                      <button
-                        onClick={() => handleSetup2FA("authenticator")}
-                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
-                      >
-                        Enable 2FA
-                      </button>
-                    ) : (
-                      <CheckCircle2 className="w-6 h-6 text-success" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Password Change */}
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Key className="w-5 h-5 text-primary" />
-                      <div>
-                        <div className="font-medium">Password</div>
-                        <div className="text-sm text-muted-foreground">
-                          Change your account password
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowPasswordChange(!showPasswordChange)}
-                      className="px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-all"
-                    >
-                      Change
-                    </button>
-                  </div>
-                  {showPasswordChange && (
-                    <div className="mt-4 pt-4 border-t border-border space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Current Password
-                        </label>
-                        <input
-                          type="password"
-                          autoComplete="off"
-                          value={passwordData.currentPassword}
-                          onChange={(e) =>
-                            setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                          }
-                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">New Password</label>
-                        <input
-                          type="password"
-                          autoComplete="off"
-                          value={passwordData.newPassword}
-                          onChange={(e) =>
-                            setPasswordData({ ...passwordData, newPassword: e.target.value })
-                          }
-                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Confirm New Password
-                        </label>
-                        <input
-                          type="password"
-                          autoComplete="off"
-                          value={passwordData.confirmPassword}
-                          onChange={(e) =>
-                            setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                          }
-                          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                      <button
-                        onClick={handleChangePassword}
-                        className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
-                      >
-                        Update Password
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Active Sessions */}
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Active Sessions</div>
-                      <div className="text-sm text-muted-foreground">
-                        {securitySettings.sessions.length || 1} active session(s)
-                      </div>
-                    </div>
-                    <button className="px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-all text-sm">
-                      View All
-                    </button>
-                  </div>
-                </div>
-
-                {/* Data Export */}
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Export Your Data</div>
-                      <div className="text-sm text-muted-foreground">
-                        Download all your account data
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleCreateExport("account_data")}
-                      className="px-4 py-2 bg-muted hover:bg-muted/70 rounded-lg transition-all text-sm"
-                    >
-                      Request Export
-                    </button>
-                  </div>
-                </div>
-
-                {/* Delete Account */}
-                <div className="p-4 border-2 border-destructive/20 rounded-lg bg-destructive/5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-destructive">Delete Account</div>
-                      <div className="text-sm text-muted-foreground">
-                        Permanently delete your account and all data
-                      </div>
-                    </div>
-                    <button className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-all text-sm">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {activeTab === "export" && (
               <div className="glass-card p-6 rounded-2xl space-y-6">
