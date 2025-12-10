@@ -78,7 +78,7 @@ export async function sendWelcomeEmail(
               <li>Collaborate with your team</li>
             </ul>
             <p>Get started by exploring your dashboard:</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/dashboard" class="button">Go to Dashboard</a>
           </div>
           <div class="footer">
             <p>© ${new Date().getFullYear()} Wavegroww. All rights reserved.</p>

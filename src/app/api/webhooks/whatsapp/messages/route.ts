@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
                 }).returning();
 
                 const orderId = orderInsert[0].id;
-                const finalInvoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://wavegroww.online'}/invoices/${orderId}`;
+                const finalInvoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/invoices/${orderId}`;
 
                 // Update with correct URL
                 await db.update(orders)
