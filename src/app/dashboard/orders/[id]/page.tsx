@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Printer, Ban } from "lucide-react";
 import ProtectedPage from "@/components/ProtectedPage";
 import { Order } from "@/types/order";
 import OrderInfo from "@/components/dashboard/orders/OrderInfo";
@@ -41,12 +41,20 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
         fetchOrder();
     }, [id]);
 
+    const handlePrintInvoice = () => {
+        if (order?.invoiceUrl) {
+            window.open(order.invoiceUrl, '_blank');
+        } else {
+            alert('Invoice not generated yet');
+        }
+    };
+
     return (
         <ProtectedPage>
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="max-w-5xl mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/dashboard/orders"
@@ -56,18 +64,40 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                             </Link>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                    Order #{id}
+                                    Order #{order?.reference || id}
                                     {order && (
-                                        <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium capitalize border ${order.status === 'confirmed' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                    'bg-blue-50 text-blue-700 border-blue-200'
+                                        <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium capitalize border ${order.status === 'delivered' || order.status === 'paid' ? 'bg-green-50 text-green-700 border-green-200' :
+                                            order.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                'bg-blue-50 text-blue-700 border-blue-200'
                                             }`}>
                                             {order.status}
                                         </span>
                                     )}
                                 </h1>
+                                <p className="text-sm text-gray-500">
+                                    Placed on {order ? new Date(order.createdAt).toLocaleDateString() : '...'}
+                                </p>
                             </div>
                         </div>
+
+                        {/* Actions */}
+                        {order && (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handlePrintInvoice}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700"
+                                >
+                                    <Printer className="w-4 h-4" />
+                                    Invoice
+                                </button>
+                                {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50">
+                                        <Ban className="w-4 h-4" />
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Content */}
@@ -88,17 +118,22 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                         </div>
                     ) : order && (
                         <div className="space-y-6">
-                            <OrderInfo order={order} />
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left Column: Info & Items */}
+                                <div className="lg:col-span-2 space-y-6">
+                                    <OrderItems items={order.items || []} currency={order.currency || 'INR'} />
+                                    <OrderTimeline timeline={order.timeline || []} />
+                                </div>
 
-                            <OrderItems items={order.items || []} />
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <OrderActions
-                                    orderId={order.id}
-                                    currentStatus={order.status}
-                                    onStatusUpdate={fetchOrder}
-                                />
-                                <OrderTimeline timeline={order.timeline || []} />
+                                {/* Right Column: Customer & Actions */}
+                                <div className="lg:col-span-1 space-y-6">
+                                    <OrderInfo order={order} />
+                                    <OrderActions
+                                        orderId={order.id}
+                                        currentStatus={order.status}
+                                        onStatusUpdate={fetchOrder}
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}

@@ -46,8 +46,8 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
             id: 1,
             planId: "starter",
             planName: "Starter",
-            monthlyPrice: 999,
-            yearlyPrice: 9990,
+            monthlyPrice: 5,
+            yearlyPrice: 50,
             features: [
                 "Up to 2,000 messages/month",
                 "Essential AI chatbot",
@@ -155,7 +155,7 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
     // even if the DB still has older rows like "free" or outdated prices.
     const allowedPlanIds = ["starter", "growth", "pro", "enterprise"] as const;
     const canonicalPrices: Record<(typeof allowedPlanIds)[number], number> = {
-        starter: 999,
+        starter: 5,
         growth: 1699,
         pro: 3999,
         enterprise: 8999,
@@ -341,8 +341,8 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                                     onClick={() => handleUpgrade(plan)}
                                     disabled={isCurrentPlan}
                                     className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors ${isCurrentPlan
-                                            ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                            : "bg-primary text-primary-foreground hover:bg-primary/90"
+                                        ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                        : "bg-primary text-primary-foreground hover:bg-primary/90"
                                         }`}
                                 >
                                     {isCurrentPlan ? "Current Plan" : "Upgrade"}

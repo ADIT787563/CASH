@@ -1,41 +1,63 @@
 "use client";
 
-import { BarChart3, TrendingUp, Users, RefreshCcw } from "lucide-react";
+import { BarChart3, TrendingUp, Users, RefreshCcw, MessageSquare, ShoppingBag } from "lucide-react";
 
-const cards = [
-    {
-        title: "Revenue Status",
-        value: "$432",
-        date: "Jan 01 - Jan 10",
-        gradient: "from-[#ec4899] to-[#8b5cf6]", // Pink to Purple
-        icon: BarChart3,
-    },
-    {
-        title: "Page View",
-        value: "60236",
-        date: "Viewed", // Custom label
-        gradient: "from-[#8b5cf6] to-[#6366f1]", // Purple to Indigo
-        icon: TrendingUp, // Using curve
-        curve: true
-    },
-    {
-        title: "Bounce Rate",
-        value: "432",
-        date: "Monthly",
-        gradient: "from-[#3b82f6] to-[#0ea5e9]", // Blue to Sky
-        icon: RefreshCcw,
-        curve: true
-    },
-    {
-        title: "Revenue Status",
-        value: "$800",
-        date: "Jan 07 - Jan 10",
-        gradient: "from-[#f59e0b] to-[#ea580c]", // Orange to Red
-        icon: BarChart3,
+interface StatCardsProps {
+    stats?: {
+        totalMessages: number;
+        totalLeads: number;
+        totalProducts: number;
+        conversionRate: number;
+        totalRevenue?: number;
+        revenueChange?: number;
+    };
+    loading?: boolean;
+}
+
+export function StatCards({ stats, loading }: StatCardsProps) {
+    if (loading) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-40 rounded-3xl bg-muted/50 animate-pulse" />
+                ))}
+            </div>
+        );
     }
-];
 
-export function StatCards() {
+    const cards = [
+        {
+            title: "Total Revenue",
+            value: stats?.totalRevenue ? `₹${stats.totalRevenue.toLocaleString()}` : "₹0",
+            date: "Lifetime",
+            gradient: "from-[#ec4899] to-[#8b5cf6]", // Pink to Purple
+            icon: BarChart3,
+        },
+        {
+            title: "Total Messages",
+            value: stats?.totalMessages?.toString() || "0",
+            date: "All time",
+            gradient: "from-[#8b5cf6] to-[#6366f1]", // Purple to Indigo
+            icon: MessageSquare,
+            curve: true
+        },
+        {
+            title: "Total Leads",
+            value: stats?.totalLeads?.toString() || "0",
+            date: "All time",
+            gradient: "from-[#3b82f6] to-[#0ea5e9]", // Blue to Sky
+            icon: Users,
+            curve: true
+        },
+        {
+            title: "Conversion Rate",
+            value: `${stats?.conversionRate?.toFixed(1) || 0}%`,
+            date: "Leads / Messages",
+            gradient: "from-[#f59e0b] to-[#ea580c]", // Orange to Red
+            icon: TrendingUp,
+        }
+    ];
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {cards.map((card, index) => (
@@ -49,7 +71,7 @@ export function StatCards() {
                         </div>
 
                         <div className="flex items-end justify-between mt-4">
-                            {/* Mock Chart/Visual */}
+                            {/* Visual Bars */}
                             <div className="h-10 w-20 flex items-end gap-1">
                                 {[40, 70, 50, 90, 60, 80].map((h, i) => (
                                     <div key={i} className="w-1.5 bg-white/40 rounded-t-sm" style={{ height: `${h}%` }} />

@@ -3,23 +3,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import ProtectedPage from "@/components/ProtectedPage";
-import { usePricing } from "@/hooks/useConfig";
 import { Footer } from "@/components/home/Footer";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { OrderTable } from "@/components/dashboard/OrderTable";
-
-interface Stats {
-  totalMessages: number;
-  totalLeads: number;
-  totalProducts: number;
-  conversionRate: number;
-  messagesChange: number;
-  leadsChange: number;
-  productsChange: number;
-  conversionChange: number;
-}
 
 interface ActivityItem {
   id: string | number;
@@ -33,101 +21,39 @@ interface ActivityItem {
 
 function DashboardContent() {
   const { user } = useAuth();
-  const { data: plans } = usePricing();
-  const [stats, setStats] = useState<Stats>({
-    totalMessages: 0,
-    totalLeads: 0,
-    totalProducts: 0,
-    conversionRate: 0,
-    messagesChange: 0,
-    leadsChange: 0,
-    productsChange: 0,
-    conversionChange: 0,
-  });
+  const [stats, setStats] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any>({ earningsData: [], trafficData: [] });
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [business, setBusiness] = useState<any>(null);
 
   useEffect(() => {
-    // Defer data fetching to avoid blocking initial render
-    const timer = setTimeout(() => {
-      fetchDashboardData();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const token = localStorage.getItem("bearer_token");
-
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
-      );
-
+    const fetchDashboardData = async () => {
       try {
-        // Fetch all data in parallel
-        const [messagesRes, leadsRes, productsRes, businessRes] = await Promise.race([
-          Promise.all([
-            fetch("/api/messages", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("/api/leads", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("/api/products", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("/api/businesses/me"), // Cookie auth
-          ]),
-          timeoutPromise
-        ]) as [Response, Response, Response, Response];
+        const token = localStorage.getItem("bearer_token");
+        const headers = { Authorization: `Bearer ${token}` };
 
-        const messages = await messagesRes.json();
-        const leads = await leadsRes.json();
-        const products = await productsRes.json();
+        const [statsRes, ordersRes, chartsRes, activityRes] = await Promise.all([
+          fetch("/api/dashboard/stats", { headers }),
+          fetch("/api/dashboard/orders", { headers }),
+          fetch("/api/dashboard/charts", { headers }),
+          fetch("/api/dashboard/activity", { headers })
+        ]);
 
-        if (businessRes.ok) {
-          const bizData = await businessRes.json();
-          setBusiness(bizData);
-        }
-
-        // Calculate stats safely
-        const totalMessages = Array.isArray(messages.data) ? messages.data.length : 0;
-        const totalLeads = Array.isArray(leads.data) ? leads.data.length : 0;
-        const totalProducts = Array.isArray(products.data) ? products.data.length : 0;
-        const conversionRate = totalMessages > 0 ? ((totalLeads / totalMessages) * 100) : 0;
-
-        setStats({
-          totalMessages,
-          totalLeads,
-          totalProducts,
-          conversionRate,
-          messagesChange: 12.5,
-          leadsChange: 8.3,
-          productsChange: 5.2,
-          conversionChange: 3.1,
-        });
-
-        // Fetch recent activity
-        const activitiesRes = await fetch("/api/dashboard/activity", { headers: { Authorization: `Bearer ${token}` } });
-        if (activitiesRes.ok) {
-          const activitiesData = await activitiesRes.json();
-          // Map activity to new UI format if needed, simplistic mapping here
-          const mappedActivities = activitiesData.map((a: any) => ({
-            ...a,
-            title: a.type === 'order' ? 'New Order' : a.type === 'message' ? 'Message' : 'Lead',
-            desc: a.message,
-            // Colors/icons handled in component for now by default 
-          }));
-          setActivities(mappedActivities);
-        } else {
-          setActivities([]);
-        }
+        if (statsRes.ok) setStats(await statsRes.json());
+        if (ordersRes.ok) setOrders(await ordersRes.json());
+        if (chartsRes.ok) setChartData(await chartsRes.json());
+        if (activityRes.ok) setActivities(await activityRes.json());
 
       } catch (error) {
-        console.error("Data fetch error:", error);
+        console.error("Dashboard data fetch error:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Dashboard error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
@@ -142,10 +68,16 @@ function DashboardContent() {
         </div>
 
         {/* Top Charts Row */}
-        <DashboardCharts />
+        <DashboardCharts
+          earningsData={chartData.earningsData}
+          trafficData={chartData.trafficData}
+          totalEarnings={chartData.totalEarnings}
+          totalSales={chartData.totalSales}
+          loading={isLoading}
+        />
 
         {/* Stat Cards Row */}
-        <StatCards />
+        <StatCards stats={stats} loading={isLoading} />
 
         {/* Bottom Row: Activity & Orders */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -153,7 +85,7 @@ function DashboardContent() {
             <RecentActivity activities={activities.length > 0 ? activities : undefined} />
           </div>
           <div className="xl:col-span-2 h-full">
-            <OrderTable />
+            <OrderTable orders={orders} />
           </div>
         </div>
       </main>

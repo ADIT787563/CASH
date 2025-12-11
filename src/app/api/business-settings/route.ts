@@ -59,8 +59,11 @@ export async function POST(request: NextRequest) {
       businessCategory,
       businessDescription,
       catalogUrl,
-      businessHours
+      businessHours,
+      themeConfig
     } = body;
+
+    // ... (validations remain same)
 
     if (!businessName || typeof businessName !== 'string' || businessName.trim() === '') {
       return NextResponse.json({
@@ -99,6 +102,7 @@ export async function POST(request: NextRequest) {
         businessDescription: businessDescription ? businessDescription.trim() : null,
         catalogUrl: catalogUrl ? catalogUrl.trim() : null,
         businessHours: businessHours ? (typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours)) : null,
+        themeConfig: themeConfig ? (typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig)) : null,
         maintenanceMode: false,
         createdAt: now,
         updatedAt: now,
@@ -151,7 +155,8 @@ export async function PUT(request: NextRequest) {
       businessCategory,
       businessDescription,
       catalogUrl,
-      businessHours
+      businessHours,
+      themeConfig
     } = body;
 
     const updates: Record<string, any> = {
@@ -195,6 +200,14 @@ export async function PUT(request: NextRequest) {
         updates.businessHours = null;
       } else {
         updates.businessHours = typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours);
+      }
+    }
+
+    if (themeConfig !== undefined) {
+      if (themeConfig === null) {
+        updates.themeConfig = null;
+      } else {
+        updates.themeConfig = typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig);
       }
     }
 

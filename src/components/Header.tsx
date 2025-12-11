@@ -27,6 +27,12 @@ import { Logo } from "@/components/Logo";
 
 export const Header = () => {
   const pathname = usePathname();
+
+  // Hide header on store pages
+  if (pathname.startsWith('/shop/')) {
+    return null;
+  }
+
   const router = useRouter();
   const { user, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

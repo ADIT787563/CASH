@@ -436,6 +436,7 @@ export const businessSettings = sqliteTable('business_settings', {
   socialLinks: text('social_links', { mode: 'json' }),
   businessHours: text('business_hours', { mode: 'json' }),
   catalogUrl: text('catalog_url'),
+  themeConfig: text('theme_config', { mode: 'json' }), // Added for store aesthetics
   maintenanceMode: integer('maintenance_mode', { mode: 'boolean' }).notNull().default(false),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),

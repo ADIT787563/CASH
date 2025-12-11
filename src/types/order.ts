@@ -17,6 +17,7 @@ export interface OrderTimeline {
 
 export interface Order {
     id: number;
+    reference?: string | null;
     customerName: string;
     customerPhone: string;
     customerEmail?: string | null;
@@ -27,12 +28,14 @@ export interface Order {
     taxAmount: number;
     shippingAmount: number;
     discountAmount: number;
+    currency?: string | null;
 
     status: string; // 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'
     paymentStatus: string; // 'unpaid', 'paid', 'refunded'
     paymentMethod?: string | null;
 
     orderDate: string;
+    createdAt: string;
     invoiceUrl?: string | null;
 
     notesInternal?: string | null;

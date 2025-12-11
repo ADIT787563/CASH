@@ -3,13 +3,14 @@ import { Order } from "@/types/order";
 
 interface OrderItemsProps {
     items: Order["items"];
+    currency?: string;
 }
 
-export default function OrderItems({ items }: OrderItemsProps) {
+export default function OrderItems({ items, currency = 'INR' }: OrderItemsProps) {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
-            currency: 'INR',
+            currency: currency,
         }).format(amount / 100);
     };
 

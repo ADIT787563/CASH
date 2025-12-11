@@ -117,7 +117,7 @@ const PLANS = [
   {
     id: "starter",
     name: "Basic",
-    price: 999,
+    price: 5,
     tagline: "Ideal for new sellers starting automation",
     features: [
       "📦 Add up to 20 products",
@@ -214,7 +214,7 @@ const COMPARISON_FEATURES = [
   {
     category: "Pricing",
     name: "Monthly Price",
-    starter: "₹999",
+    starter: "₹5",
     growth: "₹1,699",
     pro: "₹3,999",
     scale: "₹8,999+"
