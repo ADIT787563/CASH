@@ -18,9 +18,13 @@ export async function GET(req: Request) {
 
         const userId = session.user.id;
 
-        // Fetch recent orders
+        // Fetch recent orders (excluding self-subscription orders)
         const recentOrders = await db.query.orders.findMany({
-            where: eq(orders.userId, userId),
+            where: (orders, { and, eq, ne, isNull }) => and(
+                eq(orders.userId, userId),
+                // Exclude orders where the user is their own customer (Subscription payments)
+                ne(orders.customerEmail, session.user.email)
+            ),
             orderBy: [desc(orders.createdAt)],
             limit: 5,
         });

@@ -4,7 +4,7 @@ import { businesses, user, orderSequences } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
 
 // POST /api/businesses
 export async function POST(req: NextRequest) {
@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate Seller Code (WG-XXXXXX)
-        const codeSuffix = nanoid(6).toUpperCase();
+        const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 6);
+        const codeSuffix = nanoid();
         const sellerCode = `WG-${codeSuffix}`;
 
         // Create Business

@@ -188,7 +188,7 @@ export const Header = () => {
                     <p className="text-sm font-medium">{user.name}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                     <p className="text-[10px] text-muted-foreground/70">
-                      {(user as any).plan ? (user as any).plan.charAt(0).toUpperCase() + (user as any).plan.slice(1) : "Free"} Plan
+                      {(user as any).plan && (user as any).plan !== 'starter' ? (user as any).plan.charAt(0).toUpperCase() + (user as any).plan.slice(1) : "Free"} Plan
                     </p>
                   </div>
                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
