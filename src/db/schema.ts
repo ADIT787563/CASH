@@ -558,6 +558,16 @@ export const orderItems = sqliteTable('order_items', {
   createdAt: text('created_at').notNull(),
 });
 
+// Order Timeline (History)
+export const orderTimeline = sqliteTable('order_timeline', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  status: text('status').notNull(), // 'confirmed', 'shipped', 'delivered', etc.
+  note: text('note'),
+  createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+  createdAt: text('created_at').notNull(),
+});
+
 // Product Views table
 export const productViews = sqliteTable('product_views', {
   id: integer('id').primaryKey({ autoIncrement: true }),

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders, orderItems, orderTimeline } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { orders, orderTimeline } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
-export async function GET(
+export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
@@ -20,12 +20,14 @@ export async function GET(
 
         const { id } = await params;
         const orderId = parseInt(id);
+        const body = await req.json();
+        const { action } = body; // 'confirmed', 'shipped', 'delivered', 'cancelled'
 
         if (isNaN(orderId)) {
             return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
         }
 
-        // Fetch Order
+        // Verify order exists and ownership
         const order = await db.query.orders.findFirst({
             where: eq(orders.id, orderId),
         });
@@ -34,31 +36,31 @@ export async function GET(
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        // Verify ownership (assuming orders have userId or businessId linked to user)
         if (order.userId !== session.user.id) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Fetch Items
-        const items = await db.query.orderItems.findMany({
-            where: eq(orderItems.orderId, orderId),
+        // Update Order Status
+        await db.update(orders)
+            .set({
+                status: action,
+                updatedAt: new Date().toISOString()
+            })
+            .where(eq(orders.id, orderId));
+
+        // Add Timeline Entry
+        await db.insert(orderTimeline).values({
+            orderId: orderId,
+            status: action,
+            note: `Order marked as ${action} by seller`,
+            createdBy: session.user.id,
+            createdAt: new Date().toISOString(),
         });
 
-        // Fetch Timeline
-        const timeline = await db.query.orderTimeline.findMany({
-            where: eq(orderTimeline.orderId, orderId),
-            orderBy: [desc(orderTimeline.createdAt)],
-        });
-
-        // Construct Response
-        return NextResponse.json({
-            ...order,
-            items,
-            timeline
-        });
+        return NextResponse.json({ success: true });
 
     } catch (error) {
-        console.error('Error fetching order details:', error);
+        console.error('Error updating order:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

@@ -210,8 +210,8 @@ export default function OrdersPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                        order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                            'bg-blue-50 text-blue-700'
+                                                    order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                                        'bg-blue-50 text-blue-700'
                                                     }`}>
                                                     {order.status}
                                                 </span>
@@ -229,7 +229,7 @@ export default function OrdersPage() {
                                                     )}
 
                                                     <Link
-                                                        href={`/orders/${order.id}`} // Or create a modal/slide-over view. Using generic link for now
+                                                        href={`/dashboard/orders/${order.id}`}
                                                         className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
