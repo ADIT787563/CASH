@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { db } from "@/db";
-import { payments, webhookLogs, webhookEvents, user } from '@/db/schema';
+import { payments, webhookLogs, webhookEvents, user, orders } from '@/db/schema';
 import { sendPaymentReceiptEmail } from '@/lib/email';
+import { generateInvoice } from '@/lib/invoice';
 import { eq } from "drizzle-orm";
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -38,69 +39,91 @@ export async function POST(req: NextRequest) {
         }
 
         // Process Event
+        // Process Event
         if (event.event === "payment.captured") {
             const paymentData = event.payload.payment.entity;
-            const orderId = paymentData.order_id;
+            const razorpayOrderId = paymentData.order_id;
+            const notes = paymentData.notes || {};
 
+            // Update Payments Table (Common for both)
             await db.update(payments)
                 .set({
                     status: "captured",
-                    gatewayPaymentId: paymentData.id,
-                    // updatedAt: new Date() // paymentRecords table might not have updatedAt
+                    razorpayPaymentId: paymentData.id,
+                    rawPayload: JSON.stringify(paymentData),
+                    updatedAt: new Date().toISOString()
                 })
-                .where(eq(payments.gatewayOrderId, orderId));
+                .where(eq(payments.razorpayOrderId, razorpayOrderId)); // Use new column name
 
-
-            // Trigger subscription activation
-            // Fetch payment record to identify user
-            const paymentRecord = await db.query.payments.findFirst({
-                where: eq(payments.gatewayOrderId, orderId),
-            });
-
-            if (paymentRecord && paymentRecord.sellerId) {
-                // Extract Plan Details from Payment Notes (passed during creation)
-                const planId = paymentData.notes?.planId || 'pro'; // Default to Pro if missing
-
-                // Update User Subscription
-                await db.update(user)
+            // Context: Order vs Subscription
+            if (notes.wavegroww_order_id) {
+                // CASE 1: E-commerce Order Payment
+                const orderId = parseInt(notes.wavegroww_order_id);
+                // Update Order Status
+                await db.update(orders)
                     .set({
-                        plan: planId,
-                        subscriptionStatus: 'active',
-                        updatedAt: new Date()
+                        status: 'paid',
+                        paymentStatus: 'paid',
+                        paymentMethod: 'razorpay',
+                        updatedAt: new Date().toISOString()
                     })
-                    .where(eq(user.id, paymentRecord.sellerId));
+                    .where(eq(orders.id, orderId));
 
-                console.log(`✅ Activated plan ${planId} for user ${paymentRecord.sellerId}`);
-            }
+                // Trigger Invoice Generation Job
+                await generateInvoice(orderId);
+                console.log(`✅ Order #${orderId} marked as PAID.`);
 
-            // Send Receipt Email
-            try {
-                if (paymentRecord?.sellerId) {
-                    const userRec = await db.select().from(user).where(eq(user.id, paymentRecord.sellerId)).limit(1);
-                    if (userRec.length > 0) {
-                        await sendPaymentReceiptEmail(userRec[0].email, {
-                            amount: (paymentData.amount / 100),
-                            planName: paymentData.notes?.planId || "Plan Subscription",
-                            date: new Date().toLocaleDateString(),
-                            invoiceId: paymentData.id
-                        });
+            } else {
+                // CASE 2: Subscription Payment (Legacy/Platform)
+                // Fetch payment record to identify user (Seller)
+                const paymentRecord = await db.query.payments.findFirst({
+                    where: eq(payments.razorpayOrderId, razorpayOrderId),
+                });
+
+                if (paymentRecord && paymentRecord.sellerId) {
+                    const planId = notes.planId || 'pro';
+                    await db.update(user)
+                        .set({
+                            plan: planId,
+                            subscriptionStatus: 'active',
+                            updatedAt: new Date()
+                        })
+                        .where(eq(user.id, paymentRecord.sellerId));
+
+                    console.log(`✅ Activated plan ${planId} for user ${paymentRecord.sellerId}`);
+
+                    // Send Receipt Email (Only for subscriptions for now)
+                    try {
+                        const userRec = await db.select().from(user).where(eq(user.id, paymentRecord.sellerId)).limit(1);
+                        if (userRec.length > 0) {
+                            await sendPaymentReceiptEmail(userRec[0].email, {
+                                amount: (paymentData.amount / 100),
+                                planName: planId,
+                                date: new Date().toLocaleDateString(),
+                                invoiceId: paymentData.id
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Failed to send receipt email", e);
                     }
                 }
-            } catch (e) {
-                console.error("Failed to send receipt email", e);
             }
 
         } else if (event.event === "payment.failed") {
             const paymentData = event.payload.payment.entity;
-            const orderId = paymentData.order_id;
+            const razorpayOrderId = paymentData.order_id;
 
             await db.update(payments)
                 .set({
                     status: "failed",
-                    gatewayPaymentId: paymentData.id,
-                    // updatedAt: new Date()
+                    razorpayPaymentId: paymentData.id,
+                    rawPayload: JSON.stringify(paymentData),
+                    updatedAt: new Date().toISOString()
                 })
-                .where(eq(payments.gatewayOrderId, orderId));
+                .where(eq(payments.razorpayOrderId, razorpayOrderId));
+
+            // Optional: Mark order as failed?
+            // Usually we keep it pending until success or manual cancellation.
         }
 
         // Log event

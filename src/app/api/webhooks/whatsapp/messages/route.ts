@@ -321,7 +321,15 @@ export async function POST(request: NextRequest) {
         }
 
         // 10. Normal chatbot auto‑reply flow
-        const response = await generateChatbotResponse(messageText, settings);
+        // Fetch seller payment settings for context
+        const sellerPaymentList = await db
+            .select()
+            .from(sellerPaymentMethods)
+            .where(eq(sellerPaymentMethods.sellerId, userId))
+            .limit(1);
+        const paymentSettings = sellerPaymentList[0] || null;
+
+        const response = await generateChatbotResponse(messageText, settings, paymentSettings);
         const client = await WhatsAppClient.getClient(userId);
         if (client) {
             if (settings.typingDelay && settings.typingDelay > 0) {
@@ -437,16 +445,35 @@ async function createOrUpdateCustomer(userId: string, phoneNumber: string) {
     }
 }
 
-// Helper: Generate chatbot response (unchanged)
-async function generateChatbotResponse(message: string, settings: any): Promise<string> {
+// Helper: Generate chatbot response (Enhanced with Payment Info)
+async function generateChatbotResponse(message: string, settings: any, paymentSettings?: any): Promise<string> {
     const lowerMessage = message.toLowerCase();
 
+    // 1. Check for specific keywords defined in settings
     if (settings.keywordTriggers && Array.isArray(settings.keywordTriggers)) {
         for (const trigger of settings.keywordTriggers) {
             if (trigger.keyword && lowerMessage.includes(trigger.keyword.toLowerCase())) {
                 return trigger.response;
             }
         }
+    }
+
+    // 2. Payment Inquiries (Hardcoded Logic based on Seller Config)
+    if (paymentSettings && (lowerMessage.includes('pay') || lowerMessage.includes('cod') || lowerMessage.includes('cash') || lowerMessage.includes('upi') || lowerMessage.includes('card'))) {
+        const pref = paymentSettings.paymentPreference || 'both';
+
+        let response = "";
+
+        if (pref === 'cod') {
+            response = "We accept Cash on Delivery (COD). You can pay when the order arrives.";
+            if (paymentSettings.codNotes) response += ` Note: ${paymentSettings.codNotes}`;
+        } else if (pref === 'online') {
+            response = "We accept online payments via UPI, Credit/Debit Card, and Netbanking. We do not support COD at this time.";
+        } else {
+            response = "We accept both Online Payments (UPI/Cards) and Cash on Delivery (COD). Choose your preferred method at checkout.";
+        }
+
+        return response;
     }
 
     if (settings.welcomeMessage) {

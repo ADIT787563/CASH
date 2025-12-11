@@ -8,14 +8,16 @@ export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  phone: text("phone"), // Personal phone
+  phoneVerified: integer("phone_verified", { mode: "boolean" }).default(false),
   emailVerified: integer("email_verified", { mode: "boolean" })
     .$defaultFn(() => false)
     .notNull(),
   image: text("image"),
-  role: text("role").notNull().default('owner'), // 'owner', 'admin', 'manager', 'agent', 'viewer'
+  role: text("role").notNull().default('owner'), // 'owner', 'admin', 'agent'
   plan: text("plan").notNull().default('starter'), // 'starter', 'growth', 'pro', 'enterprise'
   authProvider: text("auth_provider").notNull().default('email'), // 'email', 'google'
-  onboardingStep: integer("onboarding_step").notNull().default(1), // 1: Profile, 2: WhatsApp, 3: Complete
+  onboardingStep: integer("onboarding_step").notNull().default(0), // 0: Auth, 1: Profile, 2: Business, 3: Payments, 4: Complete
   subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'past_due'
   createdAt: integer("created_at", { mode: "timestamp" })
     .$defaultFn(() => new Date())
@@ -23,6 +25,33 @@ export const user = sqliteTable("user", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .$defaultFn(() => new Date())
     .notNull(),
+});
+
+// Businesses Table (Step 2)
+export const businesses = sqliteTable('businesses', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  ownerId: text('owner_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  displayName: text('display_name'),
+  slug: text('slug').notNull().unique(),
+  sellerCode: text('seller_code').notNull().unique(), // WG-XXXXXX
+  type: text('type'), // 'Individual', 'MSME', 'Company'
+  category: text('category'),
+  address: text('address', { mode: 'json' }), // { line1, line2, city, state, pincode, country }
+  gstin: text('gstin'),
+  phone: text('phone').notNull(), // Business phone
+  email: text('email').notNull(), // Business email
+  timezone: text('timezone').default('Asia/Kolkata'),
+  logoUrl: text('logo_url'),
+  onboardingCompleted: integer('onboarding_completed', { mode: 'boolean' }).default(false),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// Order Sequences (Atomic increment)
+export const orderSequences = sqliteTable('order_sequences', {
+  businessId: text('business_id').primaryKey().references(() => businesses.id, { onDelete: 'cascade' }),
+  lastSeqNumber: integer('last_seq_number').notNull().default(0),
 });
 
 // WhatsApp Settings table (Item 5, but needed for Onboarding Step 2)
@@ -489,12 +518,18 @@ export const orders = sqliteTable('orders', {
   // Meta
   channel: text('channel').default('whatsapp'), // 'whatsapp', 'web', 'app'
   source: text('source').default('ai_chat'), // 'ai_chat', 'manual_dashboard', 'landing_page'
+  notes: text('notes', { mode: 'json' }), // Added for generic notes/metadata
   notesFromCustomer: text('notes_from_customer'),
   notesInternal: text('notes_internal'),
 
-  status: text('status').notNull().default('pending'), // 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'
+  status: text('status').notNull().default('pending'), // 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'paid'
   paymentStatus: text('payment_status').default('unpaid'), // 'unpaid', 'paid', 'refunded'
-  paymentMethod: text('payment_method'), // 'cod', 'upi', 'card'
+  paymentMethod: text('payment_method'), // 'cod', 'upi', 'card', 'razorpay'
+
+  // New Fields for Order & Payment System
+  businessId: text('business_id').references(() => businesses.id, { onDelete: 'cascade' }),
+  orderSeqNumber: integer('order_seq_number'), // Per-business sequence
+  reference: text('reference'), // WG-XXXXXX-000123
 
   invoiceUrl: text('invoice_url'),
   invoiceNumber: text('invoice_number').unique(),
@@ -504,6 +539,7 @@ export const orders = sqliteTable('orders', {
   updatedAt: text('updated_at').notNull(),
 }, (table) => ({
   userIdIdx: index('orders_user_id_idx').on(table.userId),
+  businessIdIdx: index('orders_business_id_idx').on(table.businessId),
   statusIdx: index('orders_status_idx').on(table.status),
   createdAtIdx: index('orders_created_at_idx').on(table.createdAt),
 }));
@@ -729,10 +765,17 @@ export const rateLimitTracking = sqliteTable('rate_limit_tracking', {
 // Webhook Events table for deduplication
 export const webhookEvents = sqliteTable('webhook_events', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  eventId: text('event_id').notNull().unique(), // Unique event ID from WhatsApp
+  eventId: text('event_id').notNull().unique(), // Unique event ID from WhatsApp/Provider
+  provider: text('provider'), // 'razorpay', 'whatsapp'
+  eventType: text('event_type'), // 'payment.captured'
+  rawPayload: text('raw_payload', { mode: 'json' }), // Added raw payload
+
   messageId: text('message_id'), // WhatsApp message ID
-  source: text('source').notNull(), // 'whatsapp', 'meta', '360dialog'
-  processed: integer('processed', { mode: 'boolean' }).notNull().default(true),
+  source: text('source').notNull(), // 'whatsapp', 'meta', '360dialog', 'razorpay'
+  processed: integer('processed', { mode: 'boolean' }).notNull().default(false), // Changed default to false (needs processing)
+  processedAt: text('processed_at'),
+  processedBy: text('processed_by'),
+
   createdAt: text('created_at').notNull(),
 });
 
@@ -869,22 +912,30 @@ export const paymentSettings = sqliteTable('payment_settings', {
 export const payments = sqliteTable('payments', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  sellerId: text('seller_id').notNull().references(() => user.id, { onDelete: 'cascade' }), // User is the seller
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }), // Buyer User ID if applicable
+  sellerId: text('seller_id').references(() => user.id, { onDelete: 'cascade' }), // Seller
 
   method: text('method').notNull(), // 'UPI', 'RAZORPAY', 'COD'
   amount: integer('amount').notNull(), // in paise
   currency: text('currency').default('INR').notNull(),
 
-  status: text('status').notNull().default('PENDING'), // 'PENDING', 'SUCCESS', 'FAILED', 'REFUNDED'
+  status: text('status').notNull().default('created'), // 'created', 'captured', 'failed', 'refunded'
 
   // UPI Manual
   upiReference: text('upi_reference'),
 
   // Razorpay
-  gatewayName: text('gateway_name'), // 'razorpay'
+  razorpayOrderId: text('razorpay_order_id'),
+  razorpayPaymentId: text('razorpay_payment_id'),
+  razorpaySignature: text('razorpay_signature'),
+
+  // Legacy (Keep to avoid data loss during migration)
+  gatewayName: text('gateway_name'),
   gatewayOrderId: text('gateway_order_id'),
   gatewayPaymentId: text('gateway_payment_id'),
   gatewaySignature: text('gateway_signature'),
+
+  rawPayload: text('raw_payload', { mode: 'json' }), // For audit
 
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -919,15 +970,18 @@ export const subscriptions = sqliteTable('subscriptions', {
 
 export const invoices = sqliteTable('invoices', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  orderId: integer('order_id').references(() => orders.id), // Added order link
   subscriptionId: text('subscription_id').references(() => subscriptions.id),
   userId: text('user_id').notNull().references(() => user.id),
 
+  invoiceNo: text('invoice_no'), // Added explicit invoice number
   amount: integer('amount').notNull(), // in smallest currency unit (e.g., paise)
   currency: text('currency').notNull().default('INR'),
   status: text('status').notNull(), // 'paid', 'open', 'void', 'uncollectible'
 
   providerInvoiceId: text('provider_invoice_id'),
-  invoicePdfUrl: text('invoice_pdf_url'),
+  pdfUrl: text('pdf_url'), // Renamed/Aliased as per blueprint
+  invoicePdfUrl: text('invoice_pdf_url'), // Keeping for backward compat if needed
 
   paidAt: integer('paid_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),

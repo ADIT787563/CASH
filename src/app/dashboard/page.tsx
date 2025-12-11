@@ -55,6 +55,7 @@ function DashboardContent() {
   });
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [business, setBusiness] = useState<any>(null);
 
   useEffect(() => {
     // Defer data fetching to avoid blocking initial render
@@ -74,19 +75,25 @@ function DashboardContent() {
       );
 
       try {
-        // Fetch all data in parallel with timeout
-        const [messagesRes, leadsRes, productsRes] = await Promise.race([
+        // Fetch all data in parallel
+        const [messagesRes, leadsRes, productsRes, businessRes] = await Promise.race([
           Promise.all([
             fetch("/api/messages", { headers: { Authorization: `Bearer ${token}` } }),
             fetch("/api/leads", { headers: { Authorization: `Bearer ${token}` } }),
             fetch("/api/products", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("/api/businesses/me"), // Cookie auth
           ]),
           timeoutPromise
-        ]) as [Response, Response, Response];
+        ]) as [Response, Response, Response, Response];
 
         const messages = await messagesRes.json();
         const leads = await leadsRes.json();
         const products = await productsRes.json();
+
+        if (businessRes.ok) {
+          const bizData = await businessRes.json();
+          setBusiness(bizData);
+        }
 
         // Calculate stats safely
         const totalMessages = Array.isArray(messages.data) ? messages.data.length : 0;
@@ -215,23 +222,31 @@ function DashboardContent() {
           </div>
 
           {/* Plan Info Card */}
-          <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Package className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Current Plan</p>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg">{currentPlan?.planName || "Free"}</span>
-                <span className="text-xs px-2 py-0.5 bg-success/10 text-success rounded-full capitalize">Active</span>
+          <div className="flex gap-4">
+            <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2 shadow-sm min-w-[200px]">
+              <p className="text-xs text-muted-foreground">Your Store</p>
+              <div className="flex flex-col">
+                <span className="font-bold text-sm">Seller Code: <span className="text-primary">{business?.sellerCode || "Loading..."}</span></span>
+                {business?.slug && (
+                  <a href={`https://wavegroww.online/${business.slug}`} target="_blank" className="text-xs text-blue-500 hover:underline truncate max-w-[150px]" rel="noreferrer">
+                    wavegroww.online/{business.slug}
+                  </a>
+                )}
               </div>
             </div>
-            <div className="h-8 w-px bg-border mx-2 hidden md:block" />
-            <div className="hidden md:block">
-              <p className="text-xs text-muted-foreground">Limits</p>
-              <p className="text-sm font-medium">
-                {currentPlan?.limits?.messages || 100} msgs/mo
-              </p>
+
+            <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Package className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Current Plan</p>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-lg">{currentPlan?.planName || "Free"}</span>
+                  <span className="text-xs px-2 py-0.5 bg-success/10 text-success rounded-full capitalize">Active</span>
+                </div>
+              </div>
+              {/* Limits */}
             </div>
           </div>
         </div>
