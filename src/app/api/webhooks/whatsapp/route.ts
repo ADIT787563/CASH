@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import {
     chatbotSettings, messages, leads, customers, orders, orderItems, sellerPaymentMethods, payments,
-    messageQueue, campaigns, webhookLogs
+    messageQueue, campaigns, webhookLogs, whatsappSettings
 } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -197,18 +197,32 @@ async function handleMessagePayload(value: any) {
         return;
     }
 
-    // Find WhatsApp settings
-    const whatsappSettings = await db.select().from(chatbotSettings).limit(1);
-    if (whatsappSettings.length === 0) return;
+    // 5. Identify the Seller (User) based on the Phone Number ID
+    const waSettings = await db
+        .select()
+        .from(whatsappSettings)
+        .where(eq(whatsappSettings.phoneNumberId, phoneNumberId))
+        .limit(1);
 
-    const userId = whatsappSettings[0].userId;
+    if (waSettings.length === 0) {
+        console.log(`⚠️ No WhatsApp settings found for Phone ID: ${phoneNumberId}`);
+        return NextResponse.json({ ok: true });
+    }
 
-    // Check if chatbot is enabled
-    const botSettings = await db.select().from(chatbotSettings).where(eq(chatbotSettings.userId, userId)).limit(1);
+    const userId = waSettings[0].userId;
+
+    // 6. Check if chatbot is enabled for this user
+    const botSettings = await db
+        .select()
+        .from(chatbotSettings)
+        .where(eq(chatbotSettings.userId, userId))
+        .limit(1);
 
     if (botSettings.length === 0 || !botSettings[0].enabled || !botSettings[0].autoReply) {
+        // Even if chatbot is disabled, we might want to log the message for the seller's inbox
         await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
-        return;
+        return NextResponse.json({ ok: true });
+        // return; 
     }
 
     const settings = botSettings[0];
