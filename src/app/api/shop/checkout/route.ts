@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         // 5. Create Order
         const [newOrder] = await db.insert(orders).values({
             userId: sellerId, // Seller
-            customerId: customerId,
+
             customerName: customer.name,
             customerPhone: customer.phone,
             customerEmail: customer.email,
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
                 unitPrice: fi.price,
                 totalPrice: fi.totalPrice,
                 createdAt: new Date().toISOString()
-            });
+            } as any);
         }
 
         // 7. Initialize Razorpay Order

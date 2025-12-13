@@ -30,7 +30,7 @@ const PLANS = [
     {
         id: "pro",
         name: "Pro / Agency",
-        price_paise: 399900,
+        price_paise: 500,
         currency: "INR",
         billing_cycle: "monthly",
         features: [

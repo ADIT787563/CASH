@@ -162,7 +162,7 @@ const PLANS = [
   {
     id: "pro",
     name: "Pro / Agency",
-    price: 3999,
+    price: 5,
     tagline: "For agencies, large stores, and professional sellers",
     features: [
       "📦 Add up to 130 products",
@@ -216,7 +216,7 @@ const COMPARISON_FEATURES = [
     name: "Monthly Price",
     starter: "₹999",
     growth: "₹1,699",
-    pro: "₹3,999",
+    pro: "₹5",
     scale: "₹8,999+"
   },
 

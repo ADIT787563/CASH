@@ -46,6 +46,8 @@ async function seed() {
             isPopular: false,
             isActive: true,
             sortOrder: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         },
         {
             planId: 'growth',
@@ -88,12 +90,14 @@ async function seed() {
             isPopular: true,
             isActive: true,
             sortOrder: 2,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         },
         {
             planId: 'pro',
             planName: 'Pro / Agency',
-            monthlyPrice: 399900, // ₹3,999
-            yearlyPrice: 3999000, // ₹39,990 (2 months free)
+            monthlyPrice: 500, // ₹5 (Testing)
+            yearlyPrice: 5000, // ₹50 (Testing)
             features: [
                 'Maximum 130 product catalogs',
                 'Bulk upload (Excel/CSV)',
@@ -131,6 +135,8 @@ async function seed() {
             isPopular: false,
             isActive: true,
             sortOrder: 3,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         },
         {
             planId: 'enterprise',
@@ -177,6 +183,8 @@ async function seed() {
             isPopular: false,
             isActive: true,
             sortOrder: 4,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         },
     ]).onConflictDoUpdate({
         target: pricingPlans.planId,
@@ -192,6 +200,7 @@ async function seed() {
             isPopular: sql`excluded.is_popular`,
             isActive: sql`excluded.is_active`,
             sortOrder: sql`excluded.sort_order`,
+            updatedAt: sql`excluded.updated_at`,
         }
     });
 

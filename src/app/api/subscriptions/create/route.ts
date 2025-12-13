@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         // Define price based on ID (In a real app, fetch from DB or config)
         let amount = 99900;
         if (plan_id === "growth_1699") amount = 169900;
-        if (plan_id === "pro_3999") amount = 399900;
+        if (plan_id === "pro_3999") amount = 500;
         if (plan_id === "enterprise_8999") amount = 899900;
 
         // 1. Create Subscription Record (Pending)

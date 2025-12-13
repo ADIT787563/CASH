@@ -59,6 +59,9 @@ export async function POST(request: NextRequest) {
 
         const paymentAmount = amount ? parseInt(amount) * 100 : 0; // Convert to paise if needed, assume amount is in INR if passed
 
+        let newInvoiceId: string | null = null;
+        let newSubscriptionId: string | null = null;
+
         // TRANSACTION: Update User, Create Subscription, Invoice, Payment Record
         await db.transaction(async (tx) => {
             // 1. Update User Plan
@@ -81,6 +84,8 @@ export async function POST(request: NextRequest) {
                 currentPeriodEnd: endDate.toISOString(),
             }).returning();
 
+            newSubscriptionId = newSubscription.id;
+
             // 3. Create Invoice
             const [newInvoice] = await tx.insert(invoices).values({
                 userId: session.user.id,
@@ -90,6 +95,8 @@ export async function POST(request: NextRequest) {
                 status: 'paid',
                 paidAt: new Date(),
             }).returning();
+
+            newInvoiceId = newInvoice.id;
 
             // 4. Create Payment Record
             await tx.insert(paymentRecords).values({
@@ -123,6 +130,8 @@ export async function POST(request: NextRequest) {
                 startDate,
                 endDate,
             },
+            invoiceId: newInvoiceId,
+            subscriptionId: newSubscriptionId,
         });
     } catch (error: any) {
         console.error('Verify payment error:', error);

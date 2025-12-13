@@ -6,9 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock, Bell, User, Mail, Smartphone } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Shield, Lock, Bell, User, Mail, Smartphone, CreditCard } from 'lucide-react';
+import { BillingTab } from '@/components/BillingTab';
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'security';
+
   const { data: session } = useSession();
   const [notifications, setNotifications] = useState({
     email: true,
@@ -39,8 +44,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="security" className="space-y-8">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
+      <Tabs defaultValue={defaultTab} className="space-y-8">
+        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
           <TabsTrigger value="security">
             <Shield className="w-4 h-4 mr-2" />
             Security
@@ -52,6 +57,10 @@ export default function SettingsPage() {
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />
             Notifications
+          </TabsTrigger>
+          <TabsTrigger value="billing">
+            <CreditCard className="w-4 h-4 mr-2" />
+            Billing
           </TabsTrigger>
         </TabsList>
 
@@ -222,6 +231,10 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="billing">
+          <BillingTab />
         </TabsContent>
       </Tabs>
     </div>

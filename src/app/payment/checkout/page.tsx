@@ -44,7 +44,7 @@ const PLANS: Record<string, Plan> = {
     pro: {
         id: 'pro',
         name: 'Pro / Agency',
-        price: 3999,
+        price: 5,
         description: 'For agencies, large stores, and professional sellers',
         features: [
             '📦 Add up to 130 products',
@@ -173,7 +173,7 @@ function PaymentContent() {
                     const verifyData = await verifyResponse.json();
 
                     if (verifyResponse.ok) {
-                        router.push('/payment/success?plan=' + plan.id);
+                        router.push(`/payment/success?plan=${plan.id}&invoiceId=${verifyData.invoiceId}`);
                     } else {
                         router.push('/payment/failed');
                     }

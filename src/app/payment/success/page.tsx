@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +9,24 @@ function PaymentSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const planName = searchParams.get('plan') || 'Pro';
+    const paramsInvoiceId = searchParams.get('invoiceId');
+    const [fetchedInvoiceId, setFetchedInvoiceId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!paramsInvoiceId) {
+            // Fetch latest invoice if not in params
+            fetch('/api/invoices/latest')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.invoiceId) {
+                        setFetchedInvoiceId(data.invoiceId);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch latest invoice", err));
+        }
+    }, [paramsInvoiceId]);
+
+    const finalInvoiceId = paramsInvoiceId || fetchedInvoiceId;
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -84,26 +102,37 @@ function PaymentSuccessContent() {
                             Go to Dashboard
                             <ArrowRight className="w-5 h-5" />
                         </Link>
-                        <Link
-                            href="/settings/billing"
-                            className="px-8 py-3 border border-border rounded-lg font-semibold hover:bg-muted transition-colors inline-flex items-center justify-center gap-2"
-                        >
-                            View Billing
-                        </Link>
+                        {finalInvoiceId ? (
+                            <Link
+                                href={`/invoices/${finalInvoiceId}`}
+                                target="_blank"
+                                className="px-8 py-3 border border-border rounded-lg font-semibold hover:bg-muted transition-colors inline-flex items-center justify-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                Download Invoice
+                            </Link>
+                        ) : (
+                            <Link
+                                href="/settings?tab=billing"
+                                className="px-8 py-3 border border-border rounded-lg font-semibold hover:bg-muted transition-colors inline-flex items-center justify-center gap-2"
+                            >
+                                View Billing
+                            </Link>
+                        )}
                     </div>
 
                     {/* Support */}
                     <div className="mt-8 pt-8 border-t border-border">
                         <p className="text-sm text-muted-foreground">
                             Questions? Contact our support team at{' '}
-                            <a href="mailto:support@wavegroww.com" className="text-primary hover:underline">
-                                support@wavegroww.com
+                            <a href="mailto:wavegroww@gmail.com" className="text-primary hover:underline">
+                                wavegroww@gmail.com
                             </a>
                         </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
