@@ -5,6 +5,7 @@ import { db } from '@/db';
 import { orders, payments, subscriptions, invoices, paymentRecords, user, webhookLogs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendOrderConfirmationEmail, sendNewOrderNotification } from '@/lib/email';
+import { WhatsAppClient } from '@/lib/whatsapp';
 
 export async function POST(request: NextRequest) {
     try {
@@ -114,6 +115,24 @@ export async function POST(request: NextRequest) {
                                 amount: paymentEntity.amount / 100,
                                 date: new Date().toLocaleDateString()
                             });
+                        }
+
+                        // --- 4. Notify Customer via WhatsApp (NEW) ---
+                        if (order.customerPhone) {
+                            try {
+                                const waClient = await WhatsAppClient.getClient(order.userId);
+                                if (waClient) {
+                                    await waClient.sendOrderConfirmation(order.customerPhone, {
+                                        id: order.invoiceNumber || order.id.toString(),
+                                        amount: paymentEntity.amount / 100
+                                    });
+                                    console.log(`✅ WhatsApp confirmation sent to ${order.customerPhone}`);
+                                } else {
+                                    console.log(`⚠️ No WhatsApp client found for seller ${order.userId} - skipping confirmation`);
+                                }
+                            } catch (waError) {
+                                console.error('❌ Failed to send WhatsApp confirmation:', waError);
+                            }
                         }
 
                     } else {

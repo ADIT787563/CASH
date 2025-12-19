@@ -85,7 +85,7 @@ export function FeaturesSection() {
                 key={index}
                 className="glass-card p-6 rounded-2xl hover:shadow-lg transition-all hover:scale-105"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center mb-4">
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>

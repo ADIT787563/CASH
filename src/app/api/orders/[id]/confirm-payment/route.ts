@@ -4,7 +4,8 @@ import { orders } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { WhatsAppClient } from '@/lib/whatsapp';
+import { OrderLogic } from '@/lib/order-logic';
 
 // POST /api/orders/[id]/confirm-payment
 export async function POST(
@@ -39,19 +40,25 @@ export async function POST(
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        // 2. Update Status
-        await db.update(orders)
-            .set({
-                paymentStatus: 'paid',
-                status: 'confirmed', // Auto-confirm on payment
-                updatedAt: new Date().toISOString()
-            })
-            .where(eq(orders.id, orderId));
+        // 1. Confirm Payment via State Machine
+        try {
+            await OrderLogic.confirmPayment(orderId, session.user.id, 'manual_upi');
+        } catch (error: any) {
+            return NextResponse.json({ error: error.message || 'Payment confirmation failed' }, { status: 400 });
+        }
 
-        // 3. Trigger Post-Action (Email)
-        // We can re-trigger confirmation email strictly if it wasn't sent before, 
-        // but typically "Order Confirmation" goes out pending payment too. 
-        // Let's send a "Payment Received" notification if possible, or just rely on status update.
+        // 3. Trigger Post-Action (Notification)
+        try {
+            const client = await WhatsAppClient.getClient(session.user.id);
+            if (client && order.customerPhone) {
+                await client.sendOrderConfirmation(order.customerPhone, {
+                    id: order.reference || orderId.toString(),
+                    amount: order.totalAmount / 100,
+                });
+            }
+        } catch (notifError) {
+            console.error('Failed to send confirmation notification:', notifError);
+        }
 
         return NextResponse.json({ success: true, message: 'Payment confirmed successfully' });
 

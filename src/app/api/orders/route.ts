@@ -5,6 +5,20 @@ import { razorpay, RAZORPAY_KEY_ID } from '@/lib/razorpay';
 import { eq, desc, and } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { z } from 'zod';
+
+// Validation Schema
+const createOrderSchema = z.object({
+  buyer_id: z.string().optional(), // Optional as per current logic
+  seller_id: z.string().min(1, "Seller ID is required"),
+  amount_paise: z.number().int().positive("Amount must be a positive integer"),
+  currency: z.string().default('INR'),
+  notes: z.record(z.string(), z.any()).optional(),
+  customer_name: z.string().optional(),
+  customer_phone: z.string().optional(),
+  customer_email: z.string().email().optional().or(z.literal('')),
+  items: z.array(z.any()).optional() // TODO: Define item schema if needed strictly
+});
 
 // GET /api/orders - List orders for seller
 export async function GET(req: NextRequest) {
@@ -59,12 +73,17 @@ export async function POST(req: NextRequest) {
     });
 
     const body = await req.json();
-    const { buyer_id, seller_id, items, amount_paise, currency = 'INR', notes } = body;
 
-    // TODO: Add strict validation (Zod)
-    if (!amount_paise || !seller_id) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate Input
+    const validation = createOrderSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: validation.error.format()
+      }, { status: 400 });
     }
+
+    const { buyer_id, seller_id, items, amount_paise, currency, notes, customer_name, customer_phone, customer_email } = validation.data;
 
     // 1. Get Business & Sequence
     const business = await db.query.businesses.findFirst({
@@ -114,9 +133,9 @@ export async function POST(req: NextRequest) {
       orderSeqNumber: nextSeq,
       reference: reference,
 
-      customerName: body.customer_name || 'Guest', // Fallback
-      customerPhone: body.customer_phone || '',
-      customerEmail: body.customer_email,
+      customerName: customer_name || 'Guest', // Fallback
+      customerPhone: customer_phone || '',
+      customerEmail: customer_email,
 
       subtotal: amount_paise,
       totalAmount: amount_paise,
@@ -170,9 +189,9 @@ export async function POST(req: NextRequest) {
         name: "WaveGroww Store", // Or Seller Name
         description: `Order #${newOrder.id}`,
         prefill: {
-          name: body.customer_name,
-          email: body.customer_email,
-          contact: body.customer_phone
+          name: customer_name,
+          email: customer_email,
+          contact: customer_phone
         }
       }
     }, { status: 201 });

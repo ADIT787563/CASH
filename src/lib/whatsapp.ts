@@ -98,4 +98,19 @@ export class WhatsAppClient {
         const message = `Welcome to Wavegroww! 🎉\\n\\nTo help you set up your WhatsApp Business account, please provide the following details:\\n\\n1) Business Name\\n2) Business Category\\n3) Business Phone Number\\n4) Business Email\\n\\nReply with these details to complete your onboarding.`;
         return this.sendTextMessage(to, message);
     }
+
+    async sendOrderConfirmation(to: string, orderDetails: { id: string; amount: number; items?: string }) {
+        let message = `✅ *Order Confirmed!* 🎉\n\nOrder ID: ${orderDetails.id}\nAmount Paid: ₹${orderDetails.amount}\n\nWe have received your payment and your order is being processed. You will receive another update when it ships! 📦`;
+
+        if (orderDetails.items) {
+            message += `\n\nItems:\n${orderDetails.items}`;
+        }
+
+        return this.sendTextMessage(to, message);
+    }
+
+    async sendPaymentLink(to: string, orderDetails: { id: string; amount: number; paymentUrl: string }) {
+        const message = `🛍️ *Order Placed!* \n\nYour order #${orderDetails.id} for *₹${orderDetails.amount}* has been received.\n\nTo complete your payment and confirm the order, please visit our secure payment portal:\n\n🔗 ${orderDetails.paymentUrl}\n\nNote: You can pay via UPI or Credit/Debit Cards there.`;
+        return this.sendTextMessage(to, message);
+    }
 }

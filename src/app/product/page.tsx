@@ -44,13 +44,26 @@ const trackEvent = (eventName: string, data?: Record<string, any>) => {
 export default function ProductPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const { data: plansFromDB, isLoading: isPricingLoading } = usePricing();
+  /* const { data: plansFromDB, isLoading: isPricingLoading } = usePricing(); */
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  const plans = plansFromDB || [];
+  const plans = [
+    {
+      planName: "Growth",
+      monthlyPrice: 1699,
+    },
+    {
+      planName: "Pro / Agency",
+      monthlyPrice: 5,
+    },
+    {
+      planName: "Enterprise",
+      monthlyPrice: 8999,
+    }
+  ];
 
   useEffect(() => {
     // Track page view
@@ -371,32 +384,32 @@ export default function ProductPage() {
 
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               <div className="relative">
-                <div className="bg-card border border-border rounded-xl p-8 text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary">
-                    1
+                <div className="bg-card border border-border rounded-xl p-8 text-center group hover:border-primary/50 transition-all">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary group-hover:scale-110 transition-transform">
+                    <MessageSquare className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">Connect WhatsApp</h3>
                   <p className="text-muted-foreground">Verify your number in under 2 minutes</p>
                 </div>
                 {/* Connector */}
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-primary/30" />
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border" />
               </div>
 
               <div className="relative">
-                <div className="bg-card border border-border rounded-xl p-8 text-center">
-                  <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-accent">
-                    2
+                <div className="bg-card border border-border rounded-xl p-8 text-center group hover:border-primary/50 transition-all">
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                    <Package className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">Upload Products</h3>
                   <p className="text-muted-foreground">Use Auto Catalog for instant share links</p>
                 </div>
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-accent/30" />
+                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border" />
               </div>
 
               <div>
-                <div className="bg-card border border-border rounded-xl p-8 text-center">
-                  <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-secondary">
-                    3
+                <div className="bg-card border border-border rounded-xl p-8 text-center group hover:border-primary/50 transition-all">
+                  <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                    <Bot className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">AI Handles Chats</h3>
                   <p className="text-muted-foreground">Track leads & sales in your Dashboard</p>

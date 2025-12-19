@@ -115,28 +115,6 @@ const PlanCard = ({ plan }: { plan: Plan }) => (
 // Plan data with detailed features
 const PLANS = [
   {
-    id: "starter",
-    name: "Basic",
-    price: 5,
-    tagline: "Ideal for new sellers starting automation",
-    features: [
-      "📦 Add up to 20 products",
-      "🖼️ Single image per product",
-      "🤖 250 automated replies/mo",
-      "📱 1 WhatsApp Number linking",
-      "🛒 Basic order form",
-      "🧾 Auto-invoice (Simple, No GST)",
-      "📊 Basic Analytics",
-      "👤 Single user access",
-      "📧 Basic Email support",
-      "❌ No API or Webhooks",
-    ],
-    cta: "Start Free Trial",
-    popular: false,
-    showContactSales: false,
-    limitations: ["No custom fields", "No PDF invoice", "Manual price updates"]
-  },
-  {
     id: "growth",
     name: "Growth",
     price: 1699,
@@ -155,14 +133,14 @@ const PLANS = [
       "✅ SEO fields & Product tags",
     ],
     cta: "Start Free Trial",
-    popular: true,
+    popular: false,
     showContactSales: false,
     bestFor: "Growing businesses needing GST invoices"
   },
   {
     id: "pro",
     name: "Pro / Agency",
-    price: 3999,
+    price: 5,
     tagline: "For agencies, large stores, and professional sellers",
     features: [
       "📦 Add up to 130 products",
@@ -178,7 +156,7 @@ const PLANS = [
       "⚡ Smart inventory alerts",
     ],
     cta: "Start Free Trial",
-    popular: false,
+    popular: true,
     showContactSales: false,
     bestFor: "Agencies and high-volume sellers"
   },

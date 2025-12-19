@@ -96,10 +96,10 @@ function PaymentSuccessContent() {
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
-                            href="/dashboard"
+                            href="/onboarding/step-5-finish"
                             className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors inline-flex items-center justify-center gap-2"
                         >
-                            Go to Dashboard
+                            Continue
                             <ArrowRight className="w-5 h-5" />
                         </Link>
                         {finalInvoiceId ? (

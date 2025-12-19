@@ -1,4 +1,4 @@
-import { Calendar, CreditCard, MapPin, Phone, User, Mail, FileText } from "lucide-react";
+import { Calendar, CreditCard, MapPin, Phone, User, Mail, FileText, ExternalLink } from "lucide-react";
 import { Order } from "@/types/order";
 
 interface OrderInfoProps {
@@ -66,7 +66,7 @@ export default function OrderInfo({ order }: OrderInfoProps) {
                 <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Order ID</span>
-                        <span className="font-medium text-gray-900">#{order.id}</span>
+                        <span className="font-medium text-gray-900">#{order.reference || order.id}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Date</span>
@@ -95,7 +95,7 @@ export default function OrderInfo({ order }: OrderInfoProps) {
                             <span className="text-gray-500">Shipping</span>
                             <span className="text-gray-900">{formatCurrency(order.shippingAmount)}</span>
                         </div>
-                        {order.discountAmount > 0 && (
+                        {(order.discountAmount ?? 0) > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
                                 <span>Discount</span>
                                 <span>-{formatCurrency(order.discountAmount)}</span>
@@ -108,6 +108,54 @@ export default function OrderInfo({ order }: OrderInfoProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Payment Proof Section - AG-704 */}
+            {(order.utrNumber || order.paymentProofUrl) && (
+                <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-sm md:col-span-2">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-amber-600" />
+                        Buyer Payment Proof
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            {order.utrNumber && (
+                                <div>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">UTR / Transaction ID</p>
+                                    <p className="text-lg font-mono font-bold text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-100 italic">
+                                        {order.utrNumber}
+                                    </p>
+                                </div>
+                            )}
+                            <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                                <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                                    <strong>Verify manually:</strong> Cross-check the UTR number with your bank statement before confirming this order.
+                                    Once verified, use the "Confirm Payment" button to finalize.
+                                </p>
+                            </div>
+                        </div>
+                        {order.paymentProofUrl && (
+                            <div>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Screenshot</p>
+                                <div className="relative group">
+                                    <img
+                                        src={order.paymentProofUrl}
+                                        alt="Payment Proof"
+                                        className="rounded-xl border border-gray-200 w-full max-h-64 object-cover shadow-sm"
+                                    />
+                                    <a
+                                        href={order.paymentProofUrl}
+                                        target="_blank"
+                                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl text-white font-bold gap-2"
+                                    >
+                                        <ExternalLink className="w-5 h-5" />
+                                        View Full Image
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

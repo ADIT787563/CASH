@@ -38,6 +38,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState("all");
+    const [searchText, setSearchText] = useState("");
 
     useEffect(() => {
         fetchOrders();
@@ -76,6 +77,12 @@ export default function OrdersPage() {
 
     // Filter Logic
     const filteredOrders = orders.filter(o => {
+        const matchesSearch = o.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
+            o.customerPhone.includes(searchText) ||
+            o.id.toString().includes(searchText);
+
+        if (!matchesSearch) return false;
+
         if (filterStatus === 'all') return true;
         if (filterStatus === 'pending_action') return o.paymentStatus === 'pending_verification' || o.status === 'pending';
         return o.status === filterStatus || o.paymentStatus === filterStatus;
@@ -107,6 +114,8 @@ export default function OrdersPage() {
                                 <input
                                     type="text"
                                     placeholder="Search order ID or phone..."
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
                                     className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64"
                                 />
                             </div>

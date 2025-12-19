@@ -39,6 +39,8 @@ export interface Order {
     invoiceUrl?: string | null;
 
     notesInternal?: string | null;
+    paymentProofUrl?: string | null;
+    utrNumber?: string | null;
 
     items: OrderItem[];
     timeline: OrderTimeline[];

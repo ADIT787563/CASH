@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import crypto from 'crypto';
 
 
@@ -18,7 +18,8 @@ export const user = sqliteTable("user", {
   plan: text("plan").notNull().default('starter'), // 'starter', 'growth', 'pro', 'enterprise'
   authProvider: text("auth_provider").notNull().default('email'), // 'email', 'google'
   onboardingStep: integer("onboarding_step").notNull().default(0), // 0: Auth, 1: Profile, 2: Business, 3: Payments, 4: Complete
-  subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'past_due'
+  subscriptionStatus: text("subscription_status").notNull().default('inactive'), // 'active', 'inactive', 'past_due', 'trial'
+  trialEndsAt: integer("trial_ends_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .$defaultFn(() => new Date())
     .notNull(),
@@ -43,6 +44,7 @@ export const businesses = sqliteTable('businesses', {
   email: text('email').notNull(), // Business email
   timezone: text('timezone').default('Asia/Kolkata'),
   logoUrl: text('logo_url'),
+  logoUrlDark: text('logo_url_dark'),
   onboardingCompleted: integer('onboarding_completed', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -252,7 +254,22 @@ export const leads = sqliteTable('leads', {
 }, (table) => ({
   userIdIdx: index('leads_user_id_idx').on(table.userId),
   statusIdx: index('leads_status_idx').on(table.status),
-  phoneIdx: index('leads_phone_idx').on(table.phone),
+  phoneUniqueIdx: uniqueIndex('leads_phone_user_unique_idx').on(table.userId, table.phone),
+}));
+
+// Lead Activity Log table - AG-302
+export const leadActivityLog = sqliteTable('lead_activity_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  leadId: integer('lead_id').notNull().references(() => leads.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(), // 'status_change', 'note_added', 'contacted'
+  oldStatus: text('old_status'),
+  newStatus: text('new_status'),
+  metadata: text('metadata', { mode: 'json' }),
+  createdAt: text('created_at').notNull(),
+}, (table) => ({
+  leadIdIdx: index('lead_activity_lead_id_idx').on(table.leadId),
+  userIdIdx: index('lead_activity_user_id_idx').on(table.userId),
 }));
 
 // Messages table
@@ -416,10 +433,18 @@ export const analytics = sqliteTable('analytics', {
   outboundMessages: integer('outbound_messages').notNull().default(0),
   newLeads: integer('new_leads').notNull().default(0),
   convertedLeads: integer('converted_leads').notNull().default(0),
+  totalRevenue: integer('total_revenue').notNull().default(0), // in paise
+  totalOrders: integer('total_orders').notNull().default(0),
+  paidOrders: integer('paid_orders').notNull().default(0),
+  uniqueConversations: integer('unique_conversations').notNull().default(0),
   productClicks: integer('product_clicks').notNull().default(0),
   templateSends: integer('template_sends').notNull().default(0),
+  failureReasons: text('failure_reasons', { mode: 'json' }),
+  topProducts: text('top_products', { mode: 'json' }), // [{ id, name, sales, revenue }]
   createdAt: text('created_at').notNull(),
-});
+}, (table) => ({
+  userIdDateIdx: uniqueIndex('analytics_user_id_date_idx').on(table.userId, table.date),
+}));
 
 // Business Settings table
 export const businessSettings = sqliteTable('business_settings', {
@@ -432,6 +457,7 @@ export const businessSettings = sqliteTable('business_settings', {
   shortBio: text('short_bio'),
   storeUrl: text('store_url'),
   logoUrl: text('logo_url'),
+  logoUrlDark: text('logo_url_dark'),
   coverImageUrl: text('cover_image_url'),
   socialLinks: text('social_links', { mode: 'json' }),
   businessHours: text('business_hours', { mode: 'json' }),
@@ -491,9 +517,31 @@ export const chatbotSettings = sqliteTable('chatbot_settings', {
   languageFallback: text('language_fallback', { mode: 'json' }),
   keywordTriggers: text('keyword_triggers', { mode: 'json' }),
   autoReplyTemplates: text('auto_reply_templates', { mode: 'json' }),
+
+  // New AI Persistence Fields
+  businessContext: text('business_context'),
+  handoverRule: text('handover_rule'),
+  confidenceThreshold: integer('confidence_threshold').default(85), // 0-100
+  businessHoursConfig: text('business_hours_config', { mode: 'json' }), // { start, end, enabled }
+  fallbackMode: text('fallback_mode').notNull().default('template'), // 'template', 'human', 'hybrid'
+  fallbackMessage: text('fallback_message'), // The content of the template response
+
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+// AI Settings History - AG-206
+export const chatbotSettingsHistory = sqliteTable('chatbot_settings_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  settingId: integer('setting_id').notNull().references(() => chatbotSettings.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  configSnapshot: text('config_snapshot', { mode: 'json' }).notNull(),
+  versionName: text('version_name'), // e.g., "Holiday Sale Settings"
+  createdAt: text('created_at').notNull(),
+}, (table) => ({
+  userIdIdx: index('chatbot_history_user_id_idx').on(table.userId),
+  settingIdIdx: index('chatbot_history_setting_id_idx').on(table.settingId),
+}));
 
 // Orders table
 // Orders table (Header)
@@ -535,6 +583,9 @@ export const orders = sqliteTable('orders', {
   invoiceUrl: text('invoice_url'),
   invoiceNumber: text('invoice_number').unique(),
 
+  paymentProofUrl: text('payment_proof_url'), // AG-704
+  utrNumber: text('utr_number'), // UPI Reference
+
   orderDate: text('order_date').notNull(),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -569,7 +620,7 @@ export const orderTimeline = sqliteTable('order_timeline', {
   createdAt: text('created_at').notNull(),
 });
 
-// Product Views table
+// Business Settings table (End)
 export const productViews = sqliteTable('product_views', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -602,6 +653,7 @@ export const accountSettings = sqliteTable('account_settings', {
   timezone: text('timezone').notNull().default('Asia/Kolkata'),
   language: text('language').notNull().default('en'),
   logoUrl: text('logo_url'),
+  logoUrlDark: text('logo_url_dark'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
@@ -790,7 +842,7 @@ export const webhookEvents = sqliteTable('webhook_events', {
   createdAt: text('created_at').notNull(),
 });
 
-// Chatbot Usage table for daily tracking
+// Chatbot Usage table for daily tracking (Legacy/Compatibility)
 export const chatbotUsage = sqliteTable('chatbot_usage', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -800,6 +852,21 @@ export const chatbotUsage = sqliteTable('chatbot_usage', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+// AG-901: Comprehensive Business Usage Tracking
+export const businessUsage = sqliteTable('business_usage', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  metric: text('metric').notNull(), // 'conversations', 'ai_replies', 'orders', 'messages'
+  period: text('period').notNull(), // 'daily', 'monthly'
+  key: text('key').notNull(), // '2023-10-27' or '2023-10'
+  count: integer('count').notNull().default(0),
+  limit: integer('limit').notNull().default(0),
+  updatedAt: text('updated_at').notNull(),
+}, (table) => ({
+  userMetricIdx: index('business_usage_user_metric_idx').on(table.userId, table.metric),
+  userMetricPeriodKeyIdx: uniqueIndex('business_usage_unique_idx').on(table.userId, table.metric, table.period, table.key),
+}));
 
 // Customers table for inbox
 export const customers = sqliteTable('customers', {
@@ -974,6 +1041,10 @@ export const subscriptions = sqliteTable('subscriptions', {
   currentPeriodEnd: text('current_period_end'),
   cancelAtPeriodEnd: integer('cancel_at_period_end', { mode: 'boolean' }).default(false),
   canceledAt: text('canceled_at'),
+
+  // AG-1002: Grace Period & Renewal Tracking
+  gracePeriodEndsAt: text('grace_period_ends_at'),
+  lastRenewalAt: text('last_renewal_at'),
 
   createdAt: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updatedAt: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
@@ -1260,3 +1331,15 @@ export const roleHierarchy = sqliteTable('role_hierarchy', {
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()).notNull(),
 });
 
+
+// Reviews table
+export const reviews = sqliteTable("reviews", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => user.id),
+  userName: text("user_name").notNull(),
+  userRole: text("user_role"), // e.g. "Shopify Seller", "Reseller"
+  rating: integer("rating").notNull(), // 1-5
+  comment: text("comment").notNull(),
+  status: text("status").default("pending"), // pending, approved, rejected
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
+});

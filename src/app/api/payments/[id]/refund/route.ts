@@ -4,11 +4,17 @@ import { payments, orders } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { z } from 'zod';
 import Razorpay from 'razorpay';
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID || '',
     key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+});
+
+const refundSchema = z.object({
+    amount_paise: z.number().int().positive("Amount must be positive"),
+    reason: z.string().optional()
 });
 
 // POST /api/payments/[id]/refund
@@ -26,7 +32,13 @@ export async function POST(
 
         const paymentId = id;
         const body = await request.json();
-        const { amount_paise, reason } = body;
+        const validation = refundSchema.safeParse(body);
+
+        if (!validation.success) {
+            return NextResponse.json({ error: 'Validation failed', details: validation.error.format() }, { status: 400 });
+        }
+
+        const { amount_paise, reason } = validation.data;
 
         const [payment] = await db
             .select()

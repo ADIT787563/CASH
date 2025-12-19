@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { leads } from '@/db/schema';
+import { leads, leadActivityLog } from '@/db/schema';
 import { eq, like, and, or, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -143,8 +143,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const now = new Date().toISOString();
+    // Check for duplicate lead - AG-301
+    const existingLead = await db.select()
+      .from(leads)
+      .where(and(eq(leads.userId, user.id), eq(leads.phone, phone.trim())))
+      .limit(1);
 
+    if (existingLead.length > 0) {
+      return NextResponse.json({
+        error: 'A lead with this phone number already exists',
+        code: 'DUPLICATE_LEAD'
+      }, { status: 409 });
+    }
+
+    const now = new Date().toISOString();
     const newLead = await db.insert(leads)
       .values({
         userId: user.id,
@@ -162,7 +174,18 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    return NextResponse.json(newLead[0], { status: 201 });
+    const createdLead = newLead[0];
+
+    // Log Creation - AG-302
+    await db.insert(leadActivityLog).values({
+      leadId: createdLead.id,
+      userId: user.id,
+      action: 'lead_created',
+      newStatus: createdLead.status,
+      createdAt: now,
+    });
+
+    return NextResponse.json(createdLead, { status: 201 });
 
   } catch (error) {
     console.error('POST error:', error);
@@ -270,7 +293,32 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
     }
 
-    return NextResponse.json(updatedLead[0], { status: 200 });
+    const updatedLeadData = updatedLead[0];
+
+    // Log Status Change - AG-302
+    if (status !== undefined && status !== existingLead[0].status) {
+      await db.insert(leadActivityLog).values({
+        leadId: updatedLeadData.id,
+        userId: user.id,
+        action: 'status_change',
+        oldStatus: existingLead[0].status,
+        newStatus: status,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // Log Note Addition - AG-302
+    if (notes !== undefined && notes !== existingLead[0].notes) {
+      await db.insert(leadActivityLog).values({
+        leadId: updatedLeadData.id,
+        userId: user.id,
+        action: 'note_updated',
+        metadata: { notes: notes.trim() },
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    return NextResponse.json(updatedLeadData, { status: 200 });
 
   } catch (error) {
     console.error('PUT error:', error);

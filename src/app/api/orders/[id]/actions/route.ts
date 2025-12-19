@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders, orderTimeline } from '@/db/schema';
+import { orders } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { OrderLogic } from '@/lib/order-logic';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
@@ -40,22 +41,12 @@ export async function POST(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Update Order Status
-        await db.update(orders)
-            .set({
-                status: action,
-                updatedAt: new Date().toISOString()
-            })
-            .where(eq(orders.id, orderId));
-
-        // Add Timeline Entry
-        await db.insert(orderTimeline).values({
-            orderId: orderId,
-            status: action,
-            note: `Order marked as ${action} by seller`,
-            createdBy: session.user.id,
-            createdAt: new Date().toISOString(),
-        });
+        // Update Order Status via State Machine
+        try {
+            await OrderLogic.transitionStatus(orderId, session.user.id, action);
+        } catch (error: any) {
+            return NextResponse.json({ error: error.message || 'Status transition failed' }, { status: 400 });
+        }
 
         return NextResponse.json({ success: true });
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { user } from '@/db/schema';
+import { businesses, user } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
@@ -13,8 +13,18 @@ export async function POST(request: NextRequest) {
         }
         const userId = session.user.id;
 
-        // Mark onboarding as complete (step 3)
-        await db.update(user).set({ onboardingStep: 3 }).where(eq(user.id, userId));
+        // Mark onboarding as complete
+        await db.transaction(async (tx) => {
+            // 1. Mark Business as Onboarding Completed
+            await tx.update(businesses)
+                .set({ onboardingCompleted: true, updatedAt: new Date().toISOString() })
+                .where(eq(businesses.ownerId, userId));
+
+            // 2. Mark User as fully onboarded (Step 5)
+            await tx.update(user)
+                .set({ onboardingStep: 5, updatedAt: new Date() })
+                .where(eq(user.id, userId));
+        });
 
         return NextResponse.json({ success: true, redirectTo: '/dashboard' });
 

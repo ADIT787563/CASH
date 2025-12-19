@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { StoreHeader } from "@/components/shop/StoreHeader";
 import { ProductCard } from "@/components/shop/ProductCard";
 import type { StoreData } from "@/lib/store-data";
-import { X, ShoppingBag } from "lucide-react";
+import { X, ShoppingBag, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function StoreClient({ storeData }: { storeData: StoreData }) {
@@ -65,6 +65,46 @@ export function StoreClient({ storeData }: { storeData: StoreData }) {
         phone: '',
         address: ''
     });
+
+    const handleWhatsAppCheckout = () => {
+        if (!formData.name || !formData.phone || !formData.address) {
+            toast.error("Please fill in Name, Phone and Address");
+            return;
+        }
+
+        const phone = storeData.settings?.whatsappNumber || storeData.business.phone;
+        if (!phone) {
+            toast.error("Seller WhatsApp number not configured");
+            return;
+        }
+
+        // 1. Construct Message
+        let message = `*New Order from ${formData.name}*\n\n`;
+        message += `*Items:*\n`;
+        cart.forEach(item => {
+            message += `- ${item.quantity}x ${item.name} (₹${item.price})\n`;
+        });
+
+        const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        message += `\n*Total: ₹${total}*\n\n`;
+        message += `*Delivery Details:*\n`;
+        message += `Name: ${formData.name}\n`;
+        message += `Phone: ${formData.phone}\n`;
+        message += `Address: ${formData.address}\n`;
+        if (formData.email) message += `Email: ${formData.email}\n`;
+
+        message += `\n[Generated via WaveGroww Store]`;
+
+        // 2. Open WhatsApp
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+
+        // 3. Clear Cart (optional, or wait for confirmation)
+        setCart([]);
+        setIsCartOpen(false);
+        setStep('cart');
+        toast.success("Redirecting to WhatsApp...");
+    };
 
     const handleCheckout = async () => {
         if (!formData.name || !formData.phone || !formData.address) {
@@ -126,6 +166,18 @@ export function StoreClient({ storeData }: { storeData: StoreData }) {
 
     const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+    const filteredProducts = storeData.products.filter(p => {
+        if (selectedCategory === 'all') return true;
+        // Assuming product has categoryId or category name. 
+        // Checking schema in store-data.ts, it returns products.$inferSelect[].
+        // Let's check products schema again. 
+        // If categories are joined, we might need categoryId.
+        // For now, let's assume we filter by categoryId if available, or just show all if not linked yet.
+        return p.categoryId?.toString() === selectedCategory;
+    });
+
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900" style={{
             '--primary': theme.primaryColor || '#000000',
@@ -152,11 +204,42 @@ export function StoreClient({ storeData }: { storeData: StoreData }) {
                 </div>
             </div>
 
+            {/* Category Filter */}
+            {storeData.categories.length > 0 && (
+                <div className="container mx-auto px-4 mt-8 overflow-x-auto">
+                    <div className="flex gap-2 pb-2">
+                        <button
+                            onClick={() => setSelectedCategory('all')}
+                            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${selectedCategory === 'all'
+                                    ? 'bg-black text-white border-black'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                }`}
+                            style={selectedCategory === 'all' ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
+                        >
+                            All Products
+                        </button>
+                        {storeData.categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.id.toString())}
+                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${selectedCategory === cat.id.toString()
+                                        ? 'bg-black text-white border-black'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                    }`}
+                                style={selectedCategory === cat.id.toString() ? { backgroundColor: theme.primaryColor, borderColor: theme.primaryColor } : {}}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Products Grid */}
             <div className="container mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {storeData.products.length > 0 ? (
-                        storeData.products.map(product => (
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map(product => (
                             <ProductCard
                                 key={product.id}
                                 product={product}
@@ -166,7 +249,7 @@ export function StoreClient({ storeData }: { storeData: StoreData }) {
                         ))
                     ) : (
                         <div className="col-span-full text-center py-20 text-gray-500">
-                            <p className="text-xl">No products available yet.</p>
+                            <p className="text-xl">No products found in this category.</p>
                         </div>
                     )}
                 </div>
@@ -304,20 +387,36 @@ export function StoreClient({ storeData }: { storeData: StoreData }) {
                                         Proceed to Checkout
                                     </button>
                                 ) : (
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setStep('cart')}
+                                                className="flex-1 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-100"
+                                            >
+                                                Back
+                                            </button>
+                                            <button
+                                                onClick={handleCheckout}
+                                                disabled={loading}
+                                                className="flex-[2] py-3 bg-black text-white rounded-lg font-bold hover:bg-gray-900 transition-colors disabled:opacity-50"
+                                                style={{ backgroundColor: theme.primaryColor }}
+                                            >
+                                                {loading ? 'Processing...' : 'Pay Online'}
+                                            </button>
+                                        </div>
+
+                                        <div className="relative flex py-1 items-center">
+                                            <div className="flex-grow border-t border-gray-300"></div>
+                                            <span className="flex-shrink-0 mx-2 text-gray-400 text-xs uppercase">Or</span>
+                                            <div className="flex-grow border-t border-gray-300"></div>
+                                        </div>
+
                                         <button
-                                            onClick={() => setStep('cart')}
-                                            className="flex-1 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-100"
+                                            onClick={handleWhatsAppCheckout}
+                                            className="w-full py-3 bg-[#25D366] text-white rounded-lg font-bold hover:bg-[#128C7E] transition-colors flex items-center justify-center gap-2"
                                         >
-                                            Back
-                                        </button>
-                                        <button
-                                            onClick={handleCheckout}
-                                            disabled={loading}
-                                            className="flex-[2] py-3 bg-black text-white rounded-lg font-bold hover:bg-gray-900 transition-colors disabled:opacity-50"
-                                            style={{ backgroundColor: theme.primaryColor }}
-                                        >
-                                            {loading ? 'Processing...' : 'Pay Now'}
+                                            <MessageCircle className="w-5 h-5" />
+                                            Order on WhatsApp
                                         </button>
                                     </div>
                                 )}

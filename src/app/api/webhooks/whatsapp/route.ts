@@ -2,20 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import {
     chatbotSettings, messages, leads, customers, orders, orderItems, sellerPaymentMethods, payments,
-    messageQueue, campaigns, webhookLogs, whatsappSettings
+    messageQueue, campaigns, webhookLogs, whatsappSettings, products, businesses
 } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import { WhatsAppClient } from '@/lib/whatsapp';
-import { parseOrderDetails, OrderDetails } from '@/lib/openai';
+import { parseOrderDetails, OrderDetails, generateSalesReply } from '@/lib/openai';
 import { isDuplicateWebhook, markWebhookProcessed } from '@/lib/webhook-deduplication';
 import { withWebhookRateLimit } from '@/middleware/rate-limit-middleware';
+import { findBestTriggerMatch } from '@/lib/trigger-resolver';
+import { UsageService } from '@/lib/usage-service';
+import { BillingService } from '@/lib/billing-service';
 
 /**
  * WhatsApp Unified Webhook
  * URL: https://yourdomain.com/api/webhooks/whatsapp
  * Handles both incoming messages and status updates (delivered, read, etc).
  */
+
+function isWithinBusinessHours(config: any): boolean {
+    if (!config || !config.enabled) return true;
+
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 is Sunday, 6 is Saturday
+    // For now, simplicity: assuming the same hours for all days or if only start/end provided
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    const [startH, startM] = config.start.split(':').map(Number);
+    const [endH, endM] = config.end.split(':').map(Number);
+
+    const startTime = startH * 60 + startM;
+    const endTime = endH * 60 + endM;
+
+    return currentTime >= startTime && currentTime <= endTime;
+}
 
 // --- SHARED HELPERS ---
 
@@ -59,17 +79,14 @@ function detectPurchaseIntent(message: string): boolean {
     return intentKeywords.some(k => lower.includes(k));
 }
 
-// Generate chatbot response
-async function generateChatbotResponse(message: string, settings: any, paymentSettings?: any): Promise<string> {
+// Generate chatbot response (Strict Rules & Payments)
+async function generateChatbotResponse(message: string, settings: any, paymentSettings?: any): Promise<string | null> {
     const lowerMessage = message.toLowerCase();
 
-    // 1. Check for specific keywords defined in settings
+    // 1. Check for specific keywords defined in settings - AG-502
     if (settings.keywordTriggers && Array.isArray(settings.keywordTriggers)) {
-        for (const trigger of settings.keywordTriggers) {
-            if (trigger.keyword && lowerMessage.includes(trigger.keyword.toLowerCase())) {
-                return trigger.response;
-            }
-        }
+        const bestResponse = findBestTriggerMatch(message, settings.keywordTriggers);
+        if (bestResponse) return bestResponse;
     }
 
     // 2. Payment Inquiries
@@ -88,6 +105,11 @@ async function generateChatbotResponse(message: string, settings: any, paymentSe
         return response;
     }
 
+    return null; // No strict match found
+}
+
+// Generate Fallback Response (Welcome / Tone)
+function generateFallbackResponse(settings: any): string {
     if (settings.welcomeMessage) {
         return settings.welcomeMessage;
     }
@@ -222,10 +244,36 @@ async function handleMessagePayload(value: any) {
         // Even if chatbot is disabled, we might want to log the message for the seller's inbox
         await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
         return NextResponse.json({ ok: true });
-        // return; 
     }
 
+    // AG-1001: Check Subscription Status
+    const billing = await BillingService.getEffectiveSubscriptionStatus(userId);
+    if (!billing.isOperational) {
+        console.warn(`💳 Subscription status ${billing.status} for user ${userId}. Skipping auto-reply.`);
+        await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
+        return NextResponse.json({ ok: true });
+    }
+
+    // AG-905: Check Usage Limits
+    const usage = await UsageService.checkUsageLimit(userId, 'ai_replies');
+    if (!usage.allowed) {
+        console.warn(`🛑 Chatbot usage limit EXCEEDED (${usage.current}/${usage.limit}) for user ${userId}. Skipping auto-reply.`);
+        await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
+        return NextResponse.json({ ok: true });
+    }
+
+    // AG-203: Check Business Hours
     const settings = botSettings[0];
+    const bhConfig = typeof settings.businessHoursConfig === 'string'
+        ? JSON.parse(settings.businessHoursConfig)
+        : settings.businessHoursConfig;
+
+    if (!isWithinBusinessHours(bhConfig)) {
+        console.log(`🌙 User ${userId} is outside business hours. Skipping auto-reply.`);
+        await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
+        return NextResponse.json({ ok: true });
+    }
+
     await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
     await createOrUpdateCustomer(userId, from);
 
@@ -243,17 +291,67 @@ async function handleMessagePayload(value: any) {
             const qrImageUrl = sellerPayment[0]?.qrImageUrl;
             const codNotes = sellerPayment[0]?.codNotes;
 
+            // Fetch Business ID
+            const businessRows = await db.select({ id: businesses.id }).from(businesses).where(eq(businesses.ownerId, userId)).limit(1);
+            const businessId = businessRows[0]?.id || null;
+
+            // Fetch Real Product (Simple logic: Get first active product)
+            // In future, we can match 'parsed.items_summary' to product name
+            const productRows = await db.select().from(products)
+                .where(and(eq(products.userId, userId), eq(products.status, 'active')))
+                .limit(1);
+
+            let finalProductId = null;
+            let finalProductName = parsed.items_summary || 'Custom Order';
+            let unitPrice = 100 * 100; // Default 100 INR if no product found (in paise/cents usually, but schema has integer)
+
+            // Check schema: price is integer (likely raw number if currency not specified, assuming standard INR unit)
+            // Ideally we check if price is stored as paise or rupees. Usually integers in DB implies atomic units or raw value.
+            // Let's assume schema stores price as is (e.g. 500 for 500 INR).
+
+            if (productRows.length > 0) {
+                const prod = productRows[0];
+
+                // AG-404: Real-time stock check
+                if (prod.stock <= 0) {
+                    const systemClient = WhatsAppClient.getSystemClient();
+                    await systemClient.sendTextMessage(from, `😔 I'm very sorry, but *${prod.name}* just went out of stock. We cannot process your order at this moment. Would you like to check our other products?`);
+                    await db.update(customers).set({ conversationState: 'browsing', conversationContext: null, updatedAt: new Date().toISOString() }).where(eq(customers.id, customer.id));
+                    return;
+                }
+
+                finalProductId = prod.id;
+                finalProductName = prod.name;
+                unitPrice = prod.price;
+            }
+
             const orderNumber = `INV-${Date.now()}`;
-            const subtotal = 1000;
-            const tax = Math.round(subtotal * 0.18);
+            const quantity = 1; // Default to 1 for now
+            const subtotal = unitPrice * quantity;
+            const tax = Math.round(subtotal * 0.18); // Example 18% GST
             const total = subtotal + tax;
             const initialPaymentStatus = paymentPreference === 'cod' ? 'pending_cod' : 'unpaid';
 
             const orderInsert = await db.insert(orders).values({
-                userId, leadId: null, customerName: parsed.name, customerPhone: parsed.phone, customerEmail: parsed.email,
-                shippingAddress: parsed.address, subtotal, taxAmount: tax, totalAmount: total, status: 'pending',
-                paymentStatus: initialPaymentStatus, paymentMethod: null, invoiceNumber: orderNumber, invoiceUrl: '',
-                orderDate: new Date().toISOString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+                userId,
+                businessId,
+                leadId: null,
+                customerName: parsed.name,
+                customerPhone: parsed.phone,
+                customerEmail: parsed.email,
+                shippingAddress: parsed.address,
+                subtotal,
+                taxAmount: tax,
+                totalAmount: total,
+                status: 'pending',
+                paymentStatus: initialPaymentStatus,
+                paymentMethod: null,
+                invoiceNumber: orderNumber,
+                invoiceUrl: '',
+                orderDate: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                notesFromCustomer: parsed.items_summary || null
             }).returning();
 
             const orderId = orderInsert[0].id;
@@ -261,14 +359,30 @@ async function handleMessagePayload(value: any) {
             await db.update(orders).set({ invoiceUrl: finalInvoiceUrl }).where(eq(orders.id, orderId));
 
             await db.insert(orderItems).values({
-                orderId, productId: 1, productName: 'Sample Product', quantity: 1, unitPrice: subtotal, totalPrice: subtotal, createdAt: new Date().toISOString(),
+                orderId,
+                productId: finalProductId,
+                productName: finalProductName,
+                quantity: quantity,
+                unitPrice: unitPrice,
+                totalPrice: subtotal,
+                createdAt: new Date().toISOString(),
             });
 
             await db.insert(payments).values({
-                orderId, sellerId: userId, method: 'PENDING', amount: total, currency: 'INR', status: 'PENDING', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+                orderId,
+                sellerId: userId,
+                method: 'PENDING',
+                amount: total,
+                currency: 'INR',
+                status: 'PENDING',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
             });
 
             await db.update(customers).set({ conversationState: 'browsing', conversationContext: null, updatedAt: new Date().toISOString() }).where(eq(customers.id, customer.id));
+
+            // AG-903: Increment usage for orders
+            await UsageService.incrementUsage(userId, 'orders');
 
             let paymentMessage = `✅ *Order Created Successfully!*\n\nOrder ID: ${orderId}\nTotal: ₹${(total / 100).toFixed(2)}\n\n*Payment Options:*\n`;
             const hasOnline = paymentPreference === 'online' || paymentPreference === 'both';
@@ -307,14 +421,43 @@ async function handleMessagePayload(value: any) {
 
     const sellerPaymentList = await db.select().from(sellerPaymentMethods).where(eq(sellerPaymentMethods.sellerId, userId)).limit(1);
     const paymentSettings = sellerPaymentList[0] || null;
-    const response = await generateChatbotResponse(messageText, settings, paymentSettings);
+
+    // 1. Strict Rules / Payments
+    let response = await generateChatbotResponse(messageText, settings, paymentSettings);
+
+    // 2. AI Sales Brain (RAG)
+    if (!response) {
+        // Fetch up to 20 active products for context
+        // In a real production app, we would use vector search here.
+        // For MVP, we pass the most recent/relevant products.
+        const activeProducts = await db.select().from(products)
+            .where(and(eq(products.userId, userId), eq(products.status, 'active')))
+            .orderBy(products.createdAt) // or meaningful order
+            .limit(20);
+
+        if (activeProducts.length > 0) {
+            const productContext = activeProducts.map(p =>
+                `- ${p.name} (₹${p.price}) ${p.stock > 0 ? '' : '[Out of Stock]'}`
+            ).join('\n');
+
+            response = await generateSalesReply(messageText, productContext);
+        }
+    }
+
+    // 3. Fallback Welcome/Tone
+    if (!response) {
+        response = generateFallbackResponse(settings);
+    }
+
     const client = await WhatsAppClient.getClient(userId);
-    if (client) {
+    if (client && response) {
+        // Simulate typing delay
         if (settings.typingDelay && settings.typingDelay > 0) {
             await new Promise(resolve => setTimeout(resolve, settings.typingDelay));
         }
         await client.sendTextMessage(from, response);
         await saveOutgoingMessage(userId, from, response);
+        await UsageService.incrementUsage(userId, 'ai_replies'); // AG-906: Increment Usage
     }
 }
 

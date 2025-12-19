@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { sellerPaymentMethods, orders, webhookLogs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
+import { WhatsAppClient } from '@/lib/whatsapp';
 
 // POST - Handle Razorpay webhooks for seller payments
 export async function POST(request: NextRequest) {
@@ -119,6 +120,19 @@ export async function POST(request: NextRequest) {
                 .where(eq(webhookLogs.eventId, eventId));
 
             console.log(`Order ${orderId} marked as paid`);
+
+            // Send WhatsApp Notification
+            try {
+                const client = await WhatsAppClient.getClient(sellerId);
+                if (client && order.customerPhone) {
+                    await client.sendOrderConfirmation(order.customerPhone, {
+                        id: order.reference || orderId.toString(),
+                        amount: order.totalAmount / 100,
+                    });
+                }
+            } catch (notifError) {
+                console.error('Failed to send payment notification:', notifError);
+            }
         } else if (eventType === 'payment.failed') {
             // Update order to failed
             await db

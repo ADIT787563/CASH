@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         // Format: INV-{YYYYMMDD}-{ORDER_ID}
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const invoiceNumber = `INV-${dateStr}-${orderId}`;
-        const invoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://wavegroww.online'}/invoices/${orderId}`;
+        const invoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/invoices/${orderId}`;
 
         // 4. Update Order
         await db.update(orders)

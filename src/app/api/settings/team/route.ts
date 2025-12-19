@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       .returning();
 
     const inviteId = newInvite[0].id;
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://wavegroww.online'}/accept-invite?token=${inviteToken}`;
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.wavegroww.online'}/accept-invite?token=${inviteToken}`;
 
     // Send Invitation Email
     // Fetch inviter name (session user name)

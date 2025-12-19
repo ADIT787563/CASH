@@ -37,6 +37,26 @@ export const Header = () => {
   const { user, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [customLogos, setCustomLogos] = useState<{ light: string | null; dark: string | null }>({ light: null, dark: null });
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/business-settings", {
+        headers: { "Authorization": `Bearer ${localStorage.getItem("bearer_token")}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) {
+            setCustomLogos({
+              light: data.logoUrl || null,
+              dark: data.logoUrlDark || null
+            });
+          }
+        })
+        .catch(err => console.error("Failed to fetch branding:", err));
+    }
+  }, [user]);
+
   const [scrolled, setScrolled] = useState(false);
 
   // Scroll detection
@@ -124,7 +144,11 @@ export const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Logo className="w-8 h-8" />
+            <Logo
+              className="w-8 h-8"
+              lightLogo={customLogos.light}
+              darkLogo={customLogos.dark}
+            />
             <span className="text-xl font-bold gradient-text">WaveGroww</span>
           </Link>
 

@@ -4,6 +4,7 @@ import { chatbotSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { findBestTriggerMatch } from '@/lib/trigger-resolver';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +22,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required field
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Message is required and must be a non-empty string",
-        code: "MISSING_MESSAGE" 
+        code: "MISSING_MESSAGE"
       }, { status: 400 });
     }
 
@@ -34,9 +35,9 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (settings.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Chatbot not configured or disabled',
-        code: "CHATBOT_NOT_CONFIGURED" 
+        code: "CHATBOT_NOT_CONFIGURED"
       }, { status: 400 });
     }
 
@@ -44,9 +45,9 @@ export async function POST(request: NextRequest) {
 
     // Check if chatbot is enabled
     if (!userSettings.enabled) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Chatbot not configured or disabled',
-        code: "CHATBOT_DISABLED" 
+        code: "CHATBOT_DISABLED"
       }, { status: 400 });
     }
 
@@ -68,22 +69,16 @@ export async function POST(request: NextRequest) {
 
     const tone = userSettings.tone || 'friendly';
     const language = userSettings.language || 'en';
-    
+
     const baseResponse = toneResponses[tone] || toneResponses['friendly'];
     const greeting = languageGreetings[language] || languageGreetings['en'];
-    
+
     const generatedResponse = `${greeting} ${baseResponse}`;
 
-    // Check for keyword triggers
+    // Check for keyword triggers - AG-502
     let triggeredResponse = null;
     if (userSettings.keywordTriggers && Array.isArray(userSettings.keywordTriggers)) {
-      const lowerMessage = message.toLowerCase();
-      for (const trigger of userSettings.keywordTriggers) {
-        if (trigger.keyword && lowerMessage.includes(trigger.keyword.toLowerCase())) {
-          triggeredResponse = trigger.response;
-          break;
-        }
-      }
+      triggeredResponse = findBestTriggerMatch(message, userSettings.keywordTriggers);
     }
 
     // Use welcome message if configured
@@ -109,7 +104,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Internal server error: ' + (error instanceof Error ? error.message : 'Unknown error')
     }, { status: 500 });
   }

@@ -333,3 +333,15 @@ export function getTemplateExamples(category: 'marketing' | 'utility' | 'authent
 
     return examples[category];
 }
+
+/**
+ * Render template with sample values
+ */
+export function renderTemplate(content: string, variables: string[]): string {
+    let rendered = content;
+    variables.forEach((value, index) => {
+        const placeholder = `{{${index + 1}}}`;
+        rendered = rendered.split(placeholder).join(value || `[Variable ${index + 1}]`);
+    });
+    return rendered;
+}

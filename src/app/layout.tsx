@@ -8,6 +8,7 @@ import { Providers } from "@/lib/react-query";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/providers/AuthProvider";
 import Loading from "./loading";
+import { DevelopmentWarning } from "@/components/DevelopmentWarning";
 
 // Client Components
 import ClientComponents from "./client-components";
@@ -48,6 +49,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ErrorBoundary>
           <Suspense fallback={<Loading />}>
+            <DevelopmentWarning />
             <ClientComponents />
             <Script
               src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts//route-messenger.js"

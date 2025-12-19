@@ -15,17 +15,21 @@ interface Plan {
 }
 
 const PLANS: Record<string, Plan> = {
-    starter: {
-        id: 'starter',
+    basic: {
+        id: 'basic',
         name: 'Basic',
         price: 999,
         description: 'Ideal for new sellers starting automation',
         features: [
-            '📦 Add up to 20 products',
-            '🖼️ Single image per product',
-            '🤖 250 automated replies/mo',
-            '📱 1 WhatsApp Number linking',
-            '🛒 Basic order form'
+            'Add up to 20 products',
+            'Single image per product',
+            '250 automated replies/mo',
+            '1 WhatsApp Number linking',
+            'Basic order form',
+            'Auto-invoice (Simple, No GST)',
+            'Basic Analytics',
+            'Single user access',
+            'Basic Email support'
         ]
     },
     growth: {
@@ -34,11 +38,13 @@ const PLANS: Record<string, Plan> = {
         price: 1699,
         description: 'Perfect for sellers scaling to mid-level business',
         features: [
-            '📦 Add up to 40 products',
-            '🎨 Variants & Multi-image support',
-            '🤖 800 automated replies/mo',
-            '📱 Connect up to 3 WhatsApp Numbers',
-            '🛒 Custom checkout fields'
+            'Add up to 40 products',
+            'Variants & Multi-image support',
+            '800 automated replies/mo',
+            'Connect up to 3 WhatsApp Numbers',
+            'Custom checkout fields',
+            'Advanced Invoice (GST, PDF)',
+            'Revenue chart & Top customers'
         ]
     },
     pro: {
@@ -47,24 +53,29 @@ const PLANS: Record<string, Plan> = {
         price: 5,
         description: 'For agencies, large stores, and professional sellers',
         features: [
-            '📦 Add up to 130 products',
-            '🚀 Bulk upload (CSV/Excel)',
-            '🤖 Unlimited automated replies',
-            '🧠 AI-powered auto-reply',
-            '📱 Connect up to 10 WhatsApp numbers'
+            'Add up to 130 products',
+            'Bulk upload (CSV/Excel)',
+            'Unlimited automated replies',
+            'AI-powered auto-reply',
+            'Connect up to 10 WhatsApp numbers',
+            'Branded Invoices (Logo + Colors)',
+            'Full Analytics & Conversion rates',
+            'Up to 10 team members'
         ]
     },
-    scale: {
-        id: 'scale',
+    enterprise: {
+        id: 'enterprise',
         name: 'Enterprise',
         price: 8999,
         description: 'For large businesses & D2C brands',
         features: [
-            '📦 Custom catalog limit (200-Unlimited)',
-            '🤖 AI Chatbot (NLP) & Smart Replies',
-            '🌍 Multi-language NLP auto-replies',
-            '📱 Unlimited WhatsApp numbers',
-            '🛒 Fully customizable checkout API'
+            'Custom catalog limit (200-Unlimited)',
+            'AI Chatbot (NLP) & Smart Replies',
+            'Multi-language NLP auto-replies',
+            'Unlimited WhatsApp numbers',
+            'Fully customizable checkout API',
+            'White-label & Custom Invoices',
+            'BI Dashboard & Custom Reports'
         ]
     }
 };
@@ -188,6 +199,23 @@ function PaymentContent() {
                 modal: {
                     ondismiss: function () {
                         setIsProcessing(false);
+                        const from = searchParams.get('from');
+                        if (from === 'onboarding') {
+                            router.push('/onboarding/step-4-plans');
+                        } else {
+                            // query param "cancel=true" could be useful optionally
+                            // router.push('/plans'); // Or stay on checkout?
+                            // User asked to "redirect to plan page back"
+                            // Default behavior if not from onboarding? Maybe back to previous page?
+                            // Let's stick to /plans as safe default or just nothing if we want them to retry. 
+                            // But usually cancellation means "I want to go back".
+                            // Let's keep it safe:
+                            // If specific from param, go there.
+                            // Else stay on page so they can retry or click "Back to Plans" manually?
+                            // The user user specifically said "if user cancel the payment again redirect to plan page back".
+                            // So I will redirect.
+                            router.push('/plans');
+                        }
                     }
                 }
             };

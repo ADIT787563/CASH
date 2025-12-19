@@ -24,7 +24,7 @@ export function BenefitsSection() {
               <p className="text-lg text-muted-foreground mb-8">
                 Built specifically for the Indian market with features that help you sell more, save time, and never miss a customer.
               </p>
-              
+
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3">
@@ -40,7 +40,7 @@ export function BenefitsSection() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                      <MessageCircle className="w-5 h-5 text-white" />
+                      <MessageCircle className="w-5 h-5 text-primary-foreground" />
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">New Message</div>
@@ -50,7 +50,7 @@ export function BenefitsSection() {
 
                   <div className="flex items-center gap-4 p-4 bg-accent/10 rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                      <Bot className="w-5 h-5 text-white" />
+                      <Bot className="w-5 h-5 text-accent-foreground" />
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">AI Replied Instantly</div>
@@ -60,7 +60,7 @@ export function BenefitsSection() {
 
                   <div className="flex items-center gap-4 p-4 bg-success/10 rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-success flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 text-white" />
+                      <TrendingUp className="w-5 h-5 text-success-foreground" />
                     </div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Lead Converted! 🎉</div>

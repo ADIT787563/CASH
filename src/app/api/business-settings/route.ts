@@ -103,6 +103,8 @@ export async function POST(request: NextRequest) {
         catalogUrl: catalogUrl ? catalogUrl.trim() : null,
         businessHours: businessHours ? (typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours)) : null,
         themeConfig: themeConfig ? (typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig)) : null,
+        logoUrl: body.logoUrl ? body.logoUrl.trim() : null,
+        logoUrlDark: body.logoUrlDark ? body.logoUrlDark.trim() : null,
         maintenanceMode: false,
         createdAt: now,
         updatedAt: now,
@@ -209,6 +211,14 @@ export async function PUT(request: NextRequest) {
       } else {
         updates.themeConfig = typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig);
       }
+    }
+
+    if (body.logoUrl !== undefined) {
+      updates.logoUrl = body.logoUrl ? body.logoUrl.trim() : null;
+    }
+
+    if (body.logoUrlDark !== undefined) {
+      updates.logoUrlDark = body.logoUrlDark ? body.logoUrlDark.trim() : null;
     }
 
     const updated = await db.update(businessSettings)
