@@ -13,54 +13,62 @@ const TECH_PARTNERS = [
 ];
 
 export function LogoStrip() {
-    const scrollRef = useRef<HTMLDivElement>(null);
-
     return (
         <div className="w-full py-12 bg-muted/30 overflow-hidden">
             <div className="container mx-auto px-4">
-                <p className="text-center text-sm text-muted-foreground mb-8 font-medium">
-                    Powered by
+                <p className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground/80 mb-10">
+                    Trusted by industry leaders
                 </p>
 
-                <div className="relative">
-                    {/* Gradient overlays for smooth edges */}
-                    <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-muted/30 to-transparent z-10" />
-                    <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-muted/30 to-transparent z-10" />
+                <div className="relative flex overflow-hidden group">
+                    {/* Gradient overlays */}
+                    <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-muted/30 via-muted/30 to-transparent z-10" />
+                    <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-muted/30 via-muted/30 to-transparent z-10" />
 
-                    {/* Scrolling container */}
-                    <div
-                        ref={scrollRef}
-                        className="flex gap-16 animate-scroll hover:pause-animation items-center"
-                    >
-                        {/* First set of logos */}
+                    {/* Scrolling Track for Infinite Loop */}
+                    <div className="flex gap-16 items-center animate-scroll-infinite min-w-full">
+                        {/* Original Set */}
                         {TECH_PARTNERS.map((partner, index) => (
                             <div
                                 key={`partner-1-${index}`}
-                                className="flex-shrink-0 flex items-center justify-center h-16 px-6"
+                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
                             >
                                 <Image
                                     src={partner.logo}
                                     alt={`${partner.name} logo`}
                                     width={partner.width}
                                     height={partner.height}
-                                    className="object-contain"
-                                    priority={index < 3}
+                                    className="object-contain w-auto h-full max-h-12"
                                 />
                             </div>
                         ))}
-
-                        {/* Duplicate set for seamless loop */}
+                        {/* Duplicate Set 1 */}
                         {TECH_PARTNERS.map((partner, index) => (
                             <div
                                 key={`partner-2-${index}`}
-                                className="flex-shrink-0 flex items-center justify-center h-16 px-6"
+                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
                             >
                                 <Image
                                     src={partner.logo}
                                     alt={`${partner.name} logo`}
                                     width={partner.width}
                                     height={partner.height}
-                                    className="object-contain"
+                                    className="object-contain w-auto h-full max-h-12"
+                                />
+                            </div>
+                        ))}
+                        {/* Duplicate Set 2 for ultra-wide screens */}
+                        {TECH_PARTNERS.map((partner, index) => (
+                            <div
+                                key={`partner-3-${index}`}
+                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                            >
+                                <Image
+                                    src={partner.logo}
+                                    alt={`${partner.name} logo`}
+                                    width={partner.width}
+                                    height={partner.height}
+                                    className="object-contain w-auto h-full max-h-12"
                                 />
                             </div>
                         ))}

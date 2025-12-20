@@ -11,9 +11,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
 
 const NAV_ITEMS = [
-    { label: "Dashboard", href: "/dashboard" },
+    { label: "Home", href: "/dashboard" },
+    { label: "Orders", href: "/dashboard/orders" },
+    { label: "Customers", href: "/dashboard/customers" },
+    { label: "Inbox", href: "/dashboard/inbox" },
     { label: "AI Chatbot", href: "/dashboard/chatbot" },
     { label: "Leads", href: "/dashboard/leads" },
     { label: "Catalog", href: "/dashboard/catalog" },
@@ -24,6 +29,11 @@ const NAV_ITEMS = [
 export function DashboardTopNav() {
     const pathname = usePathname();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const { theme, setTheme } = useTheme();
+
+    const toggleTheme = () => {
+        setTheme(theme === "dark" ? "light" : "dark");
+    };
 
     const handleSignOut = async () => {
         await authClient.signOut();
@@ -71,6 +81,16 @@ export function DashboardTopNav() {
                 <button className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                     <span>Today, Dec 17</span>
                     <ChevronDown className="w-3 h-3" />
+                </button>
+
+                <button
+                    onClick={toggleTheme}
+                    className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                    title="Toggle Theme"
+                    aria-label="Toggle Theme"
+                >
+                    <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                 </button>
 
                 <button className="relative p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">

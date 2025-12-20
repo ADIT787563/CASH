@@ -8,7 +8,6 @@ import {
   Settings,
   MessageCircle,
   Languages,
-  Clock,
   Zap,
   Save,
   Play,
@@ -28,11 +27,7 @@ export default function ChatbotPage() {
     language: "en",
     tone: "professional",
     typingDelay: 2,
-    businessHours: true,
-    startTime: "09:00",
-    endTime: "18:00",
     welcomeMessage: "Hello! 👋 Welcome to our store. How can I help you today?",
-    awayMessage: "Thanks for your message! We're currently away but will get back to you soon.",
   });
 
   useEffect(() => {
@@ -62,11 +57,7 @@ export default function ChatbotPage() {
           language: settings.language,
           tone: settings.tone,
           typingDelay: settings.typingDelay,
-          businessHours: settings.businessHours,
-          startTime: settings.startTime,
-          endTime: settings.endTime,
           welcomeMessage: settings.welcomeMessage,
-          awayMessage: settings.awayMessage,
         });
       }
     } catch (error) {
@@ -85,7 +76,11 @@ export default function ChatbotPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(chatbotSettings),
+        body: JSON.stringify({
+          ...chatbotSettings,
+          businessHours: false, // Force 24/7
+          awayMessage: ""
+        }),
       });
 
       const data = await res.json();
@@ -121,7 +116,7 @@ export default function ChatbotPage() {
             <span className="gradient-text">AI WhatsApp Chatbot</span>
           </h1>
           <p className="text-muted-foreground">
-            Configure your AI chatbot to automatically respond to customer inquiries
+            Configure your AI chatbot to automatically respond to customer inquiries 24/7.
           </p>
         </div>
 
@@ -140,8 +135,8 @@ export default function ChatbotPage() {
                     setChatbotSettings({ ...chatbotSettings, enabled: !chatbotSettings.enabled })
                   }
                   className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors ${chatbotSettings.enabled
-                      ? "bg-success text-success-foreground"
-                      : "bg-muted text-muted-foreground"
+                    ? "bg-success text-success-foreground"
+                    : "bg-muted text-muted-foreground"
                     }`}
                 >
                   {chatbotSettings.enabled ? (
@@ -165,7 +160,7 @@ export default function ChatbotPage() {
                     <div>
                       <p className="font-medium">Auto Reply</p>
                       <p className="text-sm text-muted-foreground">
-                        Automatically respond to messages
+                        Automatically respond to messages instantly
                       </p>
                     </div>
                   </div>
@@ -182,27 +177,19 @@ export default function ChatbotPage() {
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10">
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-accent" />
+                    <Bot className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="font-medium">Business Hours</p>
+                      <p className="font-bold text-primary">Always Active (24/7)</p>
                       <p className="text-sm text-muted-foreground">
-                        Only reply during business hours
+                        AI handles inquiries even when you sleep
                       </p>
                     </div>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={chatbotSettings.businessHours}
-                      onChange={(e) =>
-                        setChatbotSettings({ ...chatbotSettings, businessHours: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                  </label>
+                  <div className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">
+                    Enabled
+                  </div>
                 </div>
               </div>
             </div>
@@ -233,7 +220,7 @@ export default function ChatbotPage() {
                     <option value="te">Telugu (తెలుగు)</option>
                     <option value="ta">Tamil (தமிழ்)</option>
                     <option value="bn">Bengali (বাংলা)</option>
-                    <option value="mr">Marathi (मराठी)</option>
+                    <option value="mr">Marathi (મરાઠી)</option>
                     <option value="gu">Gujarati (ગુજરાતી)</option>
                   </select>
                 </div>
@@ -279,34 +266,6 @@ export default function ChatbotPage() {
                   </p>
                 </div>
 
-                {/* Business Hours */}
-                {chatbotSettings.businessHours && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Start Time</label>
-                      <input
-                        type="time"
-                        value={chatbotSettings.startTime}
-                        onChange={(e) =>
-                          setChatbotSettings({ ...chatbotSettings, startTime: e.target.value })
-                        }
-                        className="w-full px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">End Time</label>
-                      <input
-                        type="time"
-                        value={chatbotSettings.endTime}
-                        onChange={(e) =>
-                          setChatbotSettings({ ...chatbotSettings, endTime: e.target.value })
-                        }
-                        className="w-full px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {/* Welcome Message */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Welcome Message</label>
@@ -320,20 +279,6 @@ export default function ChatbotPage() {
                     placeholder="Enter your welcome message..."
                   />
                 </div>
-
-                {/* Away Message */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Away Message</label>
-                  <textarea
-                    value={chatbotSettings.awayMessage}
-                    onChange={(e) =>
-                      setChatbotSettings({ ...chatbotSettings, awayMessage: e.target.value })
-                    }
-                    rows={3}
-                    className="w-full px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                    placeholder="Enter your away message..."
-                  />
-                </div>
               </div>
             </div>
 
@@ -341,7 +286,7 @@ export default function ChatbotPage() {
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="w-full py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
             >
               {isLoading ? (
                 <>
@@ -384,8 +329,8 @@ export default function ChatbotPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Status:</span>
-                    <span className="font-medium">
-                      {chatbotSettings.enabled ? "Active" : "Paused"}
+                    <span className="font-medium text-success">
+                      {chatbotSettings.enabled ? "Active (24/7)" : "Paused"}
                     </span>
                   </div>
                   <div className="flex justify-between">

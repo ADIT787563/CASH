@@ -61,27 +61,37 @@ Extract the fields and output a JSON object with exactly these keys: name, phone
 }
 
 /**
- * Generates a helpful sales response based on the user's message and available product context.
+ * Generates a helpful, safe, and context-aware business response.
+ * Uses conversation history and strict "FALLBACK_REQUIRED" protocol.
  */
-export async function generateSalesReply(message: string, productContext: string): Promise<string | null> {
-    const systemPrompt = `You are a helpful and friendly sales assistant on WhatsApp for a store.
-Your goal is to answer customer questions about products using ONLY the provided context.
-- Be concise and friendly.
-- Use emojis 🛍️✨.
-- If the user asks for a product mentioned in the context, give details (price, variants) and ask if they want to buy.
-- If a product is marked as [Out of Stock] in the context, you MUST inform the customer that it is currently unavailable and suggest alternatives.
-- Do NOT offer to add out-of-stock items to an order.
-- Mention prices clearly in INR (₹).
-- Don't invent products.
-- End with a call to action like "Shall I add this to your order?" (only for in-stock items) or "Want to see our other available options?".
+export async function generateAIConversation(
+    currentMessage: string,
+    history: { role: 'user' | 'assistant' | 'system', content: string }[],
+    productContext: string,
+    businessContext: string
+): Promise<string | null> {
+    const systemPrompt = `You are a professional customer support AI for a business.
+Your goal is to answer customer questions using ONLY the provided Business Context and Product Context.
 
-Context (Available Products):
+STRICT RULES:
+1. TRUTH: Use ONLY the context provided. Do NOT hallucinate policies, hours, or prices.
+2. SAFETY: If the answer is not in the context, or if you are unsure, output EXACTLY "FALLBACK_REQUIRED".
+3. TONE: Professional, concise, and helpful. Use 1-2 emojis max.
+4. SALES: If products are discussed, mention price (₹) and stock status. If [Out of Stock], do not sell it.
+5. LENGTH: Keep responses under 3 sentences for WhatsApp readability.
+
+Business Context:
+${businessContext}
+
+Product Context:
 ${productContext}
 `;
 
+    // Construct message chain: System -> History -> Current User Message
     const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: message },
+        ...history.map(m => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
+        { role: 'user', content: currentMessage } // Ensure current message is last
     ];
 
     try {
@@ -89,12 +99,53 @@ ${productContext}
         const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages,
-            temperature: 0.7, // Slightly creative but grounded
-            max_tokens: 150,
+            temperature: 0.5, // Lower temperature for more factual responses
+            max_tokens: 200,
+        });
+
+        const content = response.choices[0].message.content?.trim();
+
+        if (content === "FALLBACK_REQUIRED") {
+            return "FALLBACK_REQUIRED";
+        }
+
+        return content || null;
+    } catch (error) {
+        console.error('OpenAI conversation error:', error);
+        return null;
+    }
+}
+
+/**
+ * Generates a smart reply suggestion based on the conversation history.
+ */
+export async function generateSmartReply(messages: { role: string, content: string }[], customerName: string): Promise<string | null> {
+    const systemPrompt = `You are a helpful customer support agent for a business.
+Your goal is to draft a professional, friendly, and concise reply to the customer.
+- Customer Name: ${customerName}
+- Tone: Helpful, Polite, Professional.
+- Format: Plain text, ready to send.
+- If the last message is a greeting, reply with a greeting.
+- If the last message is a question, answer it if context allows, or ask for more info.
+- Keep it under 2 sentences unless complex.
+`;
+
+    const chatMessages: ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt },
+        ...messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    ];
+
+    try {
+        const openai = getOpenAIClient();
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: chatMessages,
+            temperature: 0.7,
+            max_tokens: 100,
         });
         return response.choices[0].message.content?.trim() || null;
     } catch (error) {
-        console.error('OpenAI sales reply error:', error);
+        console.error('OpenAI smart reply error:', error);
         return null;
     }
 }

@@ -39,10 +39,17 @@ export class ErrorBoundary extends React.Component<Props, State> {
                             We encountered an unexpected error. Please try refreshing the page.
                         </p>
                         {this.state.error && (
-                            <details className="text-left mb-6 p-4 bg-muted rounded-lg text-sm">
-                                <summary className="cursor-pointer font-medium mb-2">Error Details</summary>
-                                <code className="text-xs">{this.state.error.toString()}</code>
-                            </details>
+                            <div className="text-left mb-6 space-y-4">
+                                <details className="p-4 bg-muted rounded-lg text-sm border border-border">
+                                    <summary className="cursor-pointer font-medium mb-2 text-destructive flex items-center gap-2">
+                                        <AlertTriangle className="w-4 h-4" />
+                                        Error Details
+                                    </summary>
+                                    <code className="text-xs break-all whitespace-pre-wrap block mt-2">
+                                        {this.state.error.toString()}
+                                    </code>
+                                </details>
+                            </div>
                         )}
                         <button
                             onClick={() => window.location.reload()}

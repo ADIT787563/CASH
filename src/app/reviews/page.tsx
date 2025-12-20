@@ -1,214 +1,136 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
-import { Star, CheckCircle2, User, Loader2 } from "lucide-react";
+import { Star, MessageSquare, ArrowLeft, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
 import { Footer } from "@/components/home/Footer";
 
-export default function ReviewsPage() {
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState({
-        userName: "",
-        userRole: "",
+const allReviews = [
+    {
+        name: "Priya Sharma",
+        role: "Meesho Seller",
+        quote: "WaveGroww increased my conversions by 3x! The AI chatbot handles everything while I sleep. It understands Hinglish perfectly.",
+        location: "Jaipur, Rajasthan",
+        date: "2 days ago",
         rating: 5,
-        comment: "",
-    });
-    const [submitting, setSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const [error, setError] = useState("");
+        avatar: "P"
+    },
+    {
+        name: "Rajesh Kumar",
+        role: "Shopify Store Owner",
+        quote: "The auto-catalog feature saved me 10 hours a week. No more manual link sharing. Highly recommend for Indian sellers!",
+        location: "Surat, Gujarat",
+        date: "1 week ago",
+        rating: 5,
+        avatar: "R"
+    },
+    {
+        name: "Anita Desai",
+        role: "Local Shop Owner",
+        quote: "Finally, a tool built for Indian businesses. The Hindi support is perfect! My customers feel like they are talking to a human.",
+        location: "Pune, Maharashtra",
+        date: "3 days ago",
+        rating: 5,
+        avatar: "A"
+    },
+    {
+        name: "Vikram Singh",
+        role: "Wholesaler",
+        quote: "Bulk catalog sharing on WhatsApp was a pain. WaveGroww made it one-click. Best investment this year.",
+        location: "Delhi NCR",
+        date: "5 days ago",
+        rating: 4,
+        avatar: "V"
+    },
+    {
+        name: "Sanya Malhotra",
+        role: "Boutique Owner",
+        quote: "The lead collection is a lifesaver. I never lose a customer number now. 100% recommended for small brands.",
+        location: "Chandigarh",
+        date: "1 week ago",
+        rating: 5,
+        avatar: "S"
+    }
+];
 
-    useEffect(() => {
-        fetchReviews();
-    }, []);
-
-    const fetchReviews = async () => {
-        try {
-            const res = await fetch("/api/reviews");
-            if (res.ok) {
-                const data = await res.json();
-                setReviews(data);
-            }
-        } catch (err) {
-            console.error("Error fetching reviews:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-        setError("");
-
-        try {
-            const res = await fetch("/api/reviews", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            if (res.ok) {
-                setSubmitted(true);
-                setFormData({ userName: "", userRole: "", rating: 5, comment: "" });
-            } else {
-                const data = await res.json();
-                setError(data.error || "Failed to submit review");
-            }
-        } catch (err) {
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
+export default function ReviewsPage() {
     return (
         <div className="min-h-screen bg-background">
-            {/* Hero Section */}
-            <section className="py-20 lg:py-32 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
-                <div className="container mx-auto px-4 text-center max-w-4xl">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                        Trusted by <span className="gradient-text">Indian Sellers</span>
-                    </h1>
-                    <p className="text-lg text-muted-foreground mb-8">
-                        See what our users are saying about WaveGroww.
-                    </p>
-                </div>
-            </section>
-
-            {/* Reviews Grid */}
-            <section className="py-16">
-                <div className="container mx-auto px-4">
-                    {loading ? (
-                        <div className="flex justify-center py-12">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            {/* Header */}
+            <div className="py-12 border-b border-border bg-muted/20">
+                <div className="container mx-auto px-4 md:px-6 lg:px-8">
+                    <Link href="/" className="inline-flex items-center gap-2 text-primary font-bold mb-8 hover:underline">
+                        <ArrowLeft className="w-4 h-4" /> Back to Home
+                    </Link>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div>
+                            <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight">
+                                Seller <span className="gradient-text">Trust 2k+</span>
+                            </h1>
+                            <p className="text-xl text-muted-foreground max-w-2xl">
+                                See why thousands of Indian sellers rely on WaveGroww to automate their WhatsApp business.
+                            </p>
                         </div>
-                    ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                            {reviews.length > 0 ? (
-                                reviews.map((review) => (
-                                    <div key={review.id} className="glass-card p-6 rounded-xl hover:shadow-lg transition-all">
-                                        <div className="flex items-center gap-1 mb-4">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className={`w-4 h-4 ${i < review.rating ? "fill-secondary text-secondary" : "text-muted"}`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <p className="text-muted-foreground mb-6 italic">"{review.comment}"</p>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                                <User className="w-5 h-5 text-primary" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold">{review.userName}</p>
-                                                <p className="text-sm text-muted-foreground">{review.userRole || "User"}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-12 text-muted-foreground">
-                                    No reviews yet. Be the first to share your experience!
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* Submission Form */}
-            <section className="py-16 bg-muted/30">
-                <div className="container mx-auto px-4 max-w-2xl">
-                    <div className="glass-card p-8 rounded-2xl">
-                        <h2 className="text-2xl font-bold mb-6 text-center">Share Your Experience</h2>
-
-                        {submitted ? (
-                            <div className="text-center py-8">
-                                <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle2 className="w-8 h-8 text-success" />
-                                </div>
-                                <h3 className="text-xl font-semibold mb-2">Thank You!</h3>
-                                <p className="text-muted-foreground">Your review has been submitted and is pending approval.</p>
-                                <button
-                                    onClick={() => setSubmitted(false)}
-                                    className="mt-6 text-primary font-medium hover:underline"
-                                >
-                                    Submit another review
-                                </button>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Your Name</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.userName}
-                                        onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                                        placeholder="e.g. Rahul Verma"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Role / Business Type (Optional)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.userRole}
-                                        onChange={(e) => setFormData({ ...formData, userRole: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                                        placeholder="e.g. Meesho Seller"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Rating</label>
-                                    <div className="flex gap-2">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <button
-                                                key={star}
-                                                type="button"
-                                                title={`Rate ${star} stars`}
-                                                onClick={() => setFormData({ ...formData, rating: star })}
-                                                className="p-1 focus:outline-none transition-transform hover:scale-110"
-                                            >
-                                                <Star
-                                                    className={`w-8 h-8 ${star <= formData.rating ? "fill-secondary text-secondary" : "text-muted-foreground/30"}`}
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Your Review</label>
-                                    <textarea
-                                        required
-                                        rows={4}
-                                        value={formData.comment}
-                                        onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                                        placeholder="Tell us about your experience..."
-                                    />
-                                </div>
-
-                                {error && <p className="text-destructive text-sm text-center">{error}</p>}
-
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Submit Review
-                                </button>
-                            </form>
-                        )}
+                        <button className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black shadow-xl hover:shadow-primary/20 transition-all hover:scale-105">
+                            <Plus className="w-5 h-5" />
+                            Add Your Review
+                        </button>
                     </div>
                 </div>
-            </section>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="container mx-auto px-4 py-16">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20 bg-card border border-border p-10 rounded-[2.5rem] shadow-sm">
+                    <div className="text-center">
+                        <div className="text-4xl font-black text-primary mb-1">4.9/5</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Average Rating</div>
+                    </div>
+                    <div className="text-center border-l border-border">
+                        <div className="text-4xl font-black text-primary mb-1">2,100+</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Certified Reviews</div>
+                    </div>
+                    <div className="text-center border-l border-border">
+                        <div className="text-4xl font-black text-primary mb-1">98%</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Seller Satisfaction</div>
+                    </div>
+                    <div className="text-center border-l border-border">
+                        <div className="text-4xl font-black text-primary mb-1">15+</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Indian Cities</div>
+                    </div>
+                </div>
+
+                {/* Reviews Grid */}
+                <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+                    {allReviews.map((review, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="break-inside-avoid bg-card border border-border p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all"
+                        >
+                            <div className="flex gap-1 mb-6 text-amber-400">
+                                {[...Array(review.rating)].map((_, i) => (
+                                    <Star key={i} className="w-4 h-4 fill-current" />
+                                ))}
+                            </div>
+                            <p className="text-muted-foreground font-medium mb-8 leading-relaxed italic">
+                                "{review.quote}"
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary">
+                                    {review.avatar}
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                    <p className="font-bold truncate">{review.name}</p>
+                                    <p className="text-xs text-muted-foreground font-medium truncate">{review.role} • {review.location}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
 
             <Footer />
         </div>

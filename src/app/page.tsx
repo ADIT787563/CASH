@@ -27,6 +27,16 @@ const ComparisonSection = dynamic(() => import("@/components/home/ComparisonSect
   ssr: true
 });
 
+const TestimonialsSection = dynamic(() => import("@/components/home/TestimonialsSection").then(mod => ({ default: mod.TestimonialsSection })), {
+  loading: () => <div className="h-96" />,
+  ssr: true
+});
+
+const PricingSection = dynamic(() => import("@/components/home/PricingSection").then(mod => ({ default: mod.PricingSection })), {
+  loading: () => <div className="h-96" />,
+  ssr: true
+});
+
 const Footer = dynamic(() => import("@/components/home/Footer").then(mod => ({ default: mod.Footer })), {
   loading: () => <div className="h-64" />,
   ssr: true
@@ -89,6 +99,12 @@ export default function Home() {
       </Suspense>
       <Suspense fallback={<div className="h-96" />}>
         <ComparisonSection />
+      </Suspense>
+      <Suspense fallback={<div className="h-96" />}>
+        <PricingSection />
+      </Suspense>
+      <Suspense fallback={<div className="h-96" />}>
+        <TestimonialsSection />
       </Suspense>
       <Suspense fallback={<div className="h-64" />}>
         <CTASection />

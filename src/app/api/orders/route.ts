@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { orders, orderItems, payments, businesses, orderSequences } from '@/db/schema';
 import { razorpay, RAZORPAY_KEY_ID } from '@/lib/razorpay';
 import { eq, desc, and } from 'drizzle-orm';
-import { auth } from '@/lib/auth';
+import { auth, getCurrentUser } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -23,17 +23,15 @@ const createOrderSchema = z.object({
 // GET /api/orders - List orders for seller
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers()
-    });
+    const user = await getCurrentUser(req);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Fetch Orders
     const userOrders = await db.query.orders.findMany({
-      where: eq(orders.userId, session.user.id),
+      where: eq(orders.userId, user.id),
       orderBy: [desc(orders.createdAt)],
       with: {
         // Assuming relations are set up. If not, we might not get items directly here easily 

@@ -201,8 +201,99 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
         });
     };
 
-    const handleUpgrade = (plan: PricingPlan) => {
-        toast.success(`Upgrading to ${plan.planName} plan...`);
+    // Load Razorpay script
+    // const { isLoading: isScriptLoading } = useScript("https://checkout.razorpay.com/v1/checkout.js"); // Assuming useScript hook exists or we just rely on Next.js Script in layout
+
+    const handleUpgrade = async (plan: PricingPlan) => {
+        // Prevent upgrading to same plan
+        if (plan.planId === subscription.plan) return;
+
+        // Prevent upgrading to free plan (downgrade logic should be different)
+        if (plan.planId === 'starter' || plan.planId === 'free') {
+            toast.error("Please contact support to downgrade your plan.");
+            return;
+        }
+
+        toast.loading(`Initializing payment for ${plan.planName}...`);
+
+        try {
+            // 1. Create Order
+            const res = await fetch('/api/payment/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: plan.planId,
+                    billingCycle: 'monthly', // Defaulting to monthly for now
+                    amount: plan.monthlyPrice, // Passed in Rupees
+                })
+            });
+
+            if (!res.ok) throw new Error("Failed to create order");
+
+            const orderData = await res.json();
+
+            // 2. Open Razorpay
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Ensure this env var is available
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "WaveGroww",
+                description: `Upgrade to ${plan.planName} Plan`,
+                order_id: orderData.orderId,
+                handler: async function (response: any) {
+                    toast.loading("Verifying payment...");
+                    try {
+                        // 3. Verify Payment
+                        const verifyRes = await fetch('/api/payment/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                planId: plan.planId,
+                                billingCycle: 'monthly',
+                                amount: plan.monthlyPrice
+                            })
+                        });
+
+                        const verifyData = await verifyRes.json();
+
+                        if (verifyData.success) {
+                            toast.success("Payment Successful! Upgrading plan...");
+                            window.location.reload();
+                        } else {
+                            toast.error("Payment verification failed. Please contact support.");
+                        }
+                    } catch (error) {
+                        console.error("Verification error", error);
+                        toast.error("Payment verification failed");
+                    }
+                },
+                prefill: {
+                    // name: "User Name", // We could prefill if we have user context
+                    // email: "user@example.com",
+                    // contact: "9999999999"
+                },
+                notes: {
+                    plan: plan.planId
+                },
+                theme: {
+                    color: "#4f46e5"
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', function (response: any) {
+                toast.error(`Payment Failed: ${response.error.description}`);
+            });
+            rzp.open();
+            toast.dismiss();
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to initiate payment");
+        }
     };
 
     const handleCancelSubscription = () => {
@@ -230,6 +321,30 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                 <p className="text-xs text-muted-foreground mt-1">
                     Every paid plan starts with a 3-day limited-feature trial — no card required.
                 </p>
+                {/* Trial Button */}
+                {(activePlan?.planId === 'starter' || activePlan?.planId === 'free') && (
+                    <button
+                        onClick={async () => {
+                            if (confirm("Start your 3-Day Free Trial? You will get limited access to paid features.")) {
+                                try {
+                                    const res = await fetch('/api/billing/start-trial', { method: 'POST' });
+                                    if (res.ok) {
+                                        toast.success("Trial Started! Refreshing...");
+                                        window.location.reload();
+                                    } else {
+                                        const msg = await res.text();
+                                        toast.error(msg || "Failed to start trial");
+                                    }
+                                } catch (e) {
+                                    toast.error("Something went wrong");
+                                }
+                            }
+                        }}
+                        className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                    >
+                        Start 3-Day Free Trial
+                    </button>
+                )}
             </div>
 
             {/* Current Subscription */}

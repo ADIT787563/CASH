@@ -159,7 +159,11 @@ export default function ChatWindow({ customer }: ChatWindowProps) {
             </div>
 
             {/* Input Area */}
-            <ChatInput onSend={handleSendMessage} />
+            <ChatInput
+                onSend={handleSendMessage}
+                customerId={customer.id} // Passing ID to allow AI suggestion logic inside input or passed down
+            />
+
         </div>
     );
 }

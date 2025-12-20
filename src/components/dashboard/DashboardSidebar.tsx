@@ -17,7 +17,7 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Home", href: "/dashboard", icon: LayoutDashboard },
     { label: "Leads", href: "/dashboard/leads", icon: Users },
     { label: "Catalog", href: "/dashboard/catalog", icon: ShoppingBag },
     { label: "AI Chatbot", href: "/dashboard/chatbot", icon: Bot },

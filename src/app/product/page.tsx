@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Footer } from "@/components/home/Footer";
+import { PricingSection } from "@/components/home/PricingSection";
 import {
   Bot,
   Package,
@@ -50,20 +51,7 @@ export default function ProductPage() {
   const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  const plans = [
-    {
-      planName: "Growth",
-      monthlyPrice: 1699,
-    },
-    {
-      planName: "Pro / Agency",
-      monthlyPrice: 5,
-    },
-    {
-      planName: "Enterprise",
-      monthlyPrice: 8999,
-    }
-  ];
+
 
   useEffect(() => {
     // Track page view
@@ -100,10 +88,7 @@ export default function ProductPage() {
     setDemoModalOpen(true);
   };
 
-  const handlePlanClick = (plan: string) => {
-    trackEvent("product.plan_click", { plan });
-    router.push("/plans");
-  };
+
 
   const features = [
     {
@@ -192,18 +177,21 @@ export default function ProductPage() {
       role: "Meesho Seller",
       quote: "WaveGroww increased my conversions by 3x! The AI chatbot handles everything while I sleep.",
       avatar: "P",
+      rating: 5
     },
     {
       name: "Rajesh Kumar",
       role: "Shopify Store Owner",
       quote: "The auto-catalog feature saved me 10 hours a week. Highly recommend for Indian sellers!",
       avatar: "R",
+      rating: 5
     },
     {
       name: "Anita Desai",
       role: "Local Shop Owner",
       quote: "Finally, a tool built for Indian businesses. The Hindi support is perfect!",
       avatar: "A",
+      rating: 5
     },
   ];
 
@@ -469,50 +457,8 @@ export default function ProductPage() {
           </div>
         </section>
 
-        {/* Plans Preview */}
-        <section id="pricing" className="py-20">
-          <div className="container mx-auto px-4 md:px-6 lg:px-8">
-            <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 border border-border rounded-2xl p-8 md:p-12">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Simple, <span className="gradient-text">Transparent Pricing</span>
-                </h2>
-                <p className="text-lg text-muted-foreground mb-2">Choose the plan that fits your business</p>
-                <p className="text-sm text-primary font-medium">
-                  ✨ 3-day limited-feature trial for every plan — no card required
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-4 mb-8">
-                {plans.map((plan, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handlePlanClick(plan.planName)}
-                    className="bg-card border border-border rounded-xl p-6 hover:border-primary hover:shadow-lg transition-all text-center group"
-                  >
-                    <h3 className="text-lg font-semibold mb-2">{plan.planName}</h3>
-                    <p className="text-2xl font-bold text-primary">
-                      {plan.monthlyPrice ? `₹${plan.monthlyPrice.toLocaleString("en-IN")}` : "Custom"}
-                    </p>
-                    {plan.monthlyPrice > 0 && (
-                      <p className="text-sm text-muted-foreground">/month</p>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={() => handleCTAClick("view_plans")}
-                  className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all inline-flex items-center gap-2"
-                >
-                  Compare All Plans
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Pricing Section */}
+        <PricingSection />
 
         {/* Use Cases */}
         <section className="py-20 bg-muted/30">
@@ -566,8 +512,8 @@ export default function ProductPage() {
                   className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-secondary text-secondary" />
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-current text-yellow-500" />
                     ))}
                   </div>
                   <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>

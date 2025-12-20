@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { businessSettings } from '@/db/schema';
+import { businessSettings, businessProfiles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -11,109 +11,38 @@ function getUserId(request: NextRequest): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = getUserId(request);
-
-    const settings = await db.select()
-      .from(businessSettings)
-      .where(eq(businessSettings.userId, userId))
-      .limit(1);
-
-    if (settings.length === 0) {
-      return NextResponse.json({
-        error: 'Business settings not found',
-        code: 'SETTINGS_NOT_FOUND'
-      }, { status: 404 });
-    }
-
-    return NextResponse.json(settings[0], { status: 200 });
-  } catch (error) {
-    console.error('GET error:', error);
-    return NextResponse.json({
-      error: 'Internal server error: ' + (error as Error).message
-    }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
     const user = await getCurrentUser(request);
     if (!user) {
-      return NextResponse.json({
-        error: 'Authentication required',
-        code: 'AUTHENTICATION_REQUIRED'
-      }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-
-    if ('userId' in body || 'user_id' in body) {
-      return NextResponse.json({
-        error: "User ID cannot be provided in request body",
-        code: "USER_ID_NOT_ALLOWED"
-      }, { status: 400 });
-    }
-
-    const {
-      businessName,
-      whatsappNumber,
-      businessCategory,
-      businessDescription,
-      catalogUrl,
-      businessHours,
-      themeConfig
-    } = body;
-
-    // ... (validations remain same)
-
-    if (!businessName || typeof businessName !== 'string' || businessName.trim() === '') {
-      return NextResponse.json({
-        error: 'Business name is required and cannot be empty',
-        code: 'MISSING_BUSINESS_NAME'
-      }, { status: 400 });
-    }
-
-    if (!whatsappNumber || typeof whatsappNumber !== 'string' || whatsappNumber.trim() === '') {
-      return NextResponse.json({
-        error: 'WhatsApp number is required and cannot be empty',
-        code: 'MISSING_WHATSAPP_NUMBER'
-      }, { status: 400 });
-    }
-
-    const existingSettings = await db.select()
+    // Fetch both settings and profile
+    const [settings] = await db.select()
       .from(businessSettings)
       .where(eq(businessSettings.userId, user.id))
       .limit(1);
 
-    if (existingSettings.length > 0) {
-      return NextResponse.json({
-        error: 'Settings already exist for this user',
-        code: 'DUPLICATE_SETTINGS'
-      }, { status: 400 });
+    const [profile] = await db.select()
+      .from(businessProfiles)
+      .where(eq(businessProfiles.userId, user.id))
+      .limit(1);
+
+    if (!settings && !profile) {
+      // Return empty default state instead of 404 to allow form to load
+      return NextResponse.json({}, { status: 200 });
     }
 
-    const now = new Date().toISOString();
+    // Merge data
+    const mergedData = {
+      ...(settings || {}),
+      gstin: profile?.gstNumber || null,
+      address: profile?.street || null, // Mapping single address field to street
+      businessEmail: profile?.businessEmail || null,
+    };
 
-    const newSettings = await db.insert(businessSettings)
-      .values({
-        userId: user.id,
-        businessName: businessName.trim(),
-        whatsappNumber: whatsappNumber.trim(),
-        businessCategory: businessCategory ? businessCategory.trim() : null,
-        businessDescription: businessDescription ? businessDescription.trim() : null,
-        catalogUrl: catalogUrl ? catalogUrl.trim() : null,
-        businessHours: businessHours ? (typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours)) : null,
-        themeConfig: themeConfig ? (typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig)) : null,
-        logoUrl: body.logoUrl ? body.logoUrl.trim() : null,
-        logoUrlDark: body.logoUrlDark ? body.logoUrlDark.trim() : null,
-        maintenanceMode: false,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning();
-
-    return NextResponse.json(newSettings[0], { status: 201 });
+    return NextResponse.json(mergedData, { status: 200 });
   } catch (error) {
-    console.error('POST error:', error);
+    console.error('GET error:', error);
     return NextResponse.json({
       error: 'Internal server error: ' + (error as Error).message
     }, { status: 500 });
@@ -132,25 +61,6 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
 
-    if ('userId' in body || 'user_id' in body) {
-      return NextResponse.json({
-        error: "User ID cannot be provided in request body",
-        code: "USER_ID_NOT_ALLOWED"
-      }, { status: 400 });
-    }
-
-    const existingSettings = await db.select()
-      .from(businessSettings)
-      .where(eq(businessSettings.userId, user.id))
-      .limit(1);
-
-    if (existingSettings.length === 0) {
-      return NextResponse.json({
-        error: 'Business settings not found',
-        code: 'SETTINGS_NOT_FOUND'
-      }, { status: 404 });
-    }
-
     const {
       businessName,
       whatsappNumber,
@@ -158,75 +68,80 @@ export async function PUT(request: NextRequest) {
       businessDescription,
       catalogUrl,
       businessHours,
-      themeConfig
+      themeConfig,
+      gstin,
+      address,
+      logoUrl,
+      logoUrlDark
     } = body;
 
-    const updates: Record<string, any> = {
-      updatedAt: new Date().toISOString(),
+    const now = new Date().toISOString();
+
+    // 1. Upsert businessSettings
+    const [existingSettings] = await db.select()
+      .from(businessSettings)
+      .where(eq(businessSettings.userId, user.id))
+      .limit(1);
+
+    const settingsValues = {
+      businessName: businessName?.trim() || "My Business",
+      whatsappNumber: whatsappNumber?.trim() || "",
+      businessCategory: businessCategory?.trim() || null,
+      businessDescription: businessDescription?.trim() || null,
+      catalogUrl: catalogUrl?.trim() || null,
+      businessHours: businessHours ? (typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours)) : null,
+      themeConfig: themeConfig ? (typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig)) : null,
+      logoUrl: logoUrl?.trim() || null,
+      logoUrlDark: logoUrlDark?.trim() || null,
+      updatedAt: now,
     };
 
-    if (businessName !== undefined) {
-      if (typeof businessName !== 'string' || businessName.trim() === '') {
-        return NextResponse.json({
-          error: 'Business name cannot be empty',
-          code: 'INVALID_BUSINESS_NAME'
-        }, { status: 400 });
-      }
-      updates.businessName = businessName.trim();
+    if (existingSettings) {
+      await db.update(businessSettings)
+        .set(settingsValues)
+        .where(eq(businessSettings.userId, user.id));
+    } else {
+      await db.insert(businessSettings).values({
+        userId: user.id,
+        ...settingsValues,
+        createdAt: now,
+      });
     }
 
-    if (whatsappNumber !== undefined) {
-      if (typeof whatsappNumber !== 'string' || whatsappNumber.trim() === '') {
-        return NextResponse.json({
-          error: 'WhatsApp number cannot be empty',
-          code: 'INVALID_WHATSAPP_NUMBER'
-        }, { status: 400 });
-      }
-      updates.whatsappNumber = whatsappNumber.trim();
+    // 2. Upsert businessProfiles (for GST/Address)
+    const [existingProfile] = await db.select()
+      .from(businessProfiles)
+      .where(eq(businessProfiles.userId, user.id))
+      .limit(1);
+
+    const profileValues = {
+      fullName: user.name || "Business Owner", // Required field fallback
+      businessName: businessName?.trim() || "My Business",
+      businessCategory: businessCategory?.trim() || "General",
+      phoneNumber: whatsappNumber?.trim() || "",
+      businessEmail: user.email || "",
+      street: address?.trim() || "",
+      city: "Unknown", // Required in schema but not in form
+      state: "Unknown", // Required in schema but not in form
+      pincode: "000000", // Required in schema but not in form
+      gstNumber: gstin?.trim() || null,
+      updatedAt: now,
+    };
+
+    if (existingProfile) {
+      await db.update(businessProfiles)
+        .set(profileValues)
+        .where(eq(businessProfiles.userId, user.id));
+    } else {
+      await db.insert(businessProfiles).values({
+        userId: user.id,
+        ...profileValues,
+        createdAt: now,
+      });
     }
 
-    if (businessCategory !== undefined) {
-      updates.businessCategory = businessCategory ? businessCategory.trim() : null;
-    }
+    return NextResponse.json({ success: true }, { status: 200 });
 
-    if (businessDescription !== undefined) {
-      updates.businessDescription = businessDescription ? businessDescription.trim() : null;
-    }
-
-    if (catalogUrl !== undefined) {
-      updates.catalogUrl = catalogUrl ? catalogUrl.trim() : null;
-    }
-
-    if (businessHours !== undefined) {
-      if (businessHours === null) {
-        updates.businessHours = null;
-      } else {
-        updates.businessHours = typeof businessHours === 'string' ? businessHours : JSON.stringify(businessHours);
-      }
-    }
-
-    if (themeConfig !== undefined) {
-      if (themeConfig === null) {
-        updates.themeConfig = null;
-      } else {
-        updates.themeConfig = typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig);
-      }
-    }
-
-    if (body.logoUrl !== undefined) {
-      updates.logoUrl = body.logoUrl ? body.logoUrl.trim() : null;
-    }
-
-    if (body.logoUrlDark !== undefined) {
-      updates.logoUrlDark = body.logoUrlDark ? body.logoUrlDark.trim() : null;
-    }
-
-    const updated = await db.update(businessSettings)
-      .set(updates)
-      .where(eq(businessSettings.userId, user.id))
-      .returning();
-
-    return NextResponse.json(updated[0], { status: 200 });
   } catch (error) {
     console.error('PUT error:', error);
     return NextResponse.json({

@@ -11,7 +11,11 @@ function getUserId(request: NextRequest): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = getUserId(request);
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = user.id;
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

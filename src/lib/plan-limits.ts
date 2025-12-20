@@ -49,8 +49,28 @@ const DEFAULT_LIMITS: PlanLimits = {
 /**
  * Get the user's current plan and limits
  */
+// 3-Day Trial Limits
+const TRIAL_LIMITS: PlanLimits = {
+    messages: 100, // Very limited
+    whatsappNumbers: 1,
+    templates: 1, // Only 1 template
+    leads: 20,
+    catalogs: 3,
+    teamMembers: 0,
+    aiAssistant: false, // No AI
+    productFields: 'basic',
+    bulkUpload: false,
+    aiDescriptions: false,
+    roleBasedAccess: false,
+    advancedAnalytics: false,
+    apiAccess: false,
+};
+
+/**
+ * Get the user's current plan and limits
+ */
 export async function getUserPlanLimits(userId: string): Promise<{
-    planId: PlanId | 'free';
+    planId: PlanId | 'free' | 'trial';
     planName: string;
     limits: PlanLimits;
 }> {
@@ -65,31 +85,56 @@ export async function getUserPlanLimits(userId: string): Promise<{
             ))
             .limit(1);
 
+        // Check if subscription exists and is not expired
         if (!subscription.length) {
             return {
                 planId: 'free',
-                planName: 'Free Trial',
+                planName: 'Free Tier',
                 limits: DEFAULT_LIMITS,
             };
         }
 
-        // Get plan details
+        const sub = subscription[0];
+
+        // Expiration Check
+        if (sub.currentPeriodEnd) {
+            const endDate = new Date(sub.currentPeriodEnd);
+            if (endDate < new Date()) {
+                // Expired
+                return {
+                    planId: 'free',
+                    planName: 'Expired (Free Tier)',
+                    limits: DEFAULT_LIMITS,
+                };
+            }
+        }
+
+        // Special handling for Trial Plan
+        if (sub.planId === 'trial') {
+            return {
+                planId: 'trial',
+                planName: '3-Day Trial',
+                limits: TRIAL_LIMITS,
+            };
+        }
+
+        // Get plan details for standard plans
         const plan = await db
             .select()
             .from(pricingPlans)
-            .where(eq(pricingPlans.planId, subscription[0].planId))
+            .where(eq(pricingPlans.planId, sub.planId))
             .limit(1);
 
         if (!plan.length) {
             return {
                 planId: 'free',
-                planName: 'Free Trial',
+                planName: 'Unknown Plan (Free)',
                 limits: DEFAULT_LIMITS,
             };
         }
 
         return {
-            planId: subscription[0].planId as PlanId,
+            planId: sub.planId as PlanId,
             planName: plan[0].planName,
             limits: plan[0].limits as PlanLimits,
         };
@@ -97,7 +142,7 @@ export async function getUserPlanLimits(userId: string): Promise<{
         console.error('Error getting user plan limits:', error);
         return {
             planId: 'free',
-            planName: 'Free Trial',
+            planName: 'Free Tier',
             limits: DEFAULT_LIMITS,
         };
     }

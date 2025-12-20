@@ -81,7 +81,7 @@ export const Header = () => {
   };
 
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Home", href: "/dashboard", icon: LayoutDashboard },
     { name: "AI Chatbot", href: "/chatbot", icon: Bot },
     { name: "Catalog", href: "/catalog", icon: Package },
     { name: "Leads", href: "/leads", icon: Users },
@@ -101,7 +101,7 @@ export const Header = () => {
   ];
 
   const profileMenuItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Home", href: "/dashboard", icon: LayoutDashboard },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
@@ -217,9 +217,9 @@ export const Header = () => {
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium">{user.name}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
-                    <p className="text-[10px] text-muted-foreground/70">
+                    {/* <p className="text-[10px] text-muted-foreground/70">
                       {(user as any).plan && (user as any).plan !== 'starter' ? (user as any).plan.charAt(0).toUpperCase() + (user as any).plan.slice(1) : "Free"} Plan
-                    </p>
+                    </p> */}
                   </div>
                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </button>
