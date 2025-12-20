@@ -6,6 +6,22 @@ import { motion } from "framer-motion";
 
 const plans = [
     {
+        id: "starter",
+        name: "Basic",
+        price: 999,
+        tagline: "Ideal for new sellers",
+        features: [
+            "Up to 20 products",
+            "250 auto-replies/mo",
+            "1 WhatsApp Number",
+            "Basic Auto-invoice",
+            "Basic Analytics",
+            "Email Support"
+        ],
+        popular: false,
+        cta: "Start Free Trial"
+    },
+    {
         id: "growth",
         name: "Growth",
         price: 1699,
@@ -35,7 +51,7 @@ const plans = [
             "Multi-Agent Support"
         ],
         popular: true,
-        cta: "Start Free Trial"
+        cta: "Subscribe Now"
     },
     {
         id: "enterprise",
@@ -93,7 +109,7 @@ export function PricingSection() {
                     </motion.p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
                     {plans.map((plan, index) => (
                         <motion.div
                             key={plan.id}
@@ -135,8 +151,8 @@ export function PricingSection() {
                             <Link
                                 href={plan.id === "enterprise" ? "/contact" : `/register?plan=${plan.id}`}
                                 className={`w-full py-4 rounded-2xl font-black text-center transition-all flex items-center justify-center gap-2 group ${plan.popular
-                                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
-                                        : "bg-foreground text-background hover:opacity-90"
+                                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl"
+                                    : "bg-foreground text-background hover:opacity-90"
                                     }`}
                             >
                                 {plan.cta}

@@ -93,32 +93,38 @@ export default function DashboardV2() {
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
   const [ordersData, setOrdersData] = useState<any[]>([]);
-
   const [businessSettings, setBusinessSettings] = useState<any>(null);
+  const [aiConfig, setAiConfig] = useState<any>(null);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("bearer_token");
 
-      // Parallel Fetch: Analytics, Orders, Business Settings
-      const [analyticsRes, ordersRes, settingsRes] = await Promise.all([
+      // Parallel Fetch: Analytics, Orders, Business Settings, AI Config, Payment Settings
+      const [analyticsRes, ordersRes, settingsRes, aiRes, paymentRes] = await Promise.all([
         fetch("/api/analytics?limit=30", { headers: { Authorization: `Bearer ${token}` } }),
         fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } }),
-        fetch("/api/business-settings", { headers: { Authorization: `Bearer ${token}` } })
+        fetch("/api/business-settings", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/ai/config", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/payment-settings", { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       if (!analyticsRes.ok) throw new Error(`Analytics fetch failed: ${analyticsRes.status}`);
       if (!ordersRes.ok) throw new Error(`Orders fetch failed: ${ordersRes.status}`);
-      // Settings might be 404 if not set up, so handle gracefully
 
       const analyticsResult = await analyticsRes.json();
       const ordersResult = await ordersRes.json();
       const settingsResult = settingsRes.ok ? await settingsRes.json() : null;
+      const aiResult = aiRes.ok ? await aiRes.json() : null;
+      const paymentResult = paymentRes.ok ? await paymentRes.json() : null;
 
       setAnalyticsData(Array.isArray(analyticsResult) ? analyticsResult : []);
       setOrdersData(Array.isArray(ordersResult) ? ordersResult : []);
       if (settingsResult) setBusinessSettings(settingsResult);
+      if (aiResult?.config) setAiConfig(aiResult.config);
+      if (paymentResult?.settings) setPaymentSettings(paymentResult.settings);
 
     } catch (error) {
       console.error("Dashboard fetch error:", error);
@@ -230,6 +236,16 @@ export default function DashboardV2() {
     }
   }, [ordersData, analyticsData]);
 
+  // Logic for Status Pills
+  const waStatus = businessSettings?.whatsappNumber ? "ok" : "warn";
+  const waLabel = businessSettings?.whatsappNumber ? "WhatsApp API: Connected" : "WhatsApp API: Not Configured";
+
+  const aiStatus = aiConfig?.enabled ? "ok" : "warn";
+  const aiLabel = aiConfig?.enabled ? "AI Automation: Active" : "AI Automation: Paused";
+
+  const payStatus = paymentSettings?.razorpayKeyId ? "ok" : "warn";
+  const payLabel = paymentSettings?.razorpayKeyId ? "Payment Gateway: Operational" : "Payment Gateway: Setup Needed";
+
   return (
     <div className="space-y-8">
       {/* Header with Filter */}
@@ -252,9 +268,9 @@ export default function DashboardV2() {
       {/* SECTION 1: SYSTEM STATUS & QUICK ACTIONS */}
       <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
         <div className="flex flex-wrap gap-4 items-center">
-          <StatusPill label="WhatsApp API: Connected" status="ok" />
-          <StatusPill label="AI Automation: Active" status="ok" />
-          <StatusPill label="Payment Gateway: Operational" status="ok" />
+          <StatusPill label={waLabel} status={waStatus} />
+          <StatusPill label={aiLabel} status={aiStatus} />
+          <StatusPill label={payLabel} status={payStatus} />
         </div>
 
         {/* Quick Share Widget */}

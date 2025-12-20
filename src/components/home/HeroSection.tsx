@@ -1,196 +1,120 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Sparkles, TrendingUp, MessageCircle, Bot } from "lucide-react";
-import { LogoStrip } from "./LogoStrip";
-import { motion, Variants } from "framer-motion";
-
-const stats = [
-  { value: "10,000+", label: "Active Sellers" },
-  { value: "5M+", label: "Messages Automated" },
-  { value: "3x", label: "Conversion Increase" },
-  { value: "24/7", label: "Instant Replies" },
-];
-
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.8, ease: "easeOut" }
-  }
-};
-
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2
-    }
-  }
-};
-
-const floatingAnimation: Variants = {
-  initial: { y: 0 },
-  animate: {
-    y: [0, -15, 0],
-    transition: {
-      duration: 5,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
-};
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 
 export function HeroSection() {
   const { data: session } = useSession();
 
   return (
-    <section id="product" className="relative overflow-hidden pt-10">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/5 animate-gradient" />
+    <section className="relative pt-24 pb-32 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
 
-      {/* Floating Decorative Elements */}
-      <motion.div
-        animate={{
-          rotate: 360,
-          scale: [1, 1.1, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none"
-      />
-      <motion.div
-        animate={{
-          rotate: -360,
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute -bottom-24 -left-24 w-96 h-96 bg-accent/20 rounded-full blur-[100px] pointer-events-none"
-      />
-
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-        className="relative w-full px-4 md:px-6 lg:px-8 py-20 lg:py-32"
-      >
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          {/* Badge */}
+          {/* LEFT COLUMN: Text Content */}
           <motion.div
-            variants={fadeInUp}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-glow-pulse backdrop-blur-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-6 text-left"
           >
-            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-            <span className="text-sm font-semibold tracking-wide text-primary uppercase">India's #1 WhatsApp AI Platform</span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            variants={fadeInUp}
-            className="text-5xl md:text-7xl font-extrabold mb-6 leading-[1.1] tracking-tight text-foreground"
-          >
-            Automate WhatsApp,
-            <br />
-            <span className="inline-block mt-2 bg-gradient-to-r from-primary via-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">
-              Scale Your Sales
+            {/* Label */}
+            <span className="inline-block py-1 px-3 rounded-md bg-gray-100 text-gray-800 text-xs font-semibold tracking-wide uppercase mb-6">
+              WhatsApp Automation for Businesses
             </span>
-          </motion.h1>
 
-          {/* Subheadline */}
-          <motion.p
-            variants={fadeInUp}
-            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
-          >
-            Empowering 10,000+ Indian sellers with AI that never sleeps. Automate inquiries, catalogs, and orders with personlized WhatsApp intelligence.
-          </motion.p>
+            {/* Headline */}
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
+              Automate WhatsApp conversations
+              <span className="block text-indigo-600 mt-1">with control — not chaos</span>
+            </h1>
 
-          {/* CTA Buttons */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-col sm:flex-row gap-5 justify-center mb-16"
-          >
-            <Link href={session?.user ? "/dashboard" : "/register"}>
-              <motion.div
-                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(26, 115, 232, 0.4)" }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center justify-center gap-2 px-10 py-4 bg-primary text-primary-foreground rounded-xl font-bold transition-all shadow-xl cursor-pointer text-lg group"
-              >
-                {session?.user ? "Go to Dashboard" : "Get Started Free"}
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </motion.div>
-            </Link>
-            <Link href="/plans">
-              <motion.div
-                whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.8)" }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center justify-center gap-2 px-10 py-4 bg-background/50 backdrop-blur-md text-foreground border border-border rounded-xl font-bold transition-all shadow-md cursor-pointer text-lg"
-              >
-                View Pricing
-              </motion.div>
-            </Link>
-          </motion.div>
+            {/* Sub-headline */}
+            <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-2xl">
+              WaveGroww helps businesses reply, sell, and manage orders on WhatsApp using AI,
+              with templates and rules that keep every conversation accurate and controlled.
+            </p>
 
-          {/* Features Preview (Decorative) */}
-          <motion.div
-            variants={fadeInUp}
-            className="relative max-w-5xl mx-auto"
-          >
-            <motion.div
-              variants={floatingAnimation}
-              initial="initial"
-              animate="animate"
-              className="glass-card p-4 rounded-2xl border-white/20 shadow-2xl relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <img
-                src="/images/dashboard-preview.png"
-                alt="WaveGroww Dashboard"
-                className="rounded-xl border border-border shadow-inner w-full h-auto grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              {/* Overlay elements for "Interactive" look */}
+            {/* Key Value Bullets */}
+            <ul className="space-y-4 mb-10">
+              {[
+                "24/7 AI automation with strict business rules",
+                "Templates to ensure accurate pricing, payments, and policies",
+                "Central dashboard to manage leads, orders, and conversations"
+              ].map((item, i) => (
+                <li key={i} className="flex items-start">
+                  <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5 mr-3">
+                    <Check className="h-4 w-4 text-green-600" />
+                  </div>
+                  <span className="text-gray-700 font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
 
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              <Link href={session?.user ? "/dashboard" : "/register"}>
+                <div className="inline-flex justify-center items-center px-8 py-3.5 border border-transparent text-base font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 w-full sm:w-auto text-center cursor-pointer shadow-sm hover:shadow-md">
+                  Start free trial
+                </div>
+              </Link>
+              <Link href="/demo">
+                <div className="inline-flex justify-center items-center px-8 py-3.5 border border-gray-200 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 w-full sm:w-auto text-center cursor-pointer">
+                  View demo
+                </div>
+              </Link>
+            </div>
 
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Dynamic Background Icons */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
-          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 4, repeat: Infinity }} className="absolute top-1/4 left-10"><Sparkles className="w-12 h-12" /></motion.div>
-          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute top-1/3 right-10"><MessageCircle className="w-16 h-16" /></motion.div>
-          <motion.div animate={{ x: [0, 20, 0] }} transition={{ duration: 6, repeat: Infinity }} className="absolute bottom-1/4 left-1/4"><TrendingUp className="w-20 h-20" /></motion.div>
-        </div>
-
-        {/* Stats Section */}
-        <motion.div
-          variants={staggerContainer}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto mt-24 border-t border-border/50 pt-16"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              variants={fadeInUp}
-              whileHover={{ y: -5 }}
-              className="text-center group"
-            >
-              <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-3 drop-shadow-sm group-hover:scale-110 transition-transform">
-                {stat.value}
+            {/* Trust Signals */}
+            <div className="border-t border-gray-100 pt-8 mt-8">
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-4">
+                Trusted by growing businesses across India
+              </p>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-700 font-medium items-center">
+                <span>10,000+ Active Sellers</span>
+                <span className="text-gray-300 h-1 w-1 rounded-full bg-gray-300"></span>
+                <span>5M+ Messages Automated</span>
+                <span className="text-gray-300 h-1 w-1 rounded-full bg-gray-300"></span>
+                <span>3× Conversion Increase</span>
               </div>
-              <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-80">{stat.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </motion.div>
+            </div>
+          </motion.div>
 
-      <LogoStrip />
+          {/* RIGHT COLUMN: Product Visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="lg:col-span-6 mt-16 lg:mt-0 relative"
+          >
+            {/* Browser Window Frame */}
+            <div className="relative rounded-xl bg-white ring-1 ring-gray-900/5 shadow-2xl overflow-hidden">
+              {/* Window Controls */}
+              <div className="h-8 bg-gray-50 border-b border-gray-100 flex items-center px-4 space-x-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-red-400"></div>
+                <div className="h-2.5 w-2.5 rounded-full bg-yellow-400"></div>
+                <div className="h-2.5 w-2.5 rounded-full bg-green-400"></div>
+              </div>
+              {/* Image Container */}
+              <div className="relative aspect-[16/10] bg-gray-50 group">
+                <img
+                  src="/images/dashboard-preview.png"
+                  alt="WaveGroww AI Automation Dashboard"
+                  className="w-full h-full object-cover object-top transform transition-transform duration-[20000ms] ease-linear group-hover:translate-y-[-10%]"
+                />
+                {/* Overlay Gradient (Subtle) */}
+                <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-b-xl pointer-events-none"></div>
+              </div>
+            </div>
+
+            {/* Decor Elements behind (Very subtle) */}
+            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-50 to-blue-50 rounded-2xl -z-10 blur-xl opacity-50"></div>
+          </motion.div>
+
+        </div>
+      </div>
     </section>
   );
 }

@@ -207,48 +207,100 @@ export default function ChatbotPage() {
                     {/* LEFT: CONFIGURATION */}
                     <div className="flex-1 space-y-10">
 
-                        {/* MODE SELECTOR */}
-                        <section>
-                            <h3 className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest pl-1">Operating Mode</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {[
-                                    { id: 'off', label: 'System Off', icon: Zap, desc: 'No automated replies' },
-                                    { id: 'template', label: 'Templates Only', icon: MessageSquare, desc: 'Strict keyword matching' },
-                                    { id: 'hybrid', label: 'AI Hybrid', icon: Bot, desc: 'AI + Human Handover' }
-                                ].map((mode) => {
-                                    const isSelected = config.mode === mode.id;
-                                    const Icon = mode.icon;
-                                    return (
-                                        <button
-                                            key={mode.id}
-                                            onClick={() => setConfig({ ...config, mode: mode.id as any })}
-                                            className={`
-                                                relative p-5 rounded-xl border text-left transition-all duration-300 group
-                                                ${isSelected
-                                                    ? 'bg-slate-900 border-slate-900 text-white dark:bg-zinc-900 dark:border-white/40 dark:shadow-[0_0_20px_rgba(255,255,255,0.1)]'
-                                                    : 'bg-white border-slate-200 text-slate-600 dark:bg-zinc-900/50 dark:border-zinc-800 dark:text-zinc-500 hover:border-slate-300 dark:hover:border-zinc-700'
-                                                }
-                                            `}
-                                        >
-                                            <Icon className={`w-5 h-5 mb-3 ${isSelected ? 'text-white dark:text-white dark:drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]' : 'text-slate-400'}`} />
-                                            <div className="font-bold text-sm mb-1">{mode.label}</div>
-                                            <div className={`text-xs ${isSelected ? 'text-slate-300 dark:text-zinc-400' : 'text-slate-400'}`}>{mode.desc}</div>
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        </section>
-
-                        {/* ADVANCED SETTINGS */}
-                        <section className="bg-white dark:bg-zinc-900/30 p-6 rounded-2xl border border-slate-200 dark:border-white/10 dark:backdrop-blur-sm">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <Activity className="w-4 h-4" />
-                                    Behavior Control
-                                </h3>
+                        {/* MAIN STATUS CONTROLS */}
+                        <div className="space-y-6">
+                            {/* Auto Reply Toggle */}
+                            <div className="bg-white dark:bg-zinc-900/30 p-6 rounded-2xl border border-slate-200 dark:border-white/10 dark:backdrop-blur-sm flex items-center justify-between group transition-all hover:border-indigo-500/30">
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 rounded-full ${config.mode !== 'off' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' : 'bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>
+                                        <MessageSquare className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Auto Reply</h3>
+                                        <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-[250px]">
+                                            Automatically respond to incoming inquiries instantly.
+                                        </p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={config.mode !== 'off'}
+                                        onChange={(e) => setConfig({ ...config, mode: e.target.checked ? 'hybrid' : 'off' })}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                                </label>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Always Active (24/7) Toggle */}
+                            <div className="bg-white dark:bg-zinc-900/30 p-6 rounded-2xl border border-slate-200 dark:border-white/10 dark:backdrop-blur-sm transition-all hover:border-indigo-500/30">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-full ${!config.businessHours.enabled ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-100 text-slate-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>
+                                            <Clock className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                                Always Active (24/7)
+                                                {!config.businessHours.enabled && (
+                                                    <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                        Enabled
+                                                    </span>
+                                                )}
+                                            </h3>
+                                            <p className="text-xs text-slate-500 dark:text-zinc-400">
+                                                AI handles inquiries even when you sleep.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={!config.businessHours.enabled}
+                                            onChange={(e) => setConfig({ ...config, businessHours: { ...config.businessHours, enabled: !e.target.checked } })}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+
+                                {/* Business Hours Config (Only if 24/7 is OFF) */}
+                                {config.businessHours.enabled && (
+                                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5 animate-in slide-in-from-top-2">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">Start Time</label>
+                                                <input
+                                                    type="time"
+                                                    value={config.businessHours.start}
+                                                    onChange={(e) => setConfig({ ...config, businessHours: { ...config.businessHours, start: e.target.value } })}
+                                                    className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">End Time</label>
+                                                <input
+                                                    type="time"
+                                                    value={config.businessHours.end}
+                                                    onChange={(e) => setConfig({ ...config, businessHours: { ...config.businessHours, end: e.target.value } })}
+                                                    className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ADVANCED SETTINGS COLLAPSIBLE */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Activity className="w-4 h-4 text-slate-400" />
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Advanced Behavior</h3>
+                            </div>
+
+                            <div className="bg-white dark:bg-zinc-900/30 p-6 rounded-2xl border border-slate-200 dark:border-white/10 dark:backdrop-blur-sm space-y-8">
                                 {/* Auto-Reply Confidence */}
                                 <div>
                                     <div className="flex justify-between mb-3">
@@ -258,6 +310,7 @@ export default function ChatbotPage() {
                                     <input
                                         type="range"
                                         min="0.5" max="1.0" step="0.01"
+                                        title="Confidence Threshold"
                                         value={config.confidenceThreshold}
                                         onChange={(e) => setConfig({ ...config, confidenceThreshold: parseFloat(e.target.value) })}
                                         className="w-full h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-900 dark:[&::-webkit-slider-thumb]:bg-white dark:[&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(255,255,255,0.5)]"
@@ -267,46 +320,19 @@ export default function ChatbotPage() {
                                     </p>
                                 </div>
 
-                                {/* Business Hours */}
+                                {/* Human Handover */}
                                 <div>
-                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-3">Availability</label>
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => setConfig({ ...config, businessHours: { ...config.businessHours, enabled: false } })}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${!config.businessHours.enabled
-                                                ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
-                                                : 'bg-slate-100 text-slate-500 dark:bg-zinc-800 dark:text-zinc-500'}`}
-                                        >
-                                            24/7
-                                        </button>
-                                        <button
-                                            onClick={() => setConfig({ ...config, businessHours: { ...config.businessHours, enabled: true } })}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${config.businessHours.enabled
-                                                ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
-                                                : 'bg-slate-100 text-slate-500 dark:bg-zinc-800 dark:text-zinc-500'}`}
-                                        >
-                                            Business Hours
-                                        </button>
-                                    </div>
-                                    {config.businessHours.enabled && (
-                                        <div className="mt-3 text-xs text-slate-500 font-mono">
-                                            Active: {config.businessHours.start} - {config.businessHours.end}
-                                        </div>
-                                    )}
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-3">Human Handover Keywords</label>
+                                    <input
+                                        type="text"
+                                        value={config.handoverRule}
+                                        onChange={(e) => setConfig({ ...config, handoverRule: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-white/50 transition-all font-mono"
+                                        placeholder="human, support, agent..."
+                                    />
                                 </div>
                             </div>
-
-                            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
-                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-3">Human Handover Keywords</label>
-                                <input
-                                    type="text"
-                                    value={config.handoverRule}
-                                    onChange={(e) => setConfig({ ...config, handoverRule: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-white/50 transition-all font-mono"
-                                    placeholder="human, support, agent..."
-                                />
-                            </div>
-                        </section>
+                        </div>
                     </div>
 
                     {/* RIGHT: LIVE SIMULATION */}

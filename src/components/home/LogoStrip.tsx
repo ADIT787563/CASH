@@ -17,7 +17,7 @@ export function LogoStrip() {
         <div className="w-full py-12 bg-muted/30 overflow-hidden">
             <div className="container mx-auto px-4">
                 <p className="text-center text-sm font-bold uppercase tracking-widest text-muted-foreground/80 mb-10">
-                    Trusted by industry leaders
+                    Powered by
                 </p>
 
                 <div className="relative flex overflow-hidden group">
@@ -31,7 +31,7 @@ export function LogoStrip() {
                         {TECH_PARTNERS.map((partner, index) => (
                             <div
                                 key={`partner-1-${index}`}
-                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                                className="flex-shrink-0 flex items-center justify-center h-12 hover:scale-110 transition-transform duration-300"
                             >
                                 <Image
                                     src={partner.logo}
@@ -46,7 +46,7 @@ export function LogoStrip() {
                         {TECH_PARTNERS.map((partner, index) => (
                             <div
                                 key={`partner-2-${index}`}
-                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                                className="flex-shrink-0 flex items-center justify-center h-12 hover:scale-110 transition-transform duration-300"
                             >
                                 <Image
                                     src={partner.logo}
@@ -61,7 +61,7 @@ export function LogoStrip() {
                         {TECH_PARTNERS.map((partner, index) => (
                             <div
                                 key={`partner-3-${index}`}
-                                className="flex-shrink-0 flex items-center justify-center h-12 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                                className="flex-shrink-0 flex items-center justify-center h-12 hover:scale-110 transition-transform duration-300"
                             >
                                 <Image
                                     src={partner.logo}

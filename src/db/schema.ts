@@ -1338,8 +1338,9 @@ export const reviews = sqliteTable("reviews", {
   userId: text("user_id").references(() => user.id),
   userName: text("user_name").notNull(),
   userRole: text("user_role"), // e.g. "Shopify Seller", "Reseller"
+  location: text("location"),
   rating: integer("rating").notNull(), // 1-5
   comment: text("comment").notNull(),
-  status: text("status").default("pending"), // pending, approved, rejected
+  status: text("status").default("approved"), // pending, approved, rejected
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });

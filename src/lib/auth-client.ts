@@ -6,7 +6,9 @@ export const authClient = createAuthClient({
    baseURL: typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL,
    fetchOptions: {
       headers: {
-         Authorization: `Bearer ${typeof window !== 'undefined' ? localStorage.getItem("bearer_token") : ""}`,
+         // Optimization: Do NOT set static Auth header here. It's evaluated once at load time.
+         // We rely on specific calls to inject the token or the browser to handle cookies.
+         // For 'better-auth', explicit token injection in `getSession` is safer.
       },
       onSuccess: async (ctx) => {
          let authToken = ctx.response.headers.get("set-auth-token");

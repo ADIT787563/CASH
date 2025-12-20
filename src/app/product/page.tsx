@@ -146,7 +146,7 @@ export default function ProductPage() {
     {
       title: "Integrations & Security",
       description:
-        "Razorpay/Paytm integration, Google Sheets export, Firebase sync. Bank & KYC-ready, 2FA, HTTPS, encrypted data-at-rest.",
+        "Razorpay/UPI integration, Google Sheets export, Supabase sync. Bank & KYC-ready, 2FA, HTTPS, encrypted data-at-rest.",
     },
   ];
 

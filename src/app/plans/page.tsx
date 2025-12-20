@@ -177,7 +177,7 @@ const PLANS = [
       "💳 Payment QR on invoice",
       "⚡ Smart inventory alerts",
     ],
-    cta: "Start Free Trial",
+    cta: "Subscribe Now",
     popular: false,
     showContactSales: false,
     bestFor: "Agencies and high-volume sellers"
