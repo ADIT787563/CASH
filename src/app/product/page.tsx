@@ -30,7 +30,23 @@ import {
   Star,
   X,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { usePricing } from "@/hooks/useConfig";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+};
 
 // Analytics helper
 const trackEvent = (eventName: string, data?: Record<string, any>) => {
@@ -227,10 +243,15 @@ export default function ProductPage() {
     <>
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-20 md:py-28">
+        <motion.section
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="relative overflow-hidden py-20 md:py-28"
+        >
           {/* Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 opacity-50" />
-          <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          <div className="absolute inset-0 opacity-5 bg-[image:radial-gradient(circle,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
 
           <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -320,10 +341,16 @@ export default function ProductPage() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Quick Features Cards */}
-        <section className="py-20 bg-muted/30">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20 bg-muted/30"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -358,10 +385,16 @@ export default function ProductPage() {
               })}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* How It Works */}
-        <section className="py-20">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -415,10 +448,17 @@ export default function ProductPage() {
               </button>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Deep Features Accordion */}
-        <section id="features" className="py-20 bg-muted/30">
+        <motion.section
+          id="features"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20 bg-muted/30"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -438,7 +478,7 @@ export default function ProductPage() {
                   <button
                     onClick={() => setExpandedFeature(expandedFeature === index ? null : index)}
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                    aria-expanded={expandedFeature === index}
+                    aria-expanded={expandedFeature === index ? "true" : "false"}
                   >
                     <span className="text-lg font-semibold text-left">{feature.title}</span>
                     <ChevronDown
@@ -455,13 +495,19 @@ export default function ProductPage() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Pricing Section */}
         <PricingSection />
 
         {/* Use Cases */}
-        <section className="py-20 bg-muted/30">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20 bg-muted/30"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -493,10 +539,16 @@ export default function ProductPage() {
               })}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Testimonials */}
-        <section className="py-20">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -536,10 +588,16 @@ export default function ProductPage() {
               </button>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* FAQ */}
-        <section className="py-20 bg-muted/30">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20 bg-muted/30"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -556,7 +614,7 @@ export default function ProductPage() {
                   <button
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                    aria-expanded={expandedFaq === index}
+                    aria-expanded={expandedFaq === index ? "true" : "false"}
                   >
                     <span className="text-lg font-semibold text-left">{faq.question}</span>
                     <ChevronDown
@@ -573,10 +631,16 @@ export default function ProductPage() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Final CTA */}
-        <section className="py-20">
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="py-20"
+        >
           <div className="container mx-auto px-4 md:px-6 lg:px-8">
             <div className="bg-gradient-to-r from-primary to-accent rounded-2xl p-12 md:p-16 text-center text-white">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -604,7 +668,7 @@ export default function ProductPage() {
               </p>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         <Footer />
       </div>
@@ -642,6 +706,7 @@ export default function ProductPage() {
             <button
               onClick={() => setDemoModalOpen(false)}
               className="absolute top-4 right-4 p-2 hover:bg-muted rounded-lg transition-colors"
+              aria-label="Close demo modal"
             >
               <X className="w-5 h-5" />
             </button>

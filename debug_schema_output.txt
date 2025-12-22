@@ -1,0 +1,50 @@
+ORDERS:
+CREATE TABLE `orders` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` text NOT NULL,
+	`lead_id` integer,
+	`customer_name` text NOT NULL,
+	`customer_phone` text NOT NULL,
+	`customer_email` text,
+	`shipping_address` text,
+	`subtotal` integer NOT NULL,
+	`tax_amount` integer DEFAULT 0,
+	`total_amount` integer NOT NULL,
+	`currency` text DEFAULT 'INR',
+	`status` text DEFAULT 'pending' NOT NULL,
+	`payment_status` text DEFAULT 'unpaid',
+	`payment_method` text,
+	`invoice_url` text,
+	`invoice_number` text,
+	`order_date` text NOT NULL,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL, `discount_amount` integer DEFAULT 0, `shipping_amount` integer DEFAULT 0, `channel` text DEFAULT 'whatsapp', `source` text DEFAULT 'ai_chat', `notes_from_customer` text, `notes_internal` text, `notes` text, "business_id" text REFERENCES businesses(id) ON DELETE cascade ON UPDATE no action, `order_seq_number` integer, `reference` text, payment_proof_url text, utr_number text,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`lead_id`) REFERENCES `leads`(`id`) ON UPDATE no action ON DELETE set null
+)
+
+PAYMENTS:
+CREATE TABLE "payments" (
+	`id` text PRIMARY KEY NOT NULL,
+	`order_id` integer NOT NULL,
+	`user_id` text,
+	`seller_id` text,
+	`method` text NOT NULL,
+	`amount` integer NOT NULL,
+	`currency` text DEFAULT 'INR' NOT NULL,
+	`status` text DEFAULT 'created' NOT NULL,
+	`upi_reference` text,
+	`razorpay_order_id` text,
+	`razorpay_payment_id` text,
+	`razorpay_signature` text,
+	`gateway_name` text,
+	`gateway_order_id` text,
+	`gateway_payment_id` text,
+	`gateway_signature` text,
+	`raw_payload` text,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
+	FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`seller_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+)

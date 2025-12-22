@@ -9,6 +9,12 @@ export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "sqlite",
 	}),
+	trustedOrigins: [
+		"https://wavegroww.online",
+		"https://www.wavegroww.online",
+		"https://wavegrowwcleanupload-j32w3rtg4-adit787563s-projects.vercel.app",
+		process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+	],
 	emailAndPassword: {
 		enabled: true
 	},

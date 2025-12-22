@@ -3,52 +3,79 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles, Zap, MessageCircle, TrendingUp, Users, Code, CheckCircle2 } from "lucide-react";
 import { Footer } from "@/components/home/Footer";
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2
+        }
+    }
+};
 
 export default function FeaturesPage() {
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative py-20 lg:py-32 overflow-hidden">
+            <motion.section
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer}
+                className="relative py-24 lg:py-40 overflow-hidden"
+            >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 animate-gradient" />
 
                 <div className="relative container mx-auto px-4 md:px-6 lg:px-8">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
-                            <Sparkles className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium text-primary">All Features</span>
+                    <div className="max-w-5xl mx-auto text-center">
+                        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-fade-in">
+                            <Sparkles className="w-5 h-5 text-primary" />
+                            <span className="text-base font-medium text-primary">All Features</span>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 animate-fade-in">
                             Automate your business. <br />
                             Serve customers 24/7. <br />
                             <span className="gradient-text">Grow 3x faster.</span>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto animate-fade-in">
+                        <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-4xl mx-auto animate-fade-in">
                             Wavegroww gives you powerful automation, messaging, and sales tools designed for D2C and SMB brands.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+                        <div className="flex flex-col sm:flex-row gap-5 justify-center animate-fade-in">
                             <Link
                                 href="/register"
-                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all hover:scale-105 shadow-lg"
+                                className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all hover:scale-105 shadow-lg text-lg"
                             >
                                 Start Free Trial
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-6 h-6" />
                             </Link>
                             <Link
                                 href="/plans"
-                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card text-foreground border border-border rounded-lg font-semibold hover:bg-muted transition-all"
+                                className="inline-flex items-center justify-center gap-2 px-10 py-5 bg-card text-foreground border border-border rounded-lg font-semibold hover:bg-muted transition-all text-lg"
                             >
                                 View Pricing
                             </Link>
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Feature Groups Overview */}
-            <section className="py-16 lg:py-24 bg-muted/30">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-muted/30"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
@@ -113,10 +140,16 @@ export default function FeaturesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Core Features */}
-            <section className="py-16 lg:py-24">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 md:py-24"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-6xl mx-auto space-y-24">
                         {/* Unified Dashboard */}
@@ -210,10 +243,17 @@ export default function FeaturesPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Automation Engine */}
-            <section id="automation" className="py-16 lg:py-24 bg-muted/30">
+            <motion.section
+                id="automation"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-muted/30"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -297,10 +337,17 @@ export default function FeaturesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* WhatsApp Tools Section */}
-            <section id="whatsapp-tools" className="py-16 lg:py-24">
+            <motion.section
+                id="whatsapp-tools"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -362,10 +409,17 @@ export default function FeaturesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Team & Management Tools */}
-            <section id="team-tools" className="py-16 lg:py-24 bg-muted/30">
+            <motion.section
+                id="team-tools"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-muted/30"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -414,10 +468,16 @@ export default function FeaturesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Integrations & API Section */}
-            <section className="py-16 lg:py-24">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -468,10 +528,16 @@ export default function FeaturesPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Feature Glossary Section */}
-            <section className="py-16 lg:py-24 bg-muted/30">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-muted/30"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -590,10 +656,16 @@ export default function FeaturesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Final CTA Banner */}
-            <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center">
                         <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -620,7 +692,7 @@ export default function FeaturesPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             <Footer />
         </div>

@@ -232,7 +232,7 @@ export default function NewProductPage() {
         payload.variants = null;
       }
 
-      console.log('Sending payload:', payload); // Debug log
+
 
       const response = await fetch("/api/products", {
         method: "POST",
@@ -243,15 +243,15 @@ export default function NewProductPage() {
       });
 
       const data = await response.json();
-      console.log('Response:', response.status, data); // Debug log
+
 
       if (!response.ok) {
         if (data.validationErrors) {
-          console.error('Validation errors:', data.validationErrors); // Debug log
+
           setValidationErrors(data.validationErrors);
           toast.error("Validation failed: " + JSON.stringify(data.validationErrors));
         } else {
-          console.error('Error:', data.error); // Debug log
+
           toast.error(data.error || "Failed to create product");
         }
         setIsSaving(false);

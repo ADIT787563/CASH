@@ -4,6 +4,22 @@ import { useState } from "react";
 import { Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { Footer } from "@/components/home/Footer";
 import dynamic from 'next/dynamic';
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.2
+        }
+    }
+};
 
 const FAQSection = dynamic(() => import('../plans/components/FAQSection'), {
     loading: () => <div className="p-4 text-center text-muted-foreground">Loading FAQs...</div>,
@@ -73,24 +89,35 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative py-20 lg:py-32 overflow-hidden">
+            <motion.section
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer}
+                className="relative py-24 lg:py-40 overflow-hidden"
+            >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 animate-gradient" />
 
                 <div className="relative w-full px-4 md:px-6 lg:px-8">
-                    <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                    <div className="max-w-5xl mx-auto text-center">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
                             Get in <span className="gradient-text">Touch</span>
                         </h1>
-                        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                        <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto">
                             Have questions about WaveGroww? We're here to help. Chat with our team or send us a message.
                         </p>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            <section className="py-16 lg:py-24">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8">
                     <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
 
@@ -226,9 +253,15 @@ export default function ContactPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
-            <section className="py-16 lg:py-24 bg-muted/30">
+            <motion.section
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUp}
+                className="py-16 lg:py-24 bg-muted/30"
+            >
                 <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-3xl">
                     <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
                     <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
@@ -239,7 +272,7 @@ export default function ContactPage() {
                         />
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             <Footer />
         </div>

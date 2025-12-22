@@ -1,11 +1,15 @@
 "use client";
 
-import { XCircle, ArrowLeft, RefreshCw, HelpCircle } from "lucide-react";
+import { Suspense } from 'react';
+import { XCircle, ArrowLeft, RefreshCw, HelpCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const reason = searchParams.get('reason');
+    const detail = searchParams.get('detail');
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -24,9 +28,23 @@ export default function PaymentFailedPage() {
                     <h1 className="text-3xl md:text-4xl font-bold mb-4">
                         Payment Failed
                     </h1>
-                    <p className="text-xl text-muted-foreground mb-8">
-                        We couldn't process your payment. Don't worry, you haven't been charged.
-                    </p>
+
+                    {reason ? (
+                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-left">
+                            <h3 className="font-semibold text-red-500 flex items-center gap-2">
+                                <AlertTriangle className="w-5 h-5" />
+                                {reason}
+                            </h3>
+                            {detail && <p className="text-sm text-red-400 mt-1">{detail}</p>}
+                            <p className="text-xs text-muted-foreground mt-2">
+                                Please take a screenshot of this error if you contact support.
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="text-xl text-muted-foreground mb-8">
+                            We couldn't process your payment. Don't worry, you haven't been charged.
+                        </p>
+                    )}
 
                     {/* Common Reasons */}
                     <div className="bg-muted/50 rounded-xl p-6 mb-8 text-left">
@@ -109,5 +127,13 @@ export default function PaymentFailedPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function PaymentFailedPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+            <PaymentFailedContent />
+        </Suspense>
     );
 }

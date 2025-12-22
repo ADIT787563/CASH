@@ -45,85 +45,93 @@ export default function PlansStep() {
         }
     };
 
-    const PlanCard = ({ id, name, price, duration, interval, icon: Icon, color, features, popular = false, bestValue = false }: any) => (
-        <div
-            onClick={() => setSelectedPlan(id)}
-            className={`
-                relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 flex flex-col h-full min-w-[280px]
-                ${selectedPlan === id
-                    ? `border-${color}-500 bg-${color}-500/10 shadow-xl shadow-${color}-500/20 scale-[1.02] z-10`
-                    : 'border-slate-700 bg-slate-800/30 hover:border-slate-600 hover:scale-[1.01]'
-                }
-            `}
-        >
-            {selectedPlan === id && (
-                <div className={`absolute -top-3 -right-3 w-8 h-8 bg-${color}-500 rounded-full flex items-center justify-center shadow-lg z-20`}>
-                    <Check className="w-5 h-5 text-white" />
-                </div>
-            )}
+    const PlanCard = ({ id, name, price, duration, interval, icon: Icon, color, features, popular = false, bestValue = false }: any) => {
+        const isSelected = selectedPlan === id;
 
-            {popular && (
-                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-${color}-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap`}>
-                    Most Popular
-                </div>
-            )}
+        // Map legacy colors to theme aware classes or keeping them for distinction but with better transparency
+        // For simplicity and consistency, we might want to unify them, but let's keep the distinct colors for plans as they are useful, 
+        // just making them glassier.
 
-            {bestValue && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-white text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap">
-                    Best Value
-                </div>
-            )}
+        return (
+            <div
+                onClick={() => setSelectedPlan(id)}
+                className={`
+                    relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 flex flex-col h-auto min-w-[280px] max-w-[340px] flex-1 glass-card
+                    ${isSelected
+                        ? `border-${color}-500 bg-${color}-500/10 shadow-xl shadow-${color}-500/20 scale-[1.02] z-10`
+                        : 'border-white/10 hover:border-white/20 hover:bg-white/5 hover:scale-[1.01]'
+                    }
+                `}
+            >
+                {isSelected && (
+                    <div className={`absolute -top-3 -right-3 w-8 h-8 bg-${color}-500 rounded-full flex items-center justify-center shadow-lg z-20`}>
+                        <Check className="w-5 h-5 text-white" />
+                    </div>
+                )}
 
-            <div className="flex items-center gap-3 mb-4 mt-2">
-                <div className={`w-10 h-10 rounded-xl bg-${color}-500/20 flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`w-5 h-5 text-${color}-400`} />
-                </div>
-                <div>
-                    <h3 className="text-lg font-bold text-white leading-tight">{name}</h3>
-                    <p className="text-slate-400 text-xs">{duration}</p>
-                </div>
-            </div>
+                {popular && (
+                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-${color}-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap`}>
+                        Most Popular
+                    </div>
+                )}
 
-            <div className="mb-6 pb-6 border-b border-slate-700/50">
-                <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">{price}</span>
-                    <span className="text-slate-400 text-sm">{interval}</span>
+                {bestValue && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full text-white text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap">
+                        Best Value
+                    </div>
+                )}
+
+                <div className="flex items-center gap-3 mb-4 mt-2">
+                    <div className={`w-10 h-10 rounded-xl bg-${color}-500/20 flex items-center justify-center flex-shrink-0`}>
+                        <Icon className={`w-5 h-5 text-${color}-400`} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-white leading-tight">{name}</h3>
+                        <p className="text-muted-foreground text-xs">{duration}</p>
+                    </div>
                 </div>
-            </div>
 
-            <ul className="space-y-3 mb-6 flex-grow overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2">
-                {features.map((feature: any, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-slate-300 text-xs">
-                        {feature.included !== false ? (
-                            <Check className={`w-4 h-4 text-${color}-400 flex-shrink-0 mt-0.5`} />
-                        ) : (
-                            <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center text-slate-500">✕</span>
-                        )}
-                        <span className={feature.included !== false ? "leading-tight" : "text-slate-500 leading-tight"}>{feature.text}</span>
-                    </li>
-                ))}
-            </ul>
+                <div className="mb-6 pb-6 border-b border-white/10">
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold text-white">{price}</span>
+                        <span className="text-muted-foreground text-sm">{interval}</span>
+                    </div>
+                </div>
 
-            <div className={`
+                <ul className="space-y-3 mb-6 flex-grow overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent pr-2">
+                    {features.map((feature: any, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-muted-foreground text-xs">
+                            {feature.included !== false ? (
+                                <Check className={`w-4 h-4 text-${color}-400 flex-shrink-0 mt-0.5`} />
+                            ) : (
+                                <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-center text-muted-foreground/50">✕</span>
+                            )}
+                            <span className={feature.included !== false ? "leading-tight text-white/90" : "text-muted-foreground/50 leading-tight"}>{feature.text}</span>
+                        </li>
+                    ))}
+                </ul>
+
+                <div className={`
                 px-4 py-3 rounded-xl text-center font-semibold text-sm transition-colors mt-auto
-                ${selectedPlan === id ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/25` : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}
+                ${isSelected ? `bg-${color}-500 text-white shadow-lg shadow-${color}-500/25` : 'bg-white/5 text-muted-foreground hover:bg-white/10'}
             `}>
-                {selectedPlan === id ? 'Selected' : 'Select Plan'}
+                    {isSelected ? 'Selected' : 'Select Plan'}
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto">
+        <div className="w-full max-w-[1800px] mx-auto px-4">
             <div className="text-center mb-10">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">Choose Your Plan</h2>
-                <p className="text-slate-400 max-w-2xl mx-auto">
+                <p className="text-muted-foreground max-w-2xl mx-auto">
                     Select the perfect plan for your business needs. Upgrade, downgrade, or cancel anytime.
                 </p>
             </div>
 
             <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10 items-stretch">
+                <div className="flex flex-wrap justify-center gap-10 mb-10 items-stretch">
                     {/* Free Trial */}
                     <PlanCard
                         id="trial"
@@ -232,7 +240,7 @@ export default function PlansStep() {
                     <button
                         type="submit"
                         disabled={loading || !selectedPlan}
-                        className="w-full relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full relative group overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2 text-lg">
                             {loading ? (
@@ -248,7 +256,7 @@ export default function PlansStep() {
                             )}
                         </span>
                     </button>
-                    <p className="mt-4 text-xs text-center text-slate-500">
+                    <p className="mt-4 text-xs text-center text-muted-foreground">
                         {selectedPlan === 'trial' ? 'No credit card required • Cancel anytime' : 'Secure payment • Money-back guarantee'}
                     </p>
                 </div>

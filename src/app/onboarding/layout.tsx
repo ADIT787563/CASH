@@ -28,32 +28,27 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
     };
 
     return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-            {/* Enhanced Gradient Background */}
-            <div className="absolute inset-0 z-0 overflow-hidden">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[140px] animate-pulse-slow"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 rounded-full blur-[140px] animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
-                <div className="absolute top-[30%] left-[50%] -translate-x-1/2 w-[40%] h-[40%] bg-blue-600/15 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: "4s" }}></div>
-            </div>
+        <div className="min-h-screen flex flex-col relative overflow-hidden bg-transparent">
+            {/* Background elements are handled by global styles */}
 
             {/* Header */}
             <div className="relative z-10 pt-6 sm:pt-8 pb-4 sm:pb-6 px-4 sm:px-6 text-center">
                 <div className="inline-flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold shadow-lg shadow-primary/30">
                         W
                     </div>
                     <span className="text-xl sm:text-2xl font-bold text-white tracking-tight">WaveGroww</span>
                 </div>
-                <p className="text-gray-400 text-xs sm:text-sm">Setup your automated store in minutes</p>
+                <p className="text-muted-foreground text-xs sm:text-sm">Setup your automated store in minutes</p>
             </div>
 
             {/* Enhanced Stepper */}
             <div className="relative z-10 max-w-4xl mx-auto px-4 w-full mb-6 sm:mb-8">
                 <div className="flex items-center justify-between relative">
                     {/* Progress Line */}
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-slate-800 rounded-full -z-10"></div>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-white/10 rounded-full -z-10"></div>
                     <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full -z-10 transition-all duration-500"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full -z-10 transition-all duration-500"
                         style={{
                             width: `${((steps.findIndex(s => pathname.includes(s.key)) + 1) / steps.length) * 100}%`
                         }}
@@ -65,24 +60,24 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
                         const isCurrent = status === "current";
 
                         return (
-                            <div key={step.id} className="flex flex-col items-center gap-1.5 sm:gap-2 bg-slate-950 px-1 sm:px-2 z-10">
+                            <div key={step.id} className="flex flex-col items-center gap-1.5 sm:gap-2 bg-transparent px-1 sm:px-2 z-10">
                                 <div
                                     className={`
                                         w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300
                                         ${isCompleted
-                                            ? "bg-green-500 border-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)]"
+                                            ? "bg-primary border-primary text-black shadow-[0_0_20px_rgba(192,132,252,0.5)]"
                                             : isCurrent
-                                                ? "bg-indigo-600 border-indigo-500 text-white shadow-[0_0_25px_rgba(99,102,241,0.7)] scale-110"
-                                                : "bg-slate-800 border-slate-700 text-slate-500"
+                                                ? "bg-primary border-primary text-black shadow-[0_0_25px_rgba(192,132,252,0.7)] scale-110"
+                                                : "bg-[#0f0518] border-white/20 text-muted-foreground"
                                         }
                                     `}
                                 >
-                                    {isCompleted ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <step.icon className="w-3 h-3 sm:w-4 sm:h-4" />}
+                                    {isCompleted ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-black" /> : <step.icon className="w-3 h-3 sm:w-4 sm:h-4" />}
                                 </div>
                                 <span
                                     className={`
                                             text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-colors duration-300 mt-1
-                                            ${isCurrent ? "text-indigo-400" : isCompleted ? "text-green-400" : "text-slate-600"}
+                                            ${isCurrent ? "text-primary" : isCompleted ? "text-primary/70" : "text-muted-foreground"}
                                         `}
                                 >
                                     {step.label}
@@ -101,7 +96,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
             </div>
 
             {/* Footer */}
-            <div className="relative z-10 py-4 sm:py-6 text-center text-[10px] sm:text-xs text-slate-500">
+            <div className="relative z-10 py-4 sm:py-6 text-center text-[10px] sm:text-xs text-muted-foreground">
                 &copy; {new Date().getFullYear()} WaveGroww. Secure & Encrypted SSL.
             </div>
         </div >

@@ -72,10 +72,10 @@ export default function PaymentsStep() {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto bg-slate-900/60 backdrop-blur-xl border border-slate-800/50 rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8">
+        <div className="w-full max-w-3xl mx-auto glass-card rounded-2xl p-4 sm:p-6 md:p-8">
             <div className="text-center mb-6 sm:mb-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Payment Setup</h2>
-                <p className="text-slate-400 text-xs sm:text-sm">
+                <p className="text-muted-foreground text-xs sm:text-sm">
                     Define how customers will pay for their orders
                 </p>
             </div>
@@ -88,14 +88,14 @@ export default function PaymentsStep() {
                         relative p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300
                         ${selectedOption === 'razorpay'
                             ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/20 scale-[1.02]'
-                            : 'border-slate-700 bg-slate-800/30 hover:border-slate-600 hover:bg-slate-800/40'
+                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                         }
                     `}
                 >
                     <div className="flex items-start gap-3 sm:gap-4">
                         <div className={`
                             w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors
-                            ${selectedOption === 'razorpay' ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-400'}
+                            ${selectedOption === 'razorpay' ? 'bg-green-500 text-white' : 'bg-white/10 text-muted-foreground'}
                         `}>
                             <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
@@ -106,7 +106,7 @@ export default function PaymentsStep() {
                                     Auto-Verified ✅
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-xs sm:text-sm mb-3">
+                            <p className="text-muted-foreground text-xs sm:text-sm mb-3">
                                 Payments via Razorpay are automatically verified and confirmed by the system.
                             </p>
 
@@ -115,7 +115,7 @@ export default function PaymentsStep() {
                                     <input
                                         type="text"
                                         placeholder="Razorpay Key ID"
-                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         value={razorpayKey}
                                         onChange={(e) => setRazorpayKey(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
@@ -123,7 +123,7 @@ export default function PaymentsStep() {
                                     <input
                                         type="password"
                                         placeholder="Razorpay Secret"
-                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         value={razorpaySecret}
                                         onChange={(e) => setRazorpaySecret(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
@@ -144,14 +144,14 @@ export default function PaymentsStep() {
                         relative p-4 sm:p-6 rounded-xl border-2 cursor-pointer transition-all duration-300
                         ${selectedOption === 'upi'
                             ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20 scale-[1.02]'
-                            : 'border-slate-700 bg-slate-800/30 hover:border-slate-600 hover:bg-slate-800/40'
+                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                         }
                     `}
                 >
                     <div className="flex items-start gap-3 sm:gap-4">
                         <div className={`
                             w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors
-                            ${selectedOption === 'upi' ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-400'}
+                            ${selectedOption === 'upi' ? 'bg-amber-500 text-white' : 'bg-white/10 text-muted-foreground'}
                         `}>
                             <Smartphone className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
@@ -162,7 +162,7 @@ export default function PaymentsStep() {
                                     Manual Verification ⚠️
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-xs sm:text-sm mb-3">
+                            <p className="text-muted-foreground text-xs sm:text-sm mb-3">
                                 Accept payments via UPI. You must manually verify and confirm each payment.
                             </p>
 
@@ -171,7 +171,7 @@ export default function PaymentsStep() {
                                     <input
                                         type="text"
                                         placeholder="UPI ID (e.g., yourname@upi)"
-                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                         value={upiId}
                                         onChange={(e) => setUpiId(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
@@ -196,7 +196,7 @@ export default function PaymentsStep() {
                                                         type="checkbox"
                                                         checked={upiAcknowledged}
                                                         onChange={(e) => setUpiAcknowledged(e.target.checked)}
-                                                        className="mt-0.5 w-4 h-4 rounded border-amber-500/50 bg-slate-900 text-amber-500 focus:ring-2 focus:ring-amber-500"
+                                                        className="mt-0.5 w-4 h-4 rounded border-amber-500/50 bg-[#0f0518] text-amber-500 focus:ring-2 focus:ring-amber-500"
                                                     />
                                                     <span className="text-amber-100 text-[10px] sm:text-xs font-medium">
                                                         I understand that UPI payments require manual confirmation
@@ -218,7 +218,7 @@ export default function PaymentsStep() {
                     <button
                         type="submit"
                         disabled={loading || !selectedOption}
-                        className="w-full relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 sm:py-3.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full relative group overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 sm:py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
                             {loading ? (
@@ -234,7 +234,7 @@ export default function PaymentsStep() {
                             )}
                         </span>
                     </button>
-                    <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-center text-slate-500">
+                    <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-center text-muted-foreground/60">
                         You can change this later in settings
                     </p>
                 </div>

@@ -40,7 +40,8 @@ export function DashboardSidebar() {
             {/* Mobile Toggle */}
             <button
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-md"
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#0f0518]/90 text-white rounded-md border border-white/10 backdrop-blur-md"
+                aria-label="Toggle Mobile Menu"
             >
                 <Menu className="w-6 h-6" />
             </button>
@@ -48,15 +49,15 @@ export function DashboardSidebar() {
             {/* Sidebar Container */}
             <aside
                 className={`
-          fixed top-0 left-0 z-40 h-screen w-64 bg-slate-950 border-r border-slate-800 text-slate-300 transition-transform duration-300 ease-in-out
+          fixed top-0 left-0 z-40 h-screen w-64 bg-[#0f0518]/95 backdrop-blur-xl border-r border-white/10 text-white transition-transform duration-300 ease-in-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
             >
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                        <span className="text-lg font-bold text-white tracking-tight">WaveGroww</span>
-                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-indigo-500/20 text-indigo-400 rounded">ENT</span>
+                    <div className="h-16 flex items-center px-6 border-b border-white/10">
+                        <span className="text-lg font-bold gradient-text tracking-tight">WaveGroww</span>
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-primary/20 text-primary rounded">ENT</span>
                     </div>
 
                     {/* Navigation */}
@@ -71,14 +72,14 @@ export function DashboardSidebar() {
                                     href={item.href}
                                     onClick={() => setIsMobileOpen(false)}
                                     className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive
-                                            ? "bg-indigo-600/10 text-indigo-400"
-                                            : "hover:bg-slate-900 hover:text-white"
+                                            ? "bg-primary/20 text-primary shadow-[0_0_10px_rgba(192,132,252,0.2)]"
+                                            : "text-muted-foreground hover:bg-white/5 hover:text-white"
                                         }
                   `}
                                 >
-                                    <Icon className={`w-4 h-4 ${isActive ? "text-indigo-400" : "text-slate-500"}`} />
+                                    <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                                     {item.label}
                                 </Link>
                             );
@@ -86,10 +87,10 @@ export function DashboardSidebar() {
                     </nav>
 
                     {/* Footer Loop */}
-                    <div className="p-4 border-t border-slate-800">
+                    <div className="p-4 border-t border-white/10">
                         <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-red-400 transition-colors"
+                            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
                             Sign Out

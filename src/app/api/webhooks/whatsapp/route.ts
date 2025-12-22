@@ -184,7 +184,7 @@ async function createOrUpdateCustomer(userId: string, phoneNumber: string) {
 }
 
 async function handleOnboardingMessage(from: string, messageText: string) {
-    console.log(`📝 Received onboarding response from ${from}:`, messageText);
+
     try {
         const client = WhatsAppClient.getSystemClient();
         await client.sendTextMessage(from, "Thanks! We've received your details. Our system is processing them.");
@@ -214,7 +214,7 @@ async function handleMessagePayload(value: any) {
 
     // CHECK FOR SYSTEM ONBOARDING FLOW
     if (process.env.WAVEGROWW_PHONE_ID && phoneNumberId === process.env.WAVEGROWW_PHONE_ID) {
-        console.log('🤖 Handling System Onboarding Message from:', from);
+
         await handleOnboardingMessage(from, messageText);
         return;
     }
@@ -227,7 +227,7 @@ async function handleMessagePayload(value: any) {
         .limit(1);
 
     if (waSettings.length === 0) {
-        console.log(`⚠️ No WhatsApp settings found for Phone ID: ${phoneNumberId}`);
+
         return NextResponse.json({ ok: true });
     }
 
@@ -263,7 +263,7 @@ async function handleMessagePayload(value: any) {
         : settings.businessHoursConfig;
 
     if (!isWithinBusinessHours(bhConfig)) {
-        console.log(`🌙 User ${userId} is outside business hours. Skipping auto-reply.`);
+
         await saveIncomingMessage(userId, from, messageText, messageId, timestamp);
         // Optional: Send Away Message if configured
         return NextResponse.json({ ok: true });
@@ -511,7 +511,7 @@ async function handleStatusPayload(payload: any) {
     const messageId = extractMessageId(payload);
 
     if (await isDuplicateWebhook(eventId, messageId)) {
-        console.log('✅ Duplicate webhook event ignored:', eventId);
+
         return;
     }
     await markWebhookProcessed(eventId, messageId, 'whatsapp');
@@ -552,7 +552,7 @@ export async function GET(request: NextRequest) {
     const isValidToken = (token === envToken) || (token === hardcodedToken);
 
     if (mode === 'subscribe' && isValidToken) {
-        console.log('✅ Webhook verified');
+
         return new NextResponse(challenge, { status: 200 });
     }
 
@@ -584,7 +584,7 @@ export const POST = withWebhookRateLimit()(async (request: NextRequest) => {
         } else if (value?.statuses) {
             await handleStatusPayload(payload);
         } else {
-            console.log('⚠️ Unknown webhook event type', value);
+
         }
 
         return NextResponse.json({ ok: true });

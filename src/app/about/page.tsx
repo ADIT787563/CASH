@@ -3,34 +3,61 @@
 import { CheckCircle2, Target, Eye, Sparkles, Heart, Zap, Award, TrendingUp } from "lucide-react";
 
 import { Footer } from "@/components/home/Footer";
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+};
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        className="relative py-24 lg:py-40 overflow-hidden"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 animate-gradient" />
 
         <div className="relative w-full px-4 md:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">About Us</span>
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <span className="text-base font-medium text-primary">About Us</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
               Welcome to <span className="gradient-text">Our Platform</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto">
               My name is <span className="font-semibold text-foreground">Ansh Kumar</span>, an 18-year-old student and the creator of this website. I built this platform with one clear intention: to offer a reliable, modern, and transparent solution that genuinely helps people.
             </p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Why This Platform Section */}
-      <section className="py-16 lg:py-24">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -67,10 +94,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* How This Platform Helps Section */}
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24 bg-muted/30"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">
@@ -124,10 +157,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Who Is Behind Section */}
-      <section className="py-16 lg:py-24">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">
@@ -163,10 +202,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Mission & Vision Section */}
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24 bg-muted/30"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
@@ -205,10 +250,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Core Values Section */}
-      <section className="py-16 lg:py-24">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
@@ -253,10 +304,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Commitment Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10"
+      >
         <div className="w-full px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-6">
@@ -283,7 +340,7 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
       <Footer />
     </div>
   );

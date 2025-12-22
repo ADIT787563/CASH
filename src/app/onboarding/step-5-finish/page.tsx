@@ -58,39 +58,30 @@ export default function FinishStep() {
     };
 
     return (
-        <div className="w-full max-w-lg text-center animate-fade-in">
-            {/* Step Indicator */}
-            <div className="mb-8 flex justify-center">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                    <span className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">✓</span>
-                    <div className="w-12 h-0.5 bg-green-500 mx-2"></div>
-                    <span className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">✓</span>
-                    <div className="w-12 h-0.5 bg-green-500 mx-2"></div>
-                    <span className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">✓</span>
-                    <div className="w-12 h-0.5 bg-green-500 mx-2"></div>
-                    <span className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center">🎉</span>
-                </div>
-            </div>
+        <div className="w-full max-w-lg text-center animate-fade-in relative z-10">
+            {/* Step Indicator - hiding as it conflicts with layout stepper or needs huge redesign. 
+                Assuming layout handles main progress. If not, this is a distinct "Celebration" card.
+            */}
 
-            <div className="bg-white p-10 rounded-3xl shadow-xl border border-indigo-100 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+            <div className="glass-card p-10 rounded-3xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-purple-500 to-indigo-500"></div>
 
-                <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600 animate-bounce">
-                    <Zap className="w-10 h-10 fill-indigo-600" />
+                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 text-primary animate-bounce">
+                    <Zap className="w-10 h-10 fill-primary" />
                 </div>
 
-                <h1 className="text-3xl font-extrabold text-gray-900 mb-2">You're All Set!</h1>
-                <p className="text-gray-500 mb-8 text-lg">Your AI Sales Agent is ready to take orders.</p>
+                <h1 className="text-3xl font-extrabold text-white mb-2">You're All Set!</h1>
+                <p className="text-muted-foreground mb-8 text-lg">Your AI Sales Agent is ready to take orders.</p>
 
-                <div className="bg-indigo-50/50 rounded-xl p-6 mb-8 border border-indigo-100 text-left">
-                    <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <div className="bg-white/5 rounded-xl p-6 mb-8 border border-white/10 text-left">
+                    <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                         Pro Trial Activated
                     </h3>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500" /> Unlimited AI Responses</li>
-                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500" /> Product Catalog Sync</li>
-                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-500" /> Advanced Analytics</li>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Unlimited AI Responses</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Product Catalog Sync</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Advanced Analytics</li>
                     </ul>
                 </div>
 
@@ -98,12 +89,12 @@ export default function FinishStep() {
                     <button
                         onClick={handleStartTrial}
                         disabled={loading}
-                        className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-indigo-500/25 transition-all hover:scale-[1.02]"
+                        className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-lg shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]"
                     >
                         {loading ? "Launching Dashboard..." : "Go to Dashboard"}
                     </button>
 
-                    <Link href="/plans" className="block text-sm text-gray-500 hover:text-indigo-600 transition-colors">
+                    <Link href="/plans" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
                         Compare plans & features
                     </Link>
                 </div>

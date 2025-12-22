@@ -5,6 +5,22 @@ import { Check, X, ArrowRight, Sparkles, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { Footer } from "@/components/home/Footer";
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+};
 
 // Lazy load heavy components
 const ComparisonTable = dynamic(() => import('@/components/plans/ComparisonTable'), {
@@ -686,7 +702,12 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+        className="relative py-20 lg:py-32 overflow-hidden"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 animate-gradient" />
 
         <div className="relative container mx-auto px-4 md:px-6 lg:px-8">
@@ -705,10 +726,16 @@ export default function PricingPage() {
             </p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing Cards */}
-      <section className="py-16 lg:py-24">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24"
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {PLANS.map((plan: Plan) => (
@@ -716,10 +743,16 @@ export default function PricingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Feature Comparison Table */}
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24 bg-muted/30"
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             Compare <span className="gradient-text">All Features</span>
@@ -738,10 +771,16 @@ export default function PricingPage() {
             </Suspense>
           )}
         </div>
-      </section>
+      </motion.section>
 
       {/* FAQ Section */}
-      <section className="py-16 lg:py-24">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24"
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-4xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             Frequently Asked <span className="gradient-text">Questions</span>
@@ -763,10 +802,16 @@ export default function PricingPage() {
             </Suspense>
           )}
         </div>
-      </section>
+      </motion.section>
 
       {/* Bottom CTA */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10">
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeInUp}
+        className="py-16 lg:py-24 bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10"
+      >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -793,7 +838,7 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       <Footer />
     </div>

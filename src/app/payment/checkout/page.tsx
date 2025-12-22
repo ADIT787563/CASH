@@ -186,7 +186,10 @@ function PaymentContent() {
                     if (verifyResponse.ok) {
                         router.push(`/payment/success?plan=${plan.id}&invoiceId=${verifyData.invoiceId}`);
                     } else {
-                        router.push('/payment/failed');
+                        console.error("Payment Verification Failed:", verifyData);
+                        const errorMessage = verifyData.error || 'Verification Failed';
+                        const errorDetail = verifyData.detail || '';
+                        router.push(`/payment/failed?reason=${encodeURIComponent(errorMessage)}&detail=${encodeURIComponent(errorDetail)}`);
                     }
                 },
                 prefill: {

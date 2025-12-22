@@ -50,7 +50,9 @@ export async function POST(request: NextRequest) {
 
         const dbOrderId = newOrder[0].id;
 
-        // Create Razorpay order
+
+        console.log('[CreateOrder] Starting order creation...');
+        // Create RAZORPAY order
         const options = {
             amount: Math.round(amount * 100), // Convert to paise
             currency: 'INR',
@@ -63,7 +65,11 @@ export async function POST(request: NextRequest) {
             },
         };
 
+        console.log('[CreateOrder] Razorpay options:', JSON.stringify(options));
+        console.log('[CreateOrder] Key ID present:', !!process.env.RAZORPAY_KEY_ID);
+
         const order = await razorpay.orders.create(options);
+        console.log('[CreateOrder] Razorpay order created:', order.id);
 
         // Create Payment record
         await db.insert(payments).values({

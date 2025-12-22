@@ -89,10 +89,10 @@ export default function BusinessStep() {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto bg-slate-900/60 backdrop-blur-xl border border-slate-800/50 rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8">
+        <div className="w-full max-w-3xl mx-auto glass-card rounded-2xl p-4 sm:p-6 md:p-8">
             <div className="text-center mb-6 sm:mb-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Tell us about your business</h2>
-                <p className="text-slate-400 text-xs sm:text-sm">
+                <p className="text-muted-foreground text-xs sm:text-sm">
                     These details will be used for customer communication and order confirmation on WhatsApp.
                 </p>
             </div>
@@ -101,15 +101,15 @@ export default function BusinessStep() {
                 {/* Owner & Business Name */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                             Owner Name <span className="text-red-400">*</span>
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-500"><User className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                            <span className="absolute left-3 top-3 text-muted-foreground"><User className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                             <input
                                 name="ownerName"
                                 placeholder="Your Name"
-                                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 value={formData.ownerName}
                                 onChange={handleChange}
                                 required
@@ -117,15 +117,15 @@ export default function BusinessStep() {
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                             Business Name <span className="text-red-400">*</span>
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-500"><Building2 className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                            <span className="absolute left-3 top-3 text-muted-foreground"><Building2 className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                             <input
                                 name="businessName"
                                 placeholder="Shop Name"
-                                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 value={formData.businessName}
                                 onChange={handleChange}
                                 required
@@ -137,11 +137,11 @@ export default function BusinessStep() {
                 {/* Category & City */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Category</label>
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Category</label>
                         <select
                             name="category"
                             title="Business Category"
-                            className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all [&>option]:bg-[#1a0b2e]"
                             value={formData.category}
                             onChange={handleChange}
                         >
@@ -154,15 +154,15 @@ export default function BusinessStep() {
                         </select>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                             City / State <span className="text-red-400">*</span>
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-500"><MapPin className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                            <span className="absolute left-3 top-3 text-muted-foreground"><MapPin className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                             <input
                                 name="city"
                                 placeholder="e.g. Mumbai, Maharashtra"
-                                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 value={formData.city}
                                 onChange={handleChange}
                                 required
@@ -174,15 +174,15 @@ export default function BusinessStep() {
                 {/* Contact Numbers */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-indigo-400 tracking-wider flex items-center gap-1">
+                        <label className="text-xs font-semibold uppercase text-primary tracking-wider flex items-center gap-1">
                             Selling WhatsApp <span className="text-red-400">*</span>
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-500"><Phone className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                            <span className="absolute left-3 top-3 text-muted-foreground"><Phone className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                             <input
                                 name="whatsappNumber"
                                 placeholder="+91 98765 43210"
-                                className={`w-full bg-slate-800/50 border ${errors.whatsappNumber ? 'border-red-500' : 'border-indigo-500/30'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
+                                className={`w-full bg-white/5 border ${errors.whatsappNumber ? 'border-red-500' : 'border-primary/50'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
                                 value={formData.whatsappNumber}
                                 onChange={handleChange}
                                 required
@@ -193,13 +193,13 @@ export default function BusinessStep() {
                         )}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Support Contact</label>
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Support Contact</label>
                         <div className="relative">
-                            <span className="absolute left-3 top-3 text-slate-500"><Phone className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                            <span className="absolute left-3 top-3 text-muted-foreground"><Phone className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                             <input
                                 name="supportNumber"
                                 placeholder="Same as WhatsApp"
-                                className={`w-full bg-slate-800/50 border ${errors.supportNumber ? 'border-red-500' : 'border-slate-700'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
+                                className={`w-full bg-white/5 border ${errors.supportNumber ? 'border-red-500' : 'border-white/10'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
                                 value={formData.supportNumber}
                                 onChange={handleChange}
                             />
@@ -212,13 +212,13 @@ export default function BusinessStep() {
 
                 {/* GST & Address */}
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">GSTIN (Optional)</label>
+                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">GSTIN (Optional)</label>
                     <div className="relative">
-                        <span className="absolute left-3 top-3 text-slate-500"><FileText className="w-4 h-4 sm:w-5 sm:h-5" /></span>
+                        <span className="absolute left-3 top-3 text-muted-foreground"><FileText className="w-4 h-4 sm:w-5 sm:h-5" /></span>
                         <input
                             name="gst"
                             placeholder="GST Number"
-                            className={`w-full bg-slate-800/50 border ${errors.gst ? 'border-red-500' : 'border-slate-700'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all uppercase`}
+                            className={`w-full bg-white/5 border ${errors.gst ? 'border-red-500' : 'border-white/10'} rounded-lg py-2.5 pl-9 sm:pl-10 pr-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all uppercase`}
                             value={formData.gst}
                             onChange={handleChange}
                         />
@@ -229,11 +229,11 @@ export default function BusinessStep() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-slate-400 tracking-wider">Business Address (Optional)</label>
+                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Business Address (Optional)</label>
                     <textarea
                         name="address"
                         placeholder="Full Address"
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none h-20"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none h-20"
                         value={formData.address}
                         onChange={handleChange}
                     />
@@ -243,7 +243,7 @@ export default function BusinessStep() {
                     <button
                         type="submit"
                         disabled={isLoading || Object.keys(errors).length > 0}
-                        className="w-full relative group overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 sm:py-3.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full relative group overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 sm:py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2 text-sm sm:text-base">
                             {isLoading ? (
@@ -259,7 +259,7 @@ export default function BusinessStep() {
                             )}
                         </span>
                     </button>
-                    <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-center text-slate-500">
+                    <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-center text-muted-foreground/60">
                         Secure connection. Your data is encrypted.
                     </p>
                 </div>

@@ -29,11 +29,8 @@ const NAV_ITEMS = [
 export function DashboardTopNav() {
     const pathname = usePathname();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const { theme, setTheme } = useTheme();
 
-    const toggleTheme = () => {
-        setTheme(theme === "dark" ? "light" : "dark");
-    };
+    // Theme toggle removed
 
     const handleSignOut = async () => {
         await authClient.signOut();
@@ -41,14 +38,14 @@ export function DashboardTopNav() {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-50 px-4 flex items-center justify-between">
+        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0518]/80 backdrop-blur-xl border-b border-white/10 z-50 px-4 flex items-center justify-between">
             {/* Left: Logo & Nav */}
             <div className="flex items-center gap-8">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center rounded-md font-bold text-sm tracking-tighter">
+                    <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-md font-bold text-sm tracking-tighter">
                         WG
                     </div>
-                    <span className="font-semibold text-slate-900 dark:text-white hidden sm:block">WaveGroww</span>
+                    <span className="font-semibold text-white hidden sm:block">WaveGroww</span>
                 </div>
 
                 <nav className="hidden md:flex items-center gap-6">
@@ -60,14 +57,14 @@ export function DashboardTopNav() {
                                 href={item.href}
                                 className={`text-sm font-medium transition-colors relative py-4
                   ${isActive
-                                        ? "text-indigo-600 dark:text-indigo-400"
-                                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                                        ? "text-primary"
+                                        : "text-muted-foreground hover:text-white"
                                     }
                 `}
                             >
                                 {item.label}
                                 {isActive && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400" />
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(192,132,252,0.5)]" />
                                 )}
                             </Link>
                         );
@@ -78,33 +75,26 @@ export function DashboardTopNav() {
             {/* Right: Actions */}
             <div className="flex items-center gap-4">
                 {/* Date Range Selector Placeholder */}
-                <button className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <button className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-white/5 border border-white/10 rounded-md hover:bg-white/10 hover:text-white transition-colors">
                     <span>Today, Dec 17</span>
                     <ChevronDown className="w-3 h-3" />
                 </button>
 
-                <button
-                    onClick={toggleTheme}
-                    className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-                    title="Toggle Theme"
-                    aria-label="Toggle Theme"
-                >
-                    <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                    <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                </button>
+                {/* Theme Toggle Removed */}
 
-                <button className="relative p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                <button className="relative p-2 text-muted-foreground hover:text-white transition-colors" aria-label="Notifications">
                     <Bell className="w-4 h-4" />
-                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-950" />
+                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full ring-2 ring-[#0f0518]" />
                 </button>
 
                 {/* User Menu */}
                 <div className="relative">
                     <button
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                        className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800 ml-2"
+                        className="flex items-center gap-2 pl-2 border-l border-white/10 ml-2"
+                        aria-label="User Menu"
                     >
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-medium">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium border border-primary/20">
                             JD
                         </div>
                     </button>
@@ -115,18 +105,18 @@ export function DashboardTopNav() {
                                 className="fixed inset-0 z-40"
                                 onClick={() => setIsUserMenuOpen(false)}
                             />
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg py-1 z-50">
+                            <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a0b2e] border border-white/10 rounded-lg shadow-lg py-1 z-50">
                                 <Link
                                     href="/dashboard/settings"
                                     onClick={() => setIsUserMenuOpen(false)}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-white/5 hover:text-white"
                                 >
                                     <Settings className="w-4 h-4" />
                                     Settings
                                 </Link>
                                 <button
                                     onClick={handleSignOut}
-                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/10 text-left"
+                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:bg-rose-500/10 text-left"
                                 >
                                     <LogOut className="w-4 h-4" />
                                     Sign Out

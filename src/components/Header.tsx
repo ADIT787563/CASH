@@ -75,7 +75,7 @@ export const Header = () => {
       toast.error(error.code);
     } else {
       localStorage.removeItem("bearer_token");
-      router.push("/");
+      window.location.href = "/";
       toast.success("Signed out successfully");
     }
   };
@@ -133,10 +133,8 @@ export const Header = () => {
 
   // Dynamic header classes based on page and scroll
   const headerClasses = isLandingPage
-    ? scrolled
-      ? "sticky top-0 z-[100] w-full border-b border-border/50 bg-card/60 backdrop-blur-md transition-all duration-300"
-      : "sticky top-0 z-[100] w-full border-b border-transparent bg-gradient-to-r from-primary/5 via-transparent to-accent/5 transition-all duration-300"
-    : "sticky top-0 z-[100] w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80";
+    ? "fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-7xl rounded-full border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg transition-all duration-500"
+    : "sticky top-0 z-[100] w-full border-b border-white/5 bg-[#0f0518]/80 backdrop-blur-xl support-[backdrop-filter]:bg-[#0f0518]/60";
 
   return (
     <header className={headerClasses}>
@@ -193,8 +191,7 @@ export const Header = () => {
 
           {/* Right Side - Theme Toggle & Profile/Auth */}
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Theme Toggle */}
-            <ThemeToggle />
+            {/* Theme Toggle Removed */}
 
             {/* Show loading state during session check */}
             {loading && (

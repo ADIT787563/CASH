@@ -83,25 +83,25 @@ export default function SetupPaymentsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
-                <h1 className="text-2xl font-bold mb-6">Payment Preferences</h1>
+        <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-2xl glass-card rounded-xl shadow-lg p-8">
+                <h1 className="text-2xl font-bold mb-6 text-white text-center">Payment Preferences</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Preference Radio */}
                     <div>
-                        <label className="block text-sm font-bold mb-2">How do you want to accept payments?</label>
+                        <label className="block text-sm font-bold mb-2 text-white">How do you want to accept payments?</label>
                         <div className="flex gap-4">
-                            <label className="flex items-center gap-2 border p-3 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pref" value="online" checked={formData.preference === 'online'} onChange={() => setFormData({ ...formData, preference: 'online' })} />
+                            <label className={`flex items-center gap-2 border p-3 rounded-xl cursor-pointer transition-all ${formData.preference === 'online' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'}`}>
+                                <input type="radio" name="pref" value="online" checked={formData.preference === 'online'} onChange={() => setFormData({ ...formData, preference: 'online' })} className="accent-primary" />
                                 Online Only
                             </label>
-                            <label className="flex items-center gap-2 border p-3 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pref" value="cod" checked={formData.preference === 'cod'} onChange={() => setFormData({ ...formData, preference: 'cod' })} />
+                            <label className={`flex items-center gap-2 border p-3 rounded-xl cursor-pointer transition-all ${formData.preference === 'cod' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'}`}>
+                                <input type="radio" name="pref" value="cod" checked={formData.preference === 'cod'} onChange={() => setFormData({ ...formData, preference: 'cod' })} className="accent-primary" />
                                 COD Only
                             </label>
-                            <label className="flex items-center gap-2 border p-3 rounded cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pref" value="both" checked={formData.preference === 'both'} onChange={() => setFormData({ ...formData, preference: 'both' })} />
+                            <label className={`flex items-center gap-2 border p-3 rounded-xl cursor-pointer transition-all ${formData.preference === 'both' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'}`}>
+                                <input type="radio" name="pref" value="both" checked={formData.preference === 'both'} onChange={() => setFormData({ ...formData, preference: 'both' })} className="accent-primary" />
                                 Both
                             </label>
                         </div>
@@ -109,15 +109,15 @@ export default function SetupPaymentsPage() {
 
                     {/* Online Options */}
                     {(formData.preference === 'online' || formData.preference === 'both') && (
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 space-y-4">
-                            <h3 className="font-semibold text-blue-800">Online Payment Details</h3>
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-4">
+                            <h3 className="font-semibold text-white">Online Payment Details</h3>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Razorpay Payment Link (Recommended)</label>
+                                <label className="block text-sm font-medium mb-1 text-muted-foreground">Razorpay Payment Link (Recommended)</label>
                                 <input
                                     value={formData.razorpayLink}
                                     onChange={e => setFormData({ ...formData, razorpayLink: e.target.value })}
-                                    className="w-full p-2 border rounded"
+                                    className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                     placeholder="https://rzp.io/l/your-link"
                                 />
                                 <div className="mt-2 flex items-center gap-2">
@@ -126,28 +126,29 @@ export default function SetupPaymentsPage() {
                                         checked={formData.webhookConsent}
                                         onChange={e => setFormData({ ...formData, webhookConsent: e.target.checked })}
                                         id="consent"
+                                        className="rounded border-white/10 bg-white/5 text-primary focus:ring-primary"
                                     />
-                                    <label htmlFor="consent" className="text-sm text-gray-600">
+                                    <label htmlFor="consent" className="text-sm text-muted-foreground cursor-pointer">
                                         Allow WaveGroww to verify payments automatically (I consent to Webhooks)
                                     </label>
                                 </div>
                             </div>
 
                             <div className="relative flex py-2 items-center">
-                                <div className="flex-grow border-t border-blue-200"></div>
-                                <span className="flex-shrink-0 mx-4 text-blue-300 text-xs">OR / AND</span>
-                                <div className="flex-grow border-t border-blue-200"></div>
+                                <div className="flex-grow border-t border-white/10"></div>
+                                <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs">OR / AND</span>
+                                <div className="flex-grow border-t border-white/10"></div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">UPI ID</label>
+                                <label className="block text-sm font-medium mb-1 text-muted-foreground">UPI ID</label>
                                 <input
                                     value={formData.upiId}
                                     onChange={e => setFormData({ ...formData, upiId: e.target.value })}
-                                    className="w-full p-2 border rounded"
+                                    className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                     placeholder="yourname@upi"
                                 />
-                                <p className="text-xs text-orange-600 mt-1">Note: UPI payments require manual verification by you.</p>
+                                <p className="text-xs text-amber-500 mt-1">Note: UPI payments require manual verification by you.</p>
                             </div>
                         </div>
                     )}
@@ -155,11 +156,11 @@ export default function SetupPaymentsPage() {
                     {/* COD Options */}
                     {(formData.preference === 'cod' || formData.preference === 'both') && (
                         <div>
-                            <label className="block text-sm font-medium mb-1">COD Instructions / Notes</label>
+                            <label className="block text-sm font-medium mb-1 text-muted-foreground">COD Instructions / Notes</label>
                             <textarea
                                 value={formData.codNotes}
                                 onChange={e => setFormData({ ...formData, codNotes: e.target.value })}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all min-h-[80px]"
                                 placeholder="e.g. Extra ₹50 for COD"
                             />
                         </div>
@@ -168,7 +169,7 @@ export default function SetupPaymentsPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex justify-center"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] flex justify-center"
                     >
                         {isLoading ? <Loader2 className="animate-spin" /> : "Complete Setup"}
                     </button>

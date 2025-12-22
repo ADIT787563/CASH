@@ -147,45 +147,45 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-transparent flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="w-full max-w-3xl space-y-8">
 
-                {/* Stepper Header */}
+                {/* Header (Optional if redundant with layout, keeping just in case) */}
                 <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900">Welcome to WaveGroww</h2>
-                    <p className="mt-2 text-gray-600">Let's get your business set up in just a few steps.</p>
+                    <h2 className="text-3xl font-bold text-white">Welcome to WaveGroww</h2>
+                    <p className="mt-2 text-muted-foreground">Let's get your business set up in just a few steps.</p>
                 </div>
 
-                {/* Progress Steps */}
+                {/* Progress Steps (Internal) */}
                 <div className="flex items-center justify-center space-x-4">
-                    <div className={`flex items-center ${step >= 1 ? 'text-primary' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
                         {step > 1 ? <CheckCircle className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
                         <span className="ml-2 font-medium">Business Profile</span>
                     </div>
-                    <div className="w-16 h-0.5 bg-gray-200" />
-                    <div className={`flex items-center ${step >= 2 ? 'text-primary' : 'text-gray-400'}`}>
+                    <div className="w-16 h-0.5 bg-white/10" />
+                    <div className={`flex items-center ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
                         {step > 2 ? <CheckCircle className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
                         <span className="ml-2 font-medium">WhatsApp Setup</span>
                     </div>
-                    <div className="w-16 h-0.5 bg-gray-200" />
-                    <div className={`flex items-center ${step >= 3 ? 'text-primary' : 'text-gray-400'}`}>
+                    <div className="w-16 h-0.5 bg-white/10" />
+                    <div className={`flex items-center ${step >= 3 ? 'text-primary' : 'text-muted-foreground'}`}>
                         {step === 3 ? <CheckCircle className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
                         <span className="ml-2 font-medium">Complete</span>
                     </div>
                 </div>
 
                 {/* Step Content */}
-                <div className="bg-white shadow rounded-lg p-8">
+                <div className="glass-card rounded-2xl p-8">
 
                     {step === 1 && (
                         <form onSubmit={handleStep1Submit} className="space-y-6">
-                            <h3 className="text-xl font-semibold mb-4">Step 1: Business Details</h3>
+                            <h3 className="text-xl font-semibold mb-4 text-white">Step 1: Business Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <input
                                     type="text"
                                     placeholder="Full Name"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.fullName}
                                     onChange={e => setProfileData({ ...profileData, fullName: e.target.value })}
                                 />
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
                                     type="text"
                                     placeholder="Business Name"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.businessName}
                                     onChange={e => setProfileData({ ...profileData, businessName: e.target.value })}
                                 />
@@ -201,7 +201,7 @@ export default function OnboardingPage() {
                                     type="text"
                                     placeholder="Category (e.g. Retail)"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.businessCategory}
                                     onChange={e => setProfileData({ ...profileData, businessCategory: e.target.value })}
                                 />
@@ -209,7 +209,7 @@ export default function OnboardingPage() {
                                     type="tel"
                                     placeholder="Phone Number"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.phoneNumber}
                                     onChange={e => setProfileData({ ...profileData, phoneNumber: e.target.value })}
                                 />
@@ -217,14 +217,14 @@ export default function OnboardingPage() {
                                     type="email"
                                     placeholder="Business Email"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.businessEmail}
                                     onChange={e => setProfileData({ ...profileData, businessEmail: e.target.value })}
                                 />
                                 <input
                                     type="text"
                                     placeholder="GST Number (Optional)"
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.gstNumber}
                                     onChange={e => setProfileData({ ...profileData, gstNumber: e.target.value })}
                                 />
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
                                     type="text"
                                     placeholder="Street Address"
                                     required
-                                    className="w-full p-3 border rounded-md"
+                                    className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     value={profileData.street}
                                     onChange={e => setProfileData({ ...profileData, street: e.target.value })}
                                 />
@@ -243,7 +243,7 @@ export default function OnboardingPage() {
                                         type="text"
                                         placeholder="City"
                                         required
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={profileData.city}
                                         onChange={e => setProfileData({ ...profileData, city: e.target.value })}
                                     />
@@ -251,7 +251,7 @@ export default function OnboardingPage() {
                                         type="text"
                                         placeholder="State"
                                         required
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={profileData.state}
                                         onChange={e => setProfileData({ ...profileData, state: e.target.value })}
                                     />
@@ -259,7 +259,7 @@ export default function OnboardingPage() {
                                         type="text"
                                         placeholder="Pincode"
                                         required
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={profileData.pincode}
                                         onChange={e => setProfileData({ ...profileData, pincode: e.target.value })}
                                     />
@@ -268,7 +268,7 @@ export default function OnboardingPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full bg-primary text-primary-foreground py-3 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center"
+                                className="w-full bg-primary text-primary-foreground py-3 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center shadow-[0_0_15px_rgba(192,132,252,0.3)]"
                             >
                                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Next Step <ArrowRight className="ml-2 w-5 h-5" /></>}
                             </button>
@@ -277,40 +277,40 @@ export default function OnboardingPage() {
 
                     {step === 2 && (
                         <form onSubmit={handleStep2Submit} className="space-y-6">
-                            <h3 className="text-xl font-semibold mb-4">Step 2: WhatsApp Configuration</h3>
-                            <div className="bg-blue-50 p-4 rounded-md text-blue-800 text-sm mb-6">
+                            <h3 className="text-xl font-semibold mb-4 text-white">Step 2: WhatsApp Configuration</h3>
+                            <div className="bg-blue-900/20 border border-blue-800 p-4 rounded-md text-blue-200 text-sm mb-6">
                                 You can find these details in your Meta Developer Portal under WhatsApp Product Settings.
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Phone Number ID</label>
+                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Phone Number ID</label>
                                     <input
                                         type="text"
                                         required
                                         aria-label="Phone Number ID"
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={whatsappData.phoneNumberId}
                                         onChange={e => setWhatsappData({ ...whatsappData, phoneNumberId: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">WhatsApp Business Account ID (WABA ID)</label>
+                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">WhatsApp Business Account ID (WABA ID)</label>
                                     <input
                                         type="text"
                                         required
                                         aria-label="WhatsApp Business Account ID"
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={whatsappData.wabaId}
                                         onChange={e => setWhatsappData({ ...whatsappData, wabaId: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Permanent Access Token</label>
+                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Permanent Access Token</label>
                                     <input
                                         type="password"
                                         required
                                         aria-label="Permanent Access Token"
-                                        className="w-full p-3 border rounded-md"
+                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                         value={whatsappData.accessToken}
                                         onChange={e => setWhatsappData({ ...whatsappData, accessToken: e.target.value })}
                                     />
@@ -318,15 +318,15 @@ export default function OnboardingPage() {
                             </div>
 
                             {/* Payment Settings Section */}
-                            <div className="border-t pt-6 mt-6">
-                                <h3 className="text-xl font-semibold mb-2">Payment & Payout Settings</h3>
+                            <div className="border-t border-white/10 pt-6 mt-6">
+                                <h3 className="text-xl font-semibold mb-2 text-white">Payment & Payout Settings</h3>
                                 <p className="text-sm text-muted-foreground mb-6">
                                     Configure how you want to receive payments from buyers. You can accept online payments via Razorpay, UPI apps, or Cash on Delivery.
                                 </p>
 
                                 {/* Payment Preference */}
                                 <div className="mb-6">
-                                    <label className="block text-sm font-medium mb-3">Payment Preference *</label>
+                                    <label className="block text-sm font-medium mb-3 text-muted-foreground">Payment Preference *</label>
                                     <div className="grid grid-cols-3 gap-4">
                                         {(['online', 'cod', 'both'] as const).map((pref) => (
                                             <button
@@ -334,8 +334,8 @@ export default function OnboardingPage() {
                                                 type="button"
                                                 onClick={() => setPaymentData({ ...paymentData, paymentPreference: pref })}
                                                 className={`p-4 border-2 rounded-lg transition-colors ${paymentData.paymentPreference === pref
-                                                    ? 'border-primary bg-primary/5'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-primary bg-primary/10 text-primary'
+                                                    : 'border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10'
                                                     }`}
                                             >
                                                 <div className="font-medium capitalize">{pref === 'both' ? 'Online & COD' : pref}</div>
@@ -347,23 +347,25 @@ export default function OnboardingPage() {
                                 {/* Online Payment Options */}
                                 {(paymentData.paymentPreference === 'online' || paymentData.paymentPreference === 'both') && (
                                     <div className="space-y-4 mb-6">
-                                        <h4 className="font-medium">Online Payment Configuration</h4>
+                                        <h4 className="font-medium text-white">Online Payment Configuration</h4>
 
                                         {/* Razorpay or UPI */}
                                         <div className="flex gap-4">
-                                            <label className="flex items-center gap-2">
+                                            <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
                                                 <input
                                                     type="radio"
                                                     checked={paymentData.razorpayAccountType === 'razorpay'}
                                                     onChange={() => setPaymentData({ ...paymentData, razorpayAccountType: 'razorpay' })}
+                                                    className="text-primary focus:ring-primary"
                                                 />
                                                 <span>I have a Razorpay account</span>
                                             </label>
-                                            <label className="flex items-center gap-2">
+                                            <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
                                                 <input
                                                     type="radio"
                                                     checked={paymentData.razorpayAccountType === 'upi'}
                                                     onChange={() => setPaymentData({ ...paymentData, razorpayAccountType: 'upi' })}
+                                                    className="text-primary focus:ring-primary"
                                                 />
                                                 <span>I will use UPI/Other apps</span>
                                             </label>
@@ -373,11 +375,11 @@ export default function OnboardingPage() {
                                         {paymentData.razorpayAccountType === 'razorpay' && (
                                             <div className="space-y-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1">Razorpay Payment Link</label>
+                                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Razorpay Payment Link</label>
                                                     <input
                                                         type="url"
                                                         placeholder="https://rzp.io/l/your-link"
-                                                        className="w-full p-3 border rounded-md"
+                                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                                         value={paymentData.razorpayLink}
                                                         onChange={e => setPaymentData({ ...paymentData, razorpayLink: e.target.value })}
                                                     />
@@ -387,15 +389,15 @@ export default function OnboardingPage() {
                                                 </div>
 
                                                 {/* Webhook Consent */}
-                                                <label className="flex items-start gap-3 p-4 border rounded-lg">
+                                                <label className="flex items-start gap-3 p-4 border border-white/10 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
                                                     <input
                                                         type="checkbox"
-                                                        className="mt-1"
+                                                        className="mt-1 text-primary focus:ring-primary"
                                                         checked={paymentData.webhookConsent}
                                                         onChange={e => setPaymentData({ ...paymentData, webhookConsent: e.target.checked })}
                                                     />
                                                     <div>
-                                                        <div className="font-medium">Allow WaveGroww to receive payment webhooks</div>
+                                                        <div className="font-medium text-white">Allow WaveGroww to receive payment webhooks</div>
                                                         <div className="text-xs text-muted-foreground">
                                                             We'll provide webhook URL and instructions. No money is routed through WaveGroww.
                                                         </div>
@@ -403,11 +405,11 @@ export default function OnboardingPage() {
                                                 </label>
 
                                                 {paymentData.webhookConsent && (
-                                                    <div className="bg-blue-50 p-4 rounded-md text-sm">
+                                                    <div className="bg-blue-900/20 border border-blue-800 p-4 rounded-md text-sm text-blue-200">
                                                         <p className="font-medium mb-2">Webhook Setup Instructions:</p>
-                                                        <ol className="list-decimal list-inside space-y-1 text-xs">
+                                                        <ol className="list-decimal list-inside space-y-1 text-xs text-blue-200/80">
                                                             <li>Go to Razorpay Dashboard  Settings  Webhooks</li>
-                                                            <li>Add this URL: <code className="bg-white px-2 py-0.5 rounded">{process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/seller-payments/razorpay</code></li>
+                                                            <li>Add this URL: <code className="bg-black/30 px-2 py-0.5 rounded text-blue-100">{process.env.NEXT_PUBLIC_SITE_URL}/api/webhooks/seller-payments/razorpay</code></li>
                                                             <li>Enable events: payment.link.paid, payment.captured, payment.failed</li>
                                                         </ol>
                                                     </div>
@@ -419,34 +421,34 @@ export default function OnboardingPage() {
                                         {paymentData.razorpayAccountType === 'upi' && (
                                             <div className="space-y-4">
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1">UPI ID</label>
+                                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">UPI ID</label>
                                                     <input
                                                         type="text"
                                                         placeholder="seller@upi"
-                                                        className="w-full p-3 border rounded-md"
+                                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                                         value={paymentData.upiId}
                                                         onChange={e => setPaymentData({ ...paymentData, upiId: e.target.value })}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1">Mobile Number (for UPI deep-links)</label>
+                                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">Mobile Number (for UPI deep-links)</label>
                                                     <input
                                                         type="tel"
                                                         placeholder="+91XXXXXXXXXX"
-                                                        className="w-full p-3 border rounded-md"
+                                                        className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                                         value={paymentData.phoneNumber}
                                                         onChange={e => setPaymentData({ ...paymentData, phoneNumber: e.target.value })}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-medium mb-1">UPI QR Code (Optional)</label>
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                                    <label className="block text-sm font-medium mb-1 text-muted-foreground">UPI QR Code (Optional)</label>
+                                                    <div className="border-2 border-dashed border-white/20 rounded-lg p-4 hover:bg-white/5 transition-colors">
                                                         {paymentData.qrImageUrl ? (
                                                             <div className="flex items-center gap-4">
                                                                 <img
                                                                     src={paymentData.qrImageUrl}
                                                                     alt="QR Code"
-                                                                    className="w-24 h-24 object-contain border rounded"
+                                                                    className="w-24 h-24 object-contain border border-white/10 rounded bg-white"
                                                                 />
                                                                 <button
                                                                     type="button"
@@ -454,7 +456,7 @@ export default function OnboardingPage() {
                                                                         await fetch('/api/sellers/payment-methods/qr-upload', { method: 'DELETE' });
                                                                         setPaymentData({ ...paymentData, qrImageUrl: '' });
                                                                     }}
-                                                                    className="text-red-600 text-sm hover:underline"
+                                                                    className="text-red-400 text-sm hover:underline"
                                                                 >
                                                                     Remove QR
                                                                 </button>
@@ -490,7 +492,7 @@ export default function OnboardingPage() {
                                                                 />
                                                                 <label
                                                                     htmlFor="qr-upload"
-                                                                    className="cursor-pointer text-primary hover:underline"
+                                                                    className="cursor-pointer text-primary hover:underline hover:text-primary/80 transition-colors"
                                                                 >
                                                                     Click to upload QR code
                                                                 </label>
@@ -512,12 +514,12 @@ export default function OnboardingPage() {
                                 {/* COD Options */}
                                 {(paymentData.paymentPreference === 'cod' || paymentData.paymentPreference === 'both') && (
                                     <div className="space-y-4">
-                                        <h4 className="font-medium">Cash on Delivery Configuration</h4>
+                                        <h4 className="font-medium text-white">Cash on Delivery Configuration</h4>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">COD Notes (Optional)</label>
+                                            <label className="block text-sm font-medium mb-1 text-muted-foreground">COD Notes (Optional)</label>
                                             <textarea
                                                 placeholder="E.g., Cash only, extra charges ₹50, card on delivery not available"
-                                                className="w-full p-3 border rounded-md"
+                                                className="w-full p-3 border border-white/10 rounded-md bg-white/5 text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                                 rows={2}
                                                 value={paymentData.codNotes}
                                                 onChange={e => setPaymentData({ ...paymentData, codNotes: e.target.value })}
@@ -527,9 +529,9 @@ export default function OnboardingPage() {
                                 )}
 
                                 {/* Payment Verification Policy */}
-                                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                    <h4 className="font-semibold text-amber-800 mb-2">⚠️ Payment Verification Policy</h4>
-                                    <ul className="text-xs text-amber-700 space-y-1">
+                                <div className="mt-6 p-4 bg-amber-900/10 border border-amber-900/30 rounded-lg">
+                                    <h4 className="font-semibold text-amber-500 mb-2">⚠️ Payment Verification Policy</h4>
+                                    <ul className="text-xs text-amber-400/80 space-y-1">
                                         <li>• <strong>Razorpay:</strong> Automatic verification via webhook</li>
                                         <li>• <strong>UPI (GPay/PhonePe/Paytm):</strong> Cannot be auto-verified. Buyer uploads proof, seller confirms.</li>
                                         <li>• <strong>COD:</strong> Confirmed on delivery by seller/delivery person</li>
@@ -541,7 +543,7 @@ export default function OnboardingPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full bg-primary text-primary-foreground py-3 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center"
+                                className="w-full bg-primary text-primary-foreground py-3 rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center shadow-[0_0_15px_rgba(192,132,252,0.3)]"
                             >
                                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Complete Setup <ArrowRight className="ml-2 w-5 h-5" /></>}
                             </button>
@@ -550,15 +552,15 @@ export default function OnboardingPage() {
 
                     {step === 3 && (
                         <div className="text-center py-12">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-10 h-10 text-green-600" />
+                            <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="w-10 h-10 text-primary" />
                             </div>
-                            <h3 className="text-2xl font-bold mb-2">You're All Set!</h3>
-                            <p className="text-gray-600 mb-8">Your account has been successfully configured. You can now start using WaveGroww.</p>
+                            <h3 className="text-2xl font-bold mb-2 text-white">You're All Set!</h3>
+                            <p className="text-muted-foreground mb-8">Your account has been successfully configured. You can now start using WaveGroww.</p>
                             <button
                                 onClick={handleComplete}
                                 disabled={submitting}
-                                className="bg-primary text-primary-foreground px-8 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors"
+                                className="bg-primary text-primary-foreground px-8 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(192,132,252,0.3)]"
                             >
                                 Go to Dashboard
                             </button>

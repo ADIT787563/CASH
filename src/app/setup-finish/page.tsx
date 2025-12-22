@@ -60,20 +60,20 @@ export default function SetupFinishPage() {
 
     if (isFetching) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <Loader2 className="animate-spin h-8 w-8 text-blue-600" />
-                <p className="mt-4 text-gray-500">Loading details...</p>
+            <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
+                <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                <p className="mt-4 text-muted-foreground">Loading details...</p>
             </div>
         );
     }
 
     if (!business) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <p className="text-red-500">Error: Business details not found. Please try again.</p>
+            <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
+                <p className="text-red-400">Error: Business details not found. Please try again.</p>
                 <button
                     onClick={() => router.push('/setup-business')}
-                    className="mt-4 text-blue-600 underline"
+                    className="mt-4 text-primary underline"
                 >
                     Go back to setup
                 </button>
@@ -82,38 +82,38 @@ export default function SetupFinishPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
+        <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-lg glass-card rounded-xl shadow-lg p-8">
                 <div className="text-center mb-8">
-                    <div className="bg-green-100 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="h-10 w-10 text-green-600" />
+                    <div className="bg-primary/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4 animate-bounce">
+                        <CheckCircle className="h-10 w-10 text-primary" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">You're All Set!</h1>
-                    <p className="text-gray-500 mt-2">Your store is ready to launch.</p>
+                    <h1 className="text-2xl font-bold text-white">You're All Set!</h1>
+                    <p className="text-muted-foreground mt-2">Your store is ready to launch.</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6 space-y-4 mb-8 border border-gray-100">
+                <div className="bg-white/5 rounded-lg p-6 space-y-4 mb-8 border border-white/10 text-left">
                     <div className="flex items-center gap-3">
-                        <Store className="h-5 w-5 text-gray-400" />
+                        <Store className="h-5 w-5 text-muted-foreground" />
                         <div>
-                            <p className="text-sm text-gray-500">Business Name</p>
-                            <p className="font-semibold text-gray-900">{business.name}</p>
+                            <p className="text-sm text-muted-foreground">Business Name</p>
+                            <p className="font-semibold text-white">{business.name}</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Globe className="h-5 w-5 text-gray-400" />
+                        <Globe className="h-5 w-5 text-muted-foreground" />
                         <div>
-                            <p className="text-sm text-gray-500">Store Link</p>
-                            <p className="font-semibold text-blue-600">wavegroww.online/{business.slug}</p>
+                            <p className="text-sm text-muted-foreground">Store Link</p>
+                            <p className="font-semibold text-primary">wavegroww.online/{business.slug}</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Smartphone className="h-5 w-5 text-gray-400" />
+                        <Smartphone className="h-5 w-5 text-muted-foreground" />
                         <div>
-                            <p className="text-sm text-gray-500">Seller Code</p>
-                            <p className="font-mono bg-gray-200 px-2 py-0.5 rounded text-sm text-gray-800">{business.sellerCode}</p>
+                            <p className="text-sm text-muted-foreground">Seller Code</p>
+                            <p className="font-mono bg-white/10 px-2 py-0.5 rounded text-sm text-white">{business.sellerCode}</p>
                         </div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@ export default function SetupFinishPage() {
                 <button
                     onClick={handleFinish}
                     disabled={isLoading}
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20 hover:scale-[1.02]"
                 >
                     {isLoading ? (
                         <>

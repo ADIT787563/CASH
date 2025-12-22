@@ -58,35 +58,35 @@ export default function SetupBusinessPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold">Business Profile</h1>
-                    <p className="text-gray-500">Step 2 of 4: Tell us about your store</p>
+        <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-2xl glass-card rounded-xl shadow-lg p-8">
+                <div className="mb-6 text-center">
+                    <h1 className="text-2xl font-bold text-white">Business Profile</h1>
+                    <p className="text-muted-foreground">Step 2 of 4: Tell us about your store</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-1">Business Name</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Business Name</label>
                         <input
                             title="Business Name"
                             placeholder="Business Name"
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-1">Store Handle (URL)</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Store Handle (URL)</label>
                         <div className="flex items-center">
-                            <span className="bg-gray-100 p-2 border border-r-0 rounded-l-lg text-gray-500">wavegroww.online/</span>
+                            <span className="bg-white/10 p-2 border border-white/10 border-r-0 rounded-l-lg text-muted-foreground">wavegroww.online/</span>
                             <input
                                 title="Store Handle"
                                 value={formData.slug}
                                 onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '') })}
-                                className="w-full p-2 border rounded-r-lg"
+                                className="w-full p-2 bg-white/5 border border-white/10 rounded-r-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 placeholder="my-store"
                                 required
                             />
@@ -94,12 +94,12 @@ export default function SetupBusinessPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Type</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Type</label>
                         <select
                             title="Business Type"
                             value={formData.type}
                             onChange={e => setFormData({ ...formData, type: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all [&>option]:bg-[#1a0b2e]"
                         >
                             <option>Individual</option>
                             <option>MSME</option>
@@ -108,12 +108,12 @@ export default function SetupBusinessPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Category</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Category</label>
                         <select
                             title="Business Category"
                             value={formData.category}
                             onChange={e => setFormData({ ...formData, category: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all [&>option]:bg-[#1a0b2e]"
                         >
                             <option>Retail</option>
                             <option>Services</option>
@@ -125,25 +125,25 @@ export default function SetupBusinessPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Business Phone</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Business Phone</label>
                         <input
                             title="Business Phone"
                             placeholder="Business Phone"
                             value={formData.phone}
                             onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Business Email</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">Business Email</label>
                         <input
                             title="Business Email"
                             placeholder="Business Email"
                             value={formData.email}
                             onChange={e => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             type="email"
                             required
                         />
@@ -151,7 +151,7 @@ export default function SetupBusinessPage() {
 
                     {/* Address Block */}
                     <div className="md:col-span-2 mt-2">
-                        <label className="block text-sm font-bold text-gray-700">Business Address</label>
+                        <label className="block text-sm font-bold text-white">Business Address</label>
                     </div>
 
                     <div className="md:col-span-2">
@@ -159,7 +159,7 @@ export default function SetupBusinessPage() {
                             placeholder="Street Address"
                             value={formData.addressLine1}
                             onChange={e => setFormData({ ...formData, addressLine1: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
@@ -168,7 +168,7 @@ export default function SetupBusinessPage() {
                             placeholder="City"
                             value={formData.city}
                             onChange={e => setFormData({ ...formData, city: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
@@ -177,7 +177,7 @@ export default function SetupBusinessPage() {
                             placeholder="State"
                             value={formData.state}
                             onChange={e => setFormData({ ...formData, state: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
@@ -186,16 +186,16 @@ export default function SetupBusinessPage() {
                             placeholder="Pincode"
                             value={formData.pincode}
                             onChange={e => setFormData({ ...formData, pincode: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1">GSTIN (Optional)</label>
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">GSTIN (Optional)</label>
                         <input
                             value={formData.gstin}
                             onChange={e => setFormData({ ...formData, gstin: e.target.value })}
-                            className="w-full p-2 border rounded-lg"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                             placeholder="22AAAAA0000A1Z5"
                         />
                     </div>
@@ -204,7 +204,7 @@ export default function SetupBusinessPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex justify-center"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] flex justify-center"
                         >
                             {isLoading ? <Loader2 className="animate-spin" /> : "Save & Continue"}
                         </button>
