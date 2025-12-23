@@ -11,7 +11,7 @@ export function HeroSection() {
   return (
     <section className="relative pt-40 pb-24 lg:pt-60 lg:pb-40 overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[960px] h-[480px] bg-primary/20 blur-[100px] rounded-full -z-10 opacity-30"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[960px] h-[480px] bg-indigo-500/10 blur-[100px] rounded-full -z-10 opacity-50"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
 
@@ -22,8 +22,8 @@ export function HeroSection() {
           transition={{ duration: 0.5 }}
           className="flex justify-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-purple-900/30 border border-purple-800/50 backdrop-blur-sm">
-            <span className="text-purple-300 text-lg">✨ Trusted by 10,000+ Indian Sellers</span>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-zinc-200 shadow-sm">
+            <span className="text-zinc-600 text-lg font-medium">✨ Trusted by 10,000+ Indian Sellers</span>
           </div>
         </motion.div>
 
@@ -32,10 +32,10 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-6xl lg:text-[5.5rem] font-bold tracking-tight mb-10 leading-tight"
+          className="text-6xl lg:text-[5.5rem] font-bold tracking-tight mb-10 leading-tight text-zinc-900"
         >
           WhatsApp Automation
-          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mt-3">
+          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 mt-3 pb-2">
             for Indian Businesses
           </span>
         </motion.h1>
@@ -45,7 +45,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-xl md:text-2xl text-purple-200/60 mb-12 max-w-3xl mx-auto leading-relaxed"
+          className="text-xl md:text-2xl text-zinc-600 mb-12 max-w-3xl mx-auto leading-relaxed"
         >
           Never miss a sale again. Our AI chatbot replies to buyers 24/7, manages your catalog, and helps you close more deals — all on WhatsApp.
         </motion.p>
@@ -58,14 +58,14 @@ export function HeroSection() {
           className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-24"
         >
           <Link href={session?.user ? "/dashboard" : "/register"}>
-            <div className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-primary px-10 font-medium text-black transition-all duration-300 hover:bg-purple-300 hover:w-64 w-60 text-lg shadow-[0_0_20px_rgba(192,132,252,0.5)] hover:shadow-[0_0_30px_rgba(192,132,252,0.8)]">
+            <div className="group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-full bg-indigo-600 px-10 font-medium text-white transition-all duration-300 hover:bg-indigo-700 hover:w-64 w-60 text-lg shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300">
               <span className="mr-2 font-bold">Start Free Trial</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
           <Link href="/manual">
-            <div className="inline-flex h-14 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 backdrop-blur-md px-10 font-medium text-white transition-colors hover:bg-purple-500/20 text-lg">
+            <div className="inline-flex h-14 items-center justify-center rounded-full border border-zinc-200 bg-white px-10 font-medium text-zinc-700 transition-colors hover:bg-zinc-50 text-lg hover:border-zinc-300">
               See How It Works
             </div>
           </Link>
@@ -76,25 +76,25 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto text-center border-t border-purple-500/10 pt-16"
+          className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto text-center border-t border-zinc-200 pt-16"
         >
           <div className="space-y-2">
-            <h3 className="text-4xl font-bold text-white">10K+</h3>
-            <p className="text-purple-200/60 text-lg">Active Sellers</p>
+            <h3 className="text-4xl font-bold text-zinc-900">10K+</h3>
+            <p className="text-zinc-500 text-lg">Active Sellers</p>
           </div>
           <div className="space-y-2">
-            <h3 className="text-4xl font-bold text-white">5M+</h3>
-            <p className="text-purple-200/60 text-lg">Messages Sent</p>
+            <h3 className="text-4xl font-bold text-zinc-900">5M+</h3>
+            <p className="text-zinc-500 text-lg">Messages Sent</p>
           </div>
           <div className="space-y-2">
-            <h3 className="text-4xl font-bold text-purple-400">300%</h3>
-            <p className="text-purple-200/60 text-lg">Avg. Sales Increase</p>
+            <h3 className="text-4xl font-bold text-zinc-900">300%</h3>
+            <p className="text-zinc-500 text-lg">Avg. Sales Increase</p>
           </div>
         </motion.div>
 
         {/* Made with Badge - Bottom Right */}
         <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+          <div className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-zinc-100 flex items-center gap-2">
             <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center">
               <span className="text-white text-[10px]">E</span>
             </div>

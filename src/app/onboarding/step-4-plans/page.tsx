@@ -70,7 +70,7 @@ export default function PlansStep() {
                 )}
 
                 {popular && (
-                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-${color}-500 to-pink-500 rounded-full text-white text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap`}>
+                    <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 rounded-full text-black text-xs font-bold shadow-lg uppercase tracking-wide z-10 whitespace-nowrap`}>
                         Most Popular
                     </div>
                 )}

@@ -121,10 +121,10 @@ interface PlanBadgeProps {
  */
 export function PlanBadge({ requiredPlan, className = '' }: PlanBadgeProps) {
     const colors = {
-        starter: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-        growth: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-        agency: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-        enterprise: 'bg-green-500/10 text-green-600 border-green-500/20',
+        starter: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
+        growth: 'bg-zinc-500/10 text-zinc-600 border-zinc-500/20',
+        agency: 'bg-stone-500/10 text-stone-600 border-stone-500/20',
+        enterprise: 'bg-white/10 text-white border-white/20',
     };
 
     const names = {

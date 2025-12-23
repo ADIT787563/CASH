@@ -50,28 +50,8 @@ export default function Home() {
   useEffect(() => {
     const checkAndRedirect = async () => {
       if (!isPending && session?.user) {
-        // Check if profile is complete
-        const token = localStorage.getItem("bearer_token");
-        if (token) {
-          try {
-            const response = await fetch("/api/business-profile", {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              // If profile doesn't exist or is incomplete, go to setup
-              if (!data || !data.userId || !data.isComplete) {
-                router.push("/setup-profile");
-                return;
-              }
-            }
-          } catch (error) {
-            console.error("Error checking profile:", error);
-          }
-        }
-
-        // Profile is complete or check failed, go to dashboard
+        // Always redirect to dashboard for logged-in users
+        // Profile completion checks should be handled within the dashboard or via specific guards
         router.push("/dashboard");
       }
     };

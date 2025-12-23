@@ -116,8 +116,9 @@ export default function NewCampaignPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Template</label>
+                                    <label htmlFor="campaign-template" className="block text-sm font-medium text-gray-700 mb-1">Select Template</label>
                                     <select
+                                        id="campaign-template"
                                         required
                                         value={templateId}
                                         onChange={(e) => setTemplateId(Number(e.target.value))}
@@ -159,7 +160,7 @@ export default function NewCampaignPage() {
                                     </label>
                                 </div>
                                 <div className="opacity-50 pointer-events-none flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
-                                    <input type="radio" name="audience" disabled />
+                                    <input type="radio" name="audience" disabled aria-label="Filter by Tag (Disabled - Pro Feature)" />
                                     <label className="flex-1">
                                         <span className="block text-sm font-medium text-gray-900">Filter by Tag (Pro)</span>
                                         <span className="block text-xs text-gray-500">Available in Pro plan</span>
@@ -181,8 +182,8 @@ export default function NewCampaignPage() {
                                         type="button"
                                         onClick={() => setScheduleType('now')}
                                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium border ${scheduleType === 'now'
-                                                ? 'bg-indigo-50 border-indigo-600 text-indigo-700'
-                                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                            ? 'bg-indigo-50 border-indigo-600 text-indigo-700'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
                                         Send Now
@@ -191,8 +192,8 @@ export default function NewCampaignPage() {
                                         type="button"
                                         onClick={() => setScheduleType('later')}
                                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium border ${scheduleType === 'later'
-                                                ? 'bg-indigo-50 border-indigo-600 text-indigo-700'
-                                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                            ? 'bg-indigo-50 border-indigo-600 text-indigo-700'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
                                         Schedule for Later
@@ -201,8 +202,9 @@ export default function NewCampaignPage() {
 
                                 {scheduleType === 'later' && (
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
+                                        <label htmlFor="schedule-time" className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
                                         <input
+                                            id="schedule-time"
                                             type="datetime-local"
                                             required={scheduleType === 'later'}
                                             value={scheduledAt}

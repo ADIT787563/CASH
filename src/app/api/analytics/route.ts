@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { analytics } from '@/db/schema';
-import { eq, and, desc, gte, lte } from 'drizzle-orm';
+import { analytics, messages, leads, orders } from '@/db/schema';
+import { eq, and, desc, gte, lte, sql, isNotNull, ne } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
 // Helper to get userId from headers (for testing/demo)
@@ -18,9 +18,149 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
 
     const { searchParams } = new URL(request.url);
+    const mode = searchParams.get('mode'); // 'dashboard' | 'list' | 'single'
     const id = searchParams.get('id');
 
-    // Single record fetch
+    // --- DASHBOARD AGGREGATION MODE ---
+    if (mode === 'dashboard') {
+      const now = new Date();
+      // Start of day in local time (naive approach, better to use user timezone if available)
+      // For simplicity in this demo, we'll use UTC or server time start of day
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+      const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+
+      // 7 Days ago for analytics chart
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+      const sevenDaysAgoStr = sevenDaysAgo.toISOString();
+
+      // Parallel Fetching for Dashboard Components
+      const [
+        messagesToday,
+        leadsToday,
+        ordersToday,
+        revenueToday,
+        totalOrders,
+        totalOutboundMessages, // Was totalMessages
+        totalRevenue,
+        revenueLast7Days,
+        uniqueConvertedLeadsCount // New metric for conversion rate
+      ] = await Promise.all([
+        // 1. Messages Today
+        db.select({ count: sql<number>`count(*)` })
+          .from(messages)
+          .where(and(
+            eq(messages.userId, userId),
+            gte(messages.createdAt, startOfDay)
+          )),
+
+        // 2. Leads Today
+        db.select({ count: sql<number>`count(*)` })
+          .from(leads)
+          .where(and(
+            eq(leads.userId, userId),
+            gte(leads.createdAt, startOfDay)
+          )),
+
+        // 3. Orders Today (Exclude Subscription)
+        db.select({ count: sql<number>`count(*)` })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            gte(orders.createdAt, startOfDay),
+            ne(orders.source, 'subscription')
+          )),
+
+        // 4. Revenue Today (Paid Only, Exclude Subscription)
+        db.select({ total: sql<number>`sum(${orders.totalAmount})` })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            gte(orders.createdAt, startOfDay),
+            ne(orders.source, 'subscription')
+          )),
+
+        // 5. Total Orders (All Time, Exclude Subscription)
+        db.select({ count: sql<number>`count(*)` })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            ne(orders.source, 'subscription')
+          )),
+
+        // 6. Total Messages Automated (Outbound)
+        db.select({ count: sql<number>`count(*)` })
+          .from(messages)
+          .where(and(
+            eq(messages.userId, userId),
+            eq(messages.direction, 'outbound')
+          )),
+
+        // 7. Total Revenue (All Time, Paid Only, No Sub)
+        db.select({ total: sql<number>`sum(${orders.totalAmount})` })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            eq(orders.paymentStatus, 'paid'),
+            ne(orders.source, 'subscription')
+          )),
+
+        // 8. Analytics Chart (Last 7 Days)
+        db.select({
+          date: sql<string>`substr(${orders.createdAt}, 1, 10)`,
+          revenue: sql<number>`sum(${orders.totalAmount})`
+        })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            gte(orders.createdAt, sevenDaysAgoStr),
+            eq(orders.paymentStatus, 'paid'),
+            ne(orders.source, 'subscription')
+          ))
+          .groupBy(sql`substr(${orders.createdAt}, 1, 10)`)
+          .orderBy(sql`substr(${orders.createdAt}, 1, 10)`),
+
+        // 9. Unique Converted Leads
+        db.select({ count: sql<number>`count(distinct ${orders.leadId})` })
+          .from(orders)
+          .where(and(
+            eq(orders.userId, userId),
+            ne(orders.source, 'subscription'),
+            isNotNull(orders.leadId)
+          ))
+      ]);
+
+      // Calculate conversion rate (Unique Leads with Orders / Total Leads * 100)
+      const leadCount = (await db.select({ count: sql<number>`count(*)` }).from(leads).where(eq(leads.userId, userId)))[0]?.count || 0;
+      const convertedCount = uniqueConvertedLeadsCount[0]?.count || 0;
+
+      // Cap at 100% just in case of data anomalies, though logic should prevent it
+      let conversionRateVal = leadCount > 0 ? (convertedCount / leadCount) * 100 : 0;
+      if (conversionRateVal > 100) conversionRateVal = 100;
+
+      return NextResponse.json({
+        topStats: {
+          messages: messagesToday[0]?.count || 0,
+          leads: leadsToday[0]?.count || 0,
+          orders: ordersToday[0]?.count || 0,
+          revenue: (revenueToday[0]?.total || 0) / 100,
+        },
+        inboxStats: {
+          totalOrders: totalOrders[0]?.count || 0,
+          messagesAutomated: totalOutboundMessages[0]?.count || 0,
+          paymentsReceived: (totalRevenue[0]?.total || 0) / 100,
+          conversionRate: `${conversionRateVal.toFixed(1)}%`,
+          revenueLast7Days: (revenueLast7Days.reduce((acc, curr) => acc + (curr.revenue || 0), 0) / 100).toFixed(0)
+        },
+        chartData: revenueLast7Days.map(item => ({
+          date: item.date,
+          value: (item.revenue || 0) / 100
+        }))
+      });
+    }
+
+    // --- SINGLE RECORD FETCH ---
     if (id) {
       if (!id || isNaN(parseInt(id))) {
         return NextResponse.json({
@@ -47,13 +187,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(record[0], { status: 200 });
     }
 
-    // List with pagination and date range filtering
+    // --- LIST FETCH (Legacy/Standard) ---
     const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 100);
     const offset = parseInt(searchParams.get('offset') ?? '0');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    // Build WHERE conditions
     const conditions = [eq(analytics.userId, userId)];
 
     if (startDate) {
@@ -64,7 +203,6 @@ export async function GET(request: NextRequest) {
       conditions.push(lte(analytics.date, endDate));
     }
 
-    // Sort by date descending (newest first)
     const results = await db.select()
       .from(analytics)
       .where(and(...conditions))

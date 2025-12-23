@@ -48,9 +48,9 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
                     {/* Progress Line */}
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-white/10 rounded-full -z-10"></div>
                     <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full -z-10 transition-all duration-500"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 rounded-full -z-10 transition-all duration-500"
                         style={{
-                            width: `${((steps.findIndex(s => pathname.includes(s.key)) + 1) / steps.length) * 100}%`
+                            width: `${((steps.findIndex(s => pathname.includes(s.key)) + 1) / steps.length) * 100}%` // eslint-disable-line react-dom/no-unsafe-inline-style
                         }}
                     ></div>
 
@@ -65,10 +65,10 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
                                     className={`
                                         w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300
                                         ${isCompleted
-                                            ? "bg-primary border-primary text-black shadow-[0_0_20px_rgba(192,132,252,0.5)]"
+                                            ? "bg-primary border-primary text-black shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                                             : isCurrent
-                                                ? "bg-primary border-primary text-black shadow-[0_0_25px_rgba(192,132,252,0.7)] scale-110"
-                                                : "bg-[#0f0518] border-white/20 text-muted-foreground"
+                                                ? "bg-primary border-primary text-black shadow-[0_0_25px_rgba(255,255,255,0.6)] scale-110"
+                                                : "bg-[#0a0a0a] border-white/20 text-muted-foreground"
                                         }
                                     `}
                                 >

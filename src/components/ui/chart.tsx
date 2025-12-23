@@ -216,6 +216,7 @@ function ChartTooltipContent({
                             "my-0.5": nestLabel && indicator === "dashed",
                           }
                         )}
+                        // eslint-disable-next-line react-dom/no-unsafe-inline-style
                         style={
                           {
                             "--color-bg": indicatorColor,
@@ -297,6 +298,7 @@ function ChartLegendContent({
             ) : (
               <div
                 className="h-2 w-2 shrink-0 rounded-[2px]"
+                // eslint-disable-next-line react-dom/no-unsafe-inline-style
                 style={{
                   backgroundColor: item.color,
                 }}

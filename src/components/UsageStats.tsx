@@ -89,7 +89,7 @@ export function UsageStats() {
             starter: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
             growth: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
             pro: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-            enterprise: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+            enterprise: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 font-bold',
         };
         return colors[plan] || colors.starter;
     };
@@ -201,7 +201,7 @@ export function UsageStats() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <Bot className="w-5 h-5 text-purple-500" />
+                            <Bot className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                             <h3 className="font-semibold">Chatbot Replies</h3>
                         </div>
                         <span className="text-sm text-gray-500">{usage.chatbot.window}</span>
@@ -233,7 +233,7 @@ export function UsageStats() {
 
             {/* Upgrade Prompt */}
             {normalizedPlan === 'starter' && (usage.api.current / usage.api.limit > 0.7 || usage.messages.current / usage.messages.limit > 0.7) && (
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6">
+                <div className="bg-gradient-to-r from-zinc-50 to-zinc-100 dark:from-zinc-900/40 dark:to-zinc-800/40 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
                     <div className="flex items-start gap-4">
                         <ArrowUp className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
                         <div className="flex-1">

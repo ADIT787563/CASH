@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { orders, orderItems, payments, businesses, orderSequences } from '@/db/schema';
 import { razorpay, RAZORPAY_KEY_ID } from '@/lib/razorpay';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, ne } from 'drizzle-orm';
 import { auth, getCurrentUser } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -29,10 +29,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get('limit') || '50');
+
     // Fetch Orders
     const userOrders = await db.query.orders.findMany({
-      where: eq(orders.userId, user.id),
+      where: and(
+        eq(orders.userId, user.id),
+        ne(orders.source, 'subscription')
+      ),
       orderBy: [desc(orders.createdAt)],
+      limit: limit,
       with: {
         // Assuming relations are set up. If not, we might not get items directly here easily 
         // without defined relations in schema.ts (which we saw earlier but might be incomplete)

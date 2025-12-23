@@ -476,9 +476,11 @@ export default function ProductPage() {
                   className="bg-card border border-border rounded-xl overflow-hidden"
                 >
                   <button
+                    id={`feature-btn-${index}`}
                     onClick={() => setExpandedFeature(expandedFeature === index ? null : index)}
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
                     aria-expanded={expandedFeature === index ? "true" : "false"}
+                    aria-controls={`feature-panel-${index}`}
                   >
                     <span className="text-lg font-semibold text-left">{feature.title}</span>
                     <ChevronDown
@@ -487,7 +489,12 @@ export default function ProductPage() {
                     />
                   </button>
                   {expandedFeature === index && (
-                    <div className="px-6 pb-4">
+                    <div
+                      id={`feature-panel-${index}`}
+                      role="region"
+                      aria-labelledby={`feature-btn-${index}`}
+                      className="px-6 pb-4"
+                    >
                       <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                     </div>
                   )}
@@ -612,9 +619,11 @@ export default function ProductPage() {
                   className="bg-card border border-border rounded-xl overflow-hidden"
                 >
                   <button
+                    id={`faq-btn-${index}`}
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
                     aria-expanded={expandedFaq === index ? "true" : "false"}
+                    aria-controls={`faq-panel-${index}`}
                   >
                     <span className="text-lg font-semibold text-left">{faq.question}</span>
                     <ChevronDown
@@ -623,7 +632,12 @@ export default function ProductPage() {
                     />
                   </button>
                   {expandedFaq === index && (
-                    <div className="px-6 pb-4">
+                    <div
+                      id={`faq-panel-${index}`}
+                      role="region"
+                      aria-labelledby={`faq-btn-${index}`}
+                      className="px-6 pb-4"
+                    >
                       <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
                     </div>
                   )}

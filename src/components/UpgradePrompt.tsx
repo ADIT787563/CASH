@@ -62,12 +62,12 @@ export function UpgradePrompt({
                         <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div
                                 className={`h-full transition-all ${percentage >= 100
-                                        ? "bg-destructive"
-                                        : percentage >= 80
-                                            ? "bg-yellow-500"
-                                            : "bg-primary"
+                                    ? "bg-destructive"
+                                    : percentage >= 80
+                                        ? "bg-yellow-500"
+                                        : "bg-primary"
                                     }`}
-                                style={{ width: `${Math.min(percentage, 100)}%` }}
+                                style={{ width: `${Math.min(percentage, 100)}%` }} // eslint-disable-line react-dom/no-unsafe-inline-style
                             />
                         </div>
                     </div>
@@ -137,10 +137,10 @@ export function CatalogLimitBadge({
     return (
         <div
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${isAtLimit
-                    ? "bg-destructive/10 text-destructive"
-                    : isNearLimit
-                        ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-500"
-                        : "bg-muted text-muted-foreground"
+                ? "bg-destructive/10 text-destructive"
+                : isNearLimit
+                    ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-500"
+                    : "bg-muted text-muted-foreground"
                 } ${className}`}
         >
             <span className="font-medium">
@@ -198,10 +198,10 @@ export function UsageStatsCard({
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                         className={`h-full transition-all ${percentage >= 100
-                                ? "bg-destructive"
-                                : percentage >= 80
-                                    ? "bg-yellow-500"
-                                    : "bg-primary"
+                            ? "bg-destructive"
+                            : percentage >= 80
+                                ? "bg-yellow-500"
+                                : "bg-primary"
                             }`}
                         style={{ width: `${Math.min(percentage, 100)}%` }}
                     />

@@ -1,106 +1,82 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 :root {
-  --radius: 0.5rem;
+  color-scheme: light;
+  --radius: 0.75rem;
 
-  /* Global Dark Theme (Default) - Deep Purple/Violet Base */
-  --background: #0f0518;
-  /* Deepest Violet */
-  --foreground: #ffffff;
+  /* PREMIUM WHITE THEME */
+  --background: #ffffff;
+  --foreground: #020410;
+  /* Deepest Indigo/Black for text */
 
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #020410;
 
-  --popover: #1a0b2e;
-  --popover-foreground: #ffffff;
+  --popover: #ffffff;
+  --popover-foreground: #020410;
 
-  /* Primary - Vibrant Purple/Pink Glow */
-  --primary: #c084fc;
-  /* Purple 400 */
-  --primary-foreground: #0f0518;
+  --primary: #4f46e5;
+  /* Indigo 600 - Sharp & Professional */
+  --primary-foreground: #ffffff;
 
-  /* Secondary - Deep Purple/Blue */
-  --secondary: #2e1065;
-  /* Purple 900 */
-  --secondary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --secondary-foreground: #0f172a;
 
-  /* Accent - Lighter Purple/Blue */
-  --accent: #4c1d95;
-  --accent-foreground: #ffffff;
+  --muted: #f8fafc;
+  /* Slate 50 */
+  --muted-foreground: #64748b;
+  /* Slate 500 */
 
-  /* Muted */
-  --muted: #1e1b4b;
-  /* Indigo 950 */
-  --muted-foreground: #a78bfa;
-  /* Purple 400/Grayish */
+  --accent: #f1f5f9;
+  /* Slate 100 */
+  --accent-foreground: #0f172a;
 
-  /* States */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --success: #10b981;
-  --success-foreground: #ffffff;
 
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #c084fc;
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #4f46e5;
 }
 
-.dark {
-  /* Inherit :root as we are default dark now */
-  --background: #0f0518;
-  --foreground: #ffffff;
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #ffffff;
-  --popover: #1a0b2e;
-  --popover-foreground: #ffffff;
-  --primary: #c084fc;
-  --primary-foreground: #0f0518;
-  --secondary: #2e1065;
-  --secondary-foreground: #ffffff;
-  --accent: #4c1d95;
-  --accent-foreground: #ffffff;
-  --muted: #1e1b4b;
-  --muted-foreground: #a78bfa;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #c084fc;
-}
+/* .dark {
+  DISABLED 
+} */
 
 @layer base {
   html {
-    font-size: 80%;
+    font-size: 95%;
+    /* Better readability */
   }
 
   * {
@@ -108,40 +84,58 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-zinc-50 text-foreground;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    /* Subtle gradient for light mode depth */
     background-image:
-      radial-gradient(circle at 50% 0%, rgba(120, 50, 255, 0.15), transparent 50%),
-      radial-gradient(circle at 100% 0%, rgba(100, 20, 200, 0.1), transparent 50%),
-      radial-gradient(circle at 0% 0%, rgba(100, 20, 200, 0.1), transparent 50%);
+      radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.03), transparent 30%),
+      radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.03), transparent 30%);
     background-attachment: fixed;
   }
 }
 
 @layer utilities {
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400;
-  }
-
   .glass-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+    /* Updated for transparency on White */
+    @apply bg-white/70 backdrop-blur-xl border border-slate-200/50 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300;
   }
 
-  /* Keyframes */
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
+  /* Dark mode override removed */
 
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+  .glass-panel {
+    /* For Sidebars/Modals */
+    @apply bg-white/80 backdrop-blur-xl border-r border-slate-200/60;
   }
 
+  /* Dark mode override removed */
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600;
+  }
+
+  /* Dark mode override removed */
+
+  .gradient-primary {
+    @apply bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+
+  /* Dark mode override removed */
+
+  /* Animations */
   @keyframes float {
 
     0%,
@@ -150,104 +144,11 @@
     }
 
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-6px);
     }
-  }
-
-  @keyframes pulse-soft {
-
-    0%,
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    50% {
-      opacity: 0.8;
-      transform: scale(1.02);
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  @keyframes glow-pulse {
-
-    0%,
-    100% {
-      box-shadow: 0 0 5px rgba(26, 115, 232, 0.2);
-    }
-
-    50% {
-      box-shadow: 0 0 20px rgba(26, 115, 232, 0.4);
-    }
-  }
-
-  @keyframes rotate-slow {
-    from {
-      transform: rotate(0deg);
-    }
-
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  /* Utility Animations */
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 15s ease infinite;
   }
 
   .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-pulse-soft {
-    animation: pulse-soft 4s ease-in-out infinite;
-  }
-
-  .animate-shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite linear;
-  }
-
-  .animate-glow-pulse {
-    animation: glow-pulse 3s infinite ease-in-out;
-  }
-
-  .animate-rotate-slow {
-    animation: rotate-slow 20s linear infinite;
-  }
-
-  .animate-gradient-rotate {
-    animation: gradient 10s ease infinite, rotate-slow 30s linear infinite;
-  }
-
-  .animate-color-pulse {
-    animation: pulse-soft 6s ease infinite;
-  }
-
-  /* Infinite Scroll Animation */
-  @keyframes scroll-infinite {
-    0% {
-      transform: translateX(0);
-    }
-
-    100% {
-      transform: translateX(-33.33%);
-    }
-  }
-
-  .animate-scroll-infinite {
-    animation: scroll-infinite 30s linear infinite;
+    animation: float 5s ease-in-out infinite;
   }
 }

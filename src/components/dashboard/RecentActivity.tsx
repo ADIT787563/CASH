@@ -9,7 +9,7 @@ const activities = [
         desc: "Nikolai Updated a Task",
         time: "42 Mins Ago",
         icon: CheckCircle2,
-        color: "bg-pink-500",
+        color: "bg-zinc-800 text-zinc-200 border border-zinc-700",
     },
     {
         id: 2,
@@ -17,7 +17,7 @@ const activities = [
         desc: "Pralesh Added a new Deal",
         time: "1 Hour Ago",
         icon: Briefcase,
-        color: "bg-indigo-500",
+        color: "bg-white text-black border border-white",
     },
     {
         id: 3,
@@ -25,7 +25,7 @@ const activities = [
         desc: "Sansh Published a Article",
         time: "5 Hours Ago",
         icon: FileText,
-        color: "bg-yellow-500",
+        color: "bg-zinc-700 text-zinc-300 border border-zinc-600",
     },
     {
         id: 4,
@@ -33,7 +33,7 @@ const activities = [
         desc: "Manish Updated a Dock",
         time: "1 Day Ago",
         icon: Zap,
-        color: "bg-red-500",
+        color: "bg-zinc-900 text-zinc-400 border border-zinc-800",
     },
 ];
 

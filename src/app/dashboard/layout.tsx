@@ -1,4 +1,5 @@
 import { DashboardTopNav } from "@/components/dashboard/DashboardTopNav";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 
 export default function DashboardLayout({
     children,
@@ -6,13 +7,20 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen bg-transparent">
-            <DashboardTopNav />
-            {/* Adjusted padding for fixed top bar (h-14 = 3.5rem) */}
-            <div className="pt-14 min-h-screen transition-all duration-300">
-                <div className="p-4 md:p-8 max-w-[1800px] mx-auto">
+        <div className="min-h-screen bg-zinc-50">
+            {/* 1. Fixed Sidebar */}
+            <DashboardSidebar />
+
+            {/* 2. Main Content Wrapper (shifted right by sidebar width) */}
+            <div className="pl-64 flex flex-col min-h-screen transition-all duration-300">
+
+                {/* 3. Top Navigation */}
+                <DashboardTopNav />
+
+                {/* 4. Page Content */}
+                <main className="flex-1 p-8 max-w-[1600px] mx-auto w-full">
                     {children}
-                </div>
+                </main>
             </div>
         </div>
     );

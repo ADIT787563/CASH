@@ -402,7 +402,7 @@ export default function NewProductPage() {
                     }
                     placeholder="e.g., Cotton Kurta — Men"
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    aria-invalid={!!validationErrors.name}
+                    aria-invalid={validationErrors.name ? "true" : "false"}
                     aria-describedby={validationErrors.name ? "name-error" : "name-hint"}
                   />
                   {validationErrors.name && (
@@ -551,7 +551,7 @@ export default function NewProductPage() {
                       }
                       placeholder="Enter image URL or upload"
                       className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      aria-invalid={!!validationErrors.imageUrl}
+                      aria-invalid={validationErrors.imageUrl ? "true" : "false"}
                       aria-describedby={validationErrors.imageUrl ? "image-error" : "image-hint"}
                     />
 
@@ -598,7 +598,7 @@ export default function NewProductPage() {
                       step="0.01"
                       min="0"
                       className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      aria-invalid={!!validationErrors.price}
+                      aria-invalid={validationErrors.price ? "true" : "false"}
                       aria-describedby={validationErrors.price ? "price-error" : undefined}
                     />
                   </div>
@@ -624,7 +624,7 @@ export default function NewProductPage() {
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background border-input hover:bg-muted"
                         }`}
-                      aria-pressed={formData.inStock}
+                      aria-pressed={formData.inStock ? "true" : "false"}
                     >
                       In Stock
                     </button>
@@ -635,7 +635,7 @@ export default function NewProductPage() {
                         ? "bg-destructive text-destructive-foreground border-destructive"
                         : "bg-background border-input hover:bg-muted"
                         }`}
-                      aria-pressed={!formData.inStock}
+                      aria-pressed={!formData.inStock ? "true" : "false"}
                     >
                       Out of Stock
                     </button>
@@ -660,7 +660,7 @@ export default function NewProductPage() {
                         placeholder="Enter quantity"
                         min="0"
                         className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                        aria-invalid={!!validationErrors.stock}
+                        aria-invalid={validationErrors.stock ? "true" : "false"}
                         aria-describedby={validationErrors.stock ? "stock-error" : undefined}
                       />
                       {validationErrors.stock && (
@@ -684,7 +684,7 @@ export default function NewProductPage() {
                       setFormData((prev) => ({ ...prev, category: e.target.value }))
                     }
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    aria-invalid={!!validationErrors.category}
+                    aria-invalid={validationErrors.category ? "true" : "false"}
                     aria-describedby={validationErrors.category ? "category-error" : undefined}
                   >
                     <option value="">Select a category</option>
@@ -722,7 +722,7 @@ export default function NewProductPage() {
                     rows={2}
                     maxLength={300}
                     className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                    aria-invalid={!!validationErrors.shortDescription}
+                    aria-invalid={validationErrors.shortDescription ? "true" : "false"}
                     aria-describedby={validationErrors.shortDescription ? "description-error" : "description-hint"}
                   />
                   {validationErrors.shortDescription && (
@@ -777,7 +777,7 @@ export default function NewProductPage() {
                               ? "bg-primary text-primary-foreground border-primary"
                               : "bg-background border-input hover:bg-muted"
                               }`}
-                            aria-pressed={formData.selectedSizes.includes(size)}
+                            aria-pressed={formData.selectedSizes.includes(size) ? "true" : "false"}
                           >
                             {size}
                           </button>

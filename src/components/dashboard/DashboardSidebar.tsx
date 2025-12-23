@@ -5,22 +5,26 @@ import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     Settings,
-    Bot,
+    Zap, // Replaces Bot
     BarChart3,
     Users,
     ShoppingBag,
     FileText,
     LogOut,
-    Menu
+    Menu,
+    MessageSquare,
+    Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
     { label: "Home", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Inbox", href: "/dashboard/inbox", icon: MessageSquare },
     { label: "Leads", href: "/dashboard/leads", icon: Users },
     { label: "Catalog", href: "/dashboard/catalog", icon: ShoppingBag },
-    { label: "AI Chatbot", href: "/dashboard/chatbot", icon: Bot },
+    { label: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone },
+    { label: "Auto Replies", href: "/dashboard/auto-replies", icon: Zap },
     { label: "Templates", href: "/dashboard/templates", icon: FileText },
     { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { label: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -40,7 +44,7 @@ export function DashboardSidebar() {
             {/* Mobile Toggle */}
             <button
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#0f0518]/90 text-white rounded-md border border-white/10 backdrop-blur-md"
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 glass-panel text-white rounded-md border border-white/10"
                 aria-label="Toggle Mobile Menu"
             >
                 <Menu className="w-6 h-6" />
@@ -49,19 +53,19 @@ export function DashboardSidebar() {
             {/* Sidebar Container */}
             <aside
                 className={`
-          fixed top-0 left-0 z-40 h-screen w-64 bg-[#0f0518]/95 backdrop-blur-xl border-r border-white/10 text-white transition-transform duration-300 ease-in-out
+          fixed top-0 left-0 z-40 h-screen w-64 glass-panel border-r border-border text-foreground transition-transform duration-300 ease-in-out
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
             >
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className="h-16 flex items-center px-6 border-b border-white/10">
-                        <span className="text-lg font-bold gradient-text tracking-tight">WaveGroww</span>
-                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-primary/20 text-primary rounded">ENT</span>
-                    </div>
+                    <Link href="/dashboard" className="h-16 flex items-center px-6 border-b border-border hover:bg-secondary/50 transition-colors">
+                        <span className="text-xl font-bold gradient-text tracking-tight shadow-glow">WaveGroww</span>
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 rounded shadow-sm">ENT</span>
+                    </Link>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                         {NAV_ITEMS.map((item) => {
                             const isActive = pathname === item.href;
                             const Icon = item.icon;
@@ -72,14 +76,14 @@ export function DashboardSidebar() {
                                     href={item.href}
                                     onClick={() => setIsMobileOpen(false)}
                                     className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group
                     ${isActive
-                                            ? "bg-primary/20 text-primary shadow-[0_0_10px_rgba(192,132,252,0.2)]"
-                                            : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                                            ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                            : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
                                         }
                   `}
                                 >
-                                    <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Icon className={`w-4 h-4 transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
                                     {item.label}
                                 </Link>
                             );
@@ -87,10 +91,10 @@ export function DashboardSidebar() {
                     </nav>
 
                     {/* Footer Loop */}
-                    <div className="p-4 border-t border-white/10">
+                    <div className="p-4 border-t border-border bg-secondary/30">
                         <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
                             Sign Out

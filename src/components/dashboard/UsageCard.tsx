@@ -31,7 +31,7 @@ export function UsageCard({ used, limit }: UsageCardProps) {
                 <div className="w-full bg-slate-800/50 rounded-full h-2 mb-3">
                     <div
                         className="bg-emerald-500 h-2 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${percentage}%` }}
+                        style={{ width: `${percentage}%` }} // eslint-disable-line react-dom/no-unsafe-inline-style
                     />
                 </div>
 

@@ -120,11 +120,11 @@ export function TeamManagement() {
 
     const getRoleBadgeColor = (role: string) => {
         const colors: Record<string, string> = {
-            owner: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-            admin: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-            manager: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-            agent: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-            viewer: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+            owner: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 font-bold',
+            admin: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200',
+            manager: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300',
+            agent: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400',
+            viewer: 'bg-zinc-50 text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-500',
         };
         return colors[role] || colors.viewer;
     };
@@ -195,8 +195,9 @@ export function TeamManagement() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">Role</label>
+                            <label htmlFor="invite-role" className="block text-sm font-medium mb-2">Role</label>
                             <select
+                                id="invite-role"
                                 value={inviteRole}
                                 onChange={(e) => setInviteRole(e.target.value)}
                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"

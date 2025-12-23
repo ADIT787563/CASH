@@ -393,6 +393,7 @@ function EditProductContent() {
                                     accept="image/*"
                                     onChange={handleImageUpload}
                                     className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                                    aria-label="Upload New Image"
                                 />
                             </div>
 
@@ -513,6 +514,7 @@ function EditProductContent() {
                                                 type="button"
                                                 onClick={() => handleRemoveTag(tag)}
                                                 className="hover:text-primary/70"
+                                                aria-label={`Remove tag ${tag}`}
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>

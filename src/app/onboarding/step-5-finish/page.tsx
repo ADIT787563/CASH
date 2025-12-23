@@ -64,7 +64,7 @@ export default function FinishStep() {
             */}
 
             <div className="glass-card p-10 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-purple-500 to-indigo-500"></div>
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-white via-zinc-300 to-zinc-500"></div>
 
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 text-primary animate-bounce">
                     <Zap className="w-10 h-10 fill-primary" />

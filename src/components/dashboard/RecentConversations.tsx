@@ -34,7 +34,7 @@ export function RecentConversations({ conversations }: RecentConversationsProps)
     return (
         <div className="bg-[#0F1115] border border-slate-800 rounded-xl p-5">
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-white font-bold text-lg">Recent Conversations</h3>
+                <h3 className="text-white font-bold text-lg">Inbox</h3>
                 <Link href="/inbox" className="text-emerald-500 text-sm font-medium hover:text-emerald-400 flex items-center gap-1">
                     View All <span className="text-lg">›</span>
                 </Link>
@@ -50,9 +50,9 @@ export function RecentConversations({ conversations }: RecentConversationsProps)
                     conversations.map((conv, i) => (
                         <div key={i} className="flex items-start gap-4 p-3 hover:bg-slate-800/30 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-800">
                             {/* Avatar */}
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${i % 3 === 0 ? "bg-emerald-900/50 text-emerald-500" :
-                                    i % 3 === 1 ? "bg-blue-900/50 text-blue-500" :
-                                        "bg-purple-900/50 text-purple-500"
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${i % 3 === 0 ? "bg-zinc-800/50 text-zinc-300 border border-zinc-700" :
+                                i % 3 === 1 ? "bg-zinc-900/50 text-zinc-400 border border-zinc-800" :
+                                    "bg-white/10 text-white border border-white/20"
                                 }`}>
                                 {conv.initials || conv.name.substring(0, 2).toUpperCase()}
                             </div>

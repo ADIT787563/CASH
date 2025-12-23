@@ -1,235 +1,336 @@
 "use client";
 
-import { useState } from "react";
-import {
-    Search,
-    Plus,
-    FileText,
-    MoreVertical,
-    CheckCircle2,
-    Clock,
-    XCircle,
-    Save,
-    Trash2,
-    AlertCircle,
-    Info,
-    Eye
-} from "lucide-react";
-import {
-    validateWhatsAppTemplate,
-    renderTemplate,
-    extractPlaceholderCount
-} from "@/lib/whatsapp-template-validator";
+import { useEffect, useState } from "react";
+import { Copy, Check, MessageSquare, ShoppingBag, Truck, CreditCard, Sparkles, AlertCircle, Plus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// --- Mock Data ---
-const initialTemplates = [
-    { id: 1, name: "october_sale_promo", category: "MARKETING", status: "APPROVED", body: "Hey {{1}}! Our big October Sale is live. Get up to 50% off. Shop: {{2}}" },
-    { id: 2, name: "order_confirmation", category: "UTILITY", status: "APPROVED", body: "Hi {{1}}, thanks for order #{{2}}. We will notify when shipped." },
-    { id: 3, name: "payment_failed", category: "UTILITY", status: "REJECTED", body: "Payment failed for order {{1}}. Please retry here: {{2}}" },
-];
+interface Template {
+    id: number;
+    name: string;
+    content: string;
+    category: string;
+    status: string;
+}
 
-export default function TemplatesPageV2() {
-    const [templates, setTemplates] = useState(initialTemplates);
-    const [selectedId, setSelectedId] = useState<number | null>(1);
-    const [editForm, setEditForm] = useState(initialTemplates[0]);
-    const [sampleVariables, setSampleVariables] = useState<string[]>(["Customer", "WAVE-123"]);
+export default function TemplatesPage() {
+    const [templates, setTemplates] = useState<Template[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [open, setOpen] = useState(false);
+    const [copiedId, setCopiedId] = useState<number | null>(null);
 
-    const validation = validateWhatsAppTemplate({
-        name: editForm.name,
-        category: editForm.category.toLowerCase() as any,
-        language: 'en',
-        content: editForm.body
-    });
+    // Form States
+    const [mode, setMode] = useState("ai"); // 'ai' | 'manual'
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSelect = (t: any) => {
-        setSelectedId(t.id);
-        setEditForm(t);
+    // AI Inputs
+    const [prompt, setPrompt] = useState("");
+    const [aiCategory, setAiCategory] = useState("MARKETING");
+    const [tone, setTone] = useState("Professional");
+
+    // Editor Inputs (Manual or AI Result)
+    const [name, setName] = useState("");
+    const [content, setContent] = useState("");
+    const [category, setCategory] = useState("marketing");
+
+    // Fetch Templates
+    const fetchTemplates = async () => {
+        try {
+            const res = await fetch("/api/templates");
+            if (res.ok) {
+                const data = await res.json();
+                setTemplates(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch templates", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCreate = () => {
-        const newT = { id: Date.now(), name: "new_template", category: "MARKETING", status: "DRAFT", body: "Hello {{1}}..." };
-        setTemplates([newT, ...templates]);
-        handleSelect(newT);
+    useEffect(() => {
+        fetchTemplates();
+    }, []);
+
+    const copyToClipboard = async (id: number, text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedId(id);
+            toast.success("Template copied!");
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch (err) {
+            toast.error("Failed to copy");
+        }
+    };
+
+    // AI Generation
+    const handleGenerate = async () => {
+        if (!prompt) return toast.error("Please enter a prompt");
+
+        setIsGenerating(true);
+        try {
+            const res = await fetch("/api/ai/generate-template", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt, category: aiCategory, tone })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Generation failed");
+
+            // Populate editor fields
+            setName(data.data.name || "new_template");
+            setContent(data.data.body || data.data.content || ""); // Fallback
+            setCategory(aiCategory.toLowerCase());
+
+            toast.success("Template generated!");
+            setMode("manual"); // Switch to view/edit result
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    // Save Template
+    const handleSave = async () => {
+        if (!name || !content) return toast.error("Name and content required");
+
+        setIsSaving(true);
+        try {
+            const res = await fetch("/api/templates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name,
+                    content,
+                    category,
+                    language: 'en'
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to save");
+
+            toast.success("Template saved successfully!");
+            setOpen(false);
+            fetchTemplates(); // Refresh list
+
+            // Reset form
+            setName("");
+            setContent("");
+            setPrompt("");
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const getIcon = (cat: string) => {
+        const c = cat.toUpperCase();
+        if (c === 'ORDER' || c === 'UTILITY') return ShoppingBag;
+        if (c === 'SHIPPING') return Truck;
+        if (c === 'PAYMENT') return CreditCard;
+        if (c === 'SUPPORT') return MessageSquare;
+        return Sparkles; // Marketing
+    };
+
+    const getColor = (cat: string) => {
+        const c = cat.toUpperCase();
+        if (c === 'ORDER' || c === 'UTILITY') return "bg-emerald-500/10 text-emerald-400";
+        if (c === 'SHIPPING') return "bg-cyan-500/10 text-cyan-400";
+        if (c === 'PAYMENT') return "bg-indigo-500/10 text-indigo-400";
+        if (c === 'SUPPORT') return "bg-rose-500/10 text-rose-400";
+        return "bg-blue-500/10 text-blue-400"; // Marketing
     };
 
     return (
-        <div className="h-[calc(100vh-6rem)] flex -m-8 border-t border-slate-200 dark:border-slate-800">
-            {/* LEFT PANE: LIST */}
-            <div className="w-1/3 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-                {/* Toolbar */}
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            placeholder="Search templates..."
-                            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-sm focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
-                    <button onClick={handleCreate} className="p-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        <Plus className="w-4 h-4" />
-                    </button>
+        <div className="space-y-6 text-foreground">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Message Templates</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Ready-to-use messages for your customers.</p>
                 </div>
+                <Button onClick={() => setOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Plus className="w-4 h-4 mr-2" /> New Template
+                </Button>
+            </div>
 
-                {/* List */}
-                <div className="flex-1 overflow-y-auto">
-                    {templates.map((t) => (
-                        <div
-                            key={t.id}
-                            onClick={() => handleSelect(t)}
-                            className={`p-4 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors
-                     ${selectedId === t.id ? 'bg-indigo-50/50 dark:bg-indigo-900/10 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent'}
-                  `}
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className="font-medium text-slate-900 dark:text-white text-sm truncate">{t.name}</span>
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide
-                         ${t.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : ''}
-                         ${t.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' : ''}
-                         ${t.status === 'DRAFT' ? 'bg-slate-100 text-slate-700' : ''}
-                      `}>
-                                    {t.status}
-                                </span>
+            {loading ? (
+                <div className="flex justify-center p-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {templates.length === 0 && (
+                        <div className="col-span-full text-center p-12 text-muted-foreground border border-dashed border-border rounded-xl">
+                            No templates found. Create your first one!
+                        </div>
+                    )}
+                    {templates.map((card) => (
+                        <div key={card.id} className="bg-card border border-border rounded-xl p-5 hover:bg-secondary/50 transition-colors flex flex-col group shadow-sm">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${getColor(card.category)}`}>
+                                        {(() => {
+                                            const Icon = getIcon(card.category);
+                                            return <Icon className="w-5 h-5" />;
+                                        })()}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-sm">{card.name.replace(/_/g, ' ')}</h3>
+                                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider ring-1 ring-border px-1.5 py-0.5 rounded-full">{card.category}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => copyToClipboard(card.id, card.content)}
+                                    className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-secondary rounded-lg"
+                                    title="Copy Text"
+                                >
+                                    {copiedId === card.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                                </button>
                             </div>
-                            <p className="text-xs text-slate-500 line-clamp-2 font-mono">
-                                {t.body}
-                            </p>
+
+                            <div className="flex-1 bg-secondary/30 rounded-lg p-3 border border-border/50 font-mono text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto custom-scrollbar">
+                                {card.content}
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-border flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ActionButton
+                                    variant="secondary"
+                                    className="w-full text-xs h-8"
+                                    onAction={() => copyToClipboard(card.id, card.content)}
+                                >
+                                    Copy Text
+                                </ActionButton>
+                            </div>
                         </div>
                     ))}
                 </div>
-            </div>
+            )}
 
-            {/* RIGHT PANE: EDITOR */}
-            <div className="w-2/3 bg-slate-50 dark:bg-slate-900/50 flex flex-col">
-                {selectedId ? (
-                    <>
-                        {/* Editor Header */}
-                        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex justify-between items-center">
-                            <div>
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-slate-400" />
-                                    {editForm.name}
-                                </h2>
-                                <p className="text-xs text-slate-400 font-mono mt-1">ID: {editForm.id} • Language: en_US</p>
+            {/* CREATE TEMPLATE DIALOG */}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Create Message Template</DialogTitle>
+                        <DialogDescription>
+                            Generate with AI or write manually.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <Tabs value={mode} onValueChange={setMode} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="ai">Generate with AI</TabsTrigger>
+                            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="ai" className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>What should this message do?</Label>
+                                <Textarea
+                                    placeholder="E.g. Confirm an order for a fashion store and ask for a Google Review..."
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    className="min-h-[100px]"
+                                />
                             </div>
-                            <div className="flex gap-2">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded text-sm font-medium hover:bg-indigo-700">
-                                    <Save className="w-4 h-4" />
-                                    Save Changes
-                                </button>
-                                <button className="p-2 text-rose-600 hover:bg-rose-50 rounded">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Category</Label>
+                                    <Select value={aiCategory} onValueChange={setAiCategory}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="MARKETING">Marketing</SelectItem>
+                                            <SelectItem value="UTILITY">Utility</SelectItem>
+                                            <SelectItem value="AUTHENTICATION">Authentication</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tone</Label>
+                                    <Select value={tone} onValueChange={setTone}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Professional">Professional</SelectItem>
+                                            <SelectItem value="Friendly">Friendly</SelectItem>
+                                            <SelectItem value="Urgent">Urgent</SelectItem>
+                                            <SelectItem value="Luxury">Luxury</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Editor Body */}
-                        <div className="flex-1 p-8 overflow-y-auto">
-                            <div className="max-w-2xl mx-auto space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase">Template Name</label>
-                                        <input
-                                            value={editForm.name}
-                                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded font-mono text-sm focus:ring-2 focus:ring-indigo-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase">Category</label>
-                                        <select
-                                            value={editForm.category}
-                                            onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                                            className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded text-sm focus:ring-2 focus:ring-indigo-500"
-                                        >
-                                            <option>MARKETING</option>
-                                            <option>UTILITY</option>
-                                            <option>AUTHENTICATION</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase">Message Body</label>
-                                    <textarea
-                                        rows={6}
-                                        value={editForm.body}
-                                        onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
-                                        className={`w-full px-4 py-3 bg-white dark:bg-slate-950 border rounded text-sm font-mono leading-relaxed focus:ring-2 focus:ring-indigo-500 ${!validation.valid ? 'border-rose-300 dark:border-rose-900' : 'border-slate-200 dark:border-slate-800'}`}
-                                    />
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-xs text-slate-400">Use {'{{1}}'}, {'{{2}}'} etc. for variables.</p>
-                                        <span className={`text-[10px] font-bold ${validation.valid ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {validation.valid ? 'VALID STRUCTURE' : 'INVALID STRUCTURE'}
-                                        </span>
-                                    </div>
-
-                                    {/* Validation Messages */}
-                                    {(validation.errors.length > 0 || validation.warnings.length > 0) && (
-                                        <div className="mt-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
-                                            {validation.errors.map((err, i) => (
-                                                <div key={i} className="flex gap-2 text-xs text-rose-600">
-                                                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                                    {err}
-                                                </div>
-                                            ))}
-                                            {validation.warnings.map((warn, i) => (
-                                                <div key={i} className="flex gap-2 text-xs text-amber-600">
-                                                    <Info className="w-3.5 h-3.5 flex-shrink-0" />
-                                                    {warn}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Sample Variables */}
-                                {extractPlaceholderCount(editForm.body) > 0 && (
-                                    <div className="space-y-3 p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
-                                        <h4 className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Sample Variables (for preview)</h4>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {Array.from({ length: extractPlaceholderCount(editForm.body) }).map((_, i) => (
-                                                <div key={i} className="flex items-center gap-2">
-                                                    <span className="text-[10px] text-slate-400 font-mono w-8">{'{{'}{i + 1}{'}}'}</span>
-                                                    <input
-                                                        placeholder={`Sample ${i + 1}`}
-                                                        value={sampleVariables[i] || ""}
-                                                        onChange={(e) => {
-                                                            const newVars = [...sampleVariables];
-                                                            newVars[i] = e.target.value;
-                                                            setSampleVariables(newVars);
-                                                        }}
-                                                        className="flex-1 px-2 py-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded text-xs focus:ring-1 focus:ring-indigo-500"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                            <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+                                {isGenerating ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="mr-2 h-4 w-4" /> Generate Template
+                                    </>
                                 )}
+                            </Button>
+                        </TabsContent>
 
-                                {/* Live Preview Box */}
-                                <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Preview</h3>
-                                    <div className="bg-[url('/patterns/subtle-dots.png')] bg-slate-100 dark:bg-slate-900 p-6 rounded-xl flex justify-center border border-slate-200 dark:border-slate-800">
-                                        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg rounded-tl-none shadow-sm max-w-sm border border-slate-200 dark:border-slate-700 relative">
-                                            <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
-                                                {renderTemplate(editForm.body, sampleVariables)}
-                                            </p>
-                                            <div className="flex justify-end items-center gap-1 mt-2">
-                                                <span className="text-[9px] text-slate-400 uppercase font-medium">Delivered</span>
-                                                <span className="text-[10px] text-slate-400 block">12:42 PM</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <TabsContent value="manual" className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>Template Name</Label>
+                                <Input
+                                    placeholder="order_confirmation_v1"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
                             </div>
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center text-slate-400">
-                        <p>Select a template to view details</p>
-                    </div>
-                )}
-            </div>
+                            <div className="space-y-2">
+                                <Label>Category</Label>
+                                <Select value={category} onValueChange={setCategory}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="marketing">Marketing</SelectItem>
+                                        <SelectItem value="utility">Utility</SelectItem>
+                                        <SelectItem value="authentication">Authentication</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Message Content</Label>
+                                <Textarea
+                                    placeholder="Hi {{1}}, your order is..."
+                                    className="min-h-[150px] font-mono text-sm"
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                />
+                                <p className="text-xs text-muted-foreground">Use {'{{1}}, {{2}}'} for variables.</p>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+
+                    <DialogFooter>
+                        {mode === 'manual' && (
+                            <Button onClick={handleSave} disabled={isSaving}>
+                                {isSaving ? "Saving..." : "Save Template"}
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

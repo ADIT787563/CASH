@@ -36,7 +36,7 @@ const features = [
   {
     icon: FileText,
     title: "AI Templates & Campaigns",
-    description: "Pre-made message templates for offers, arrivals, and restocks. Schedule broadcasts with personalization tokens.",
+    description: "Generate high-converting templates instantly with AI. Schedule broadcasts with personalization tokens to boost sales.",
     href: "/templates",
   },
   {

@@ -1,174 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import ProtectedPage from "@/components/ProtectedPage";
-import { useAuth } from "@/providers/AuthProvider";
-import {
-    CreditCard,
-    Download,
-    FileText,
-    CheckCircle2,
-    AlertCircle,
-    ArrowUpRight
-} from "lucide-react";
-
-interface BillingOrder {
-    id: number;
-    totalAmount: number;
-    currency: string;
-    status: string;
-    paymentStatus: string;
-    invoiceUrl: string | null;
-    invoiceNumber: string | null;
-    createdAt: string;
-    notesInternal: string; // e.g., "Plan: pro, Cycle: monthly"
-}
+import { CreditCard, Download, CheckCircle, Clock, ShoppingBag } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function BillingPage() {
-    const { user } = useAuth() as any;
-    const [history, setHistory] = useState<BillingOrder[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchHistory();
-    }, []);
-
-    const fetchHistory = async () => {
-        try {
-            const res = await fetch('/api/billing/history');
-            if (res.ok) {
-                const data = await res.json();
-                setHistory(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch billing history");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const formatCurrency = (amount: number, currency: string) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: currency || 'INR',
-        }).format(amount / 100);
+    // Mock Data for Phase 2 Implementation
+    const stats = {
+        totalReceived: "₹45,200",
+        pendingPayments: "₹2,400",
+        codPending: "₹1,850",
+        lastPayout: "Dec 21, 2024"
     };
 
     return (
-        <ProtectedPage>
-            <div className="p-6 max-w-6xl mx-auto space-y-8">
-
-                {/* Header */}
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Billing & Subscription</h1>
-                    <p className="text-gray-500">Manage your plan and view payment history.</p>
+                    <h1 className="text-2xl font-bold text-white tracking-tight">Payments & Payouts</h1>
+                    <p className="text-sm text-white/50 mt-1">Track your revenue and pending settlements.</p>
                 </div>
-
-                {/* Current Plan Card */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex gap-4 items-start">
-                        <div className="h-12 w-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
-                            <CreditCard className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 mb-1">Current Plan</p>
-                            <h2 className="text-2xl font-bold text-gray-900 capitalize">
-                                {user?.plan || 'Free'} Plan
-                            </h2>
-                            <p className="text-gray-500 text-sm mt-1">
-                                {user?.plan === 'enterprise'
-                                    ? 'Custom billing cycle'
-                                    : 'Renews automatically'}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <Link
-                            href="/pricing"
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-                        >
-                            Upgrade Plan
-                        </Link>
-                        <button className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors">
-                            Manage Payment Method
-                        </button>
-                    </div>
-                </div>
-
-                {/* Billing History */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-gray-500" />
-                            Payment History
-                        </h3>
-                    </div>
-
-                    {loading ? (
-                        <div className="p-8 text-center text-gray-500">Loading history...</div>
-                    ) : history.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500">
-                            No billing history found.
-                        </div>
-                    ) : (
-                        <table className="w-full text-left text-sm text-gray-600">
-                            <thead className="bg-gray-50 border-b border-gray-200 font-medium text-gray-700">
-                                <tr>
-                                    <th className="px-6 py-4">Date</th>
-                                    <th className="px-6 py-4">Description</th>
-                                    <th className="px-6 py-4">Amount</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Invoice</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {history.map((order) => (
-                                    <tr key={order.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            {new Date(order.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-gray-900 font-medium">Subscription Charge</span>
-                                            <div className="text-xs text-gray-500">{order.notesInternal || `Order #${order.id}`}</div>
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            {formatCurrency(order.totalAmount, order.currency)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {order.paymentStatus === 'paid' ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <CheckCircle2 className="w-3 h-3" /> Paid
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    <AlertCircle className="w-3 h-3" /> {order.paymentStatus}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            {order.invoiceUrl || order.paymentStatus === 'paid' ? (
-                                                <Link
-                                                    href={order.invoiceUrl || `/invoices/${order.id}`}
-                                                    target="_blank"
-                                                    className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
-                                                >
-                                                    <Download className="w-4 h-4 mr-1" />
-                                                    PDF
-                                                </Link>
-                                            ) : (
-                                                <span className="text-gray-400 text-xs">Generating...</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-
             </div>
-        </ProtectedPage>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6 relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="p-2 bg-emerald-500/20 rounded-lg">
+                            <CreditCard className="w-6 h-6 text-emerald-400" />
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded-full flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Confirmed
+                        </span>
+                    </div>
+                    <div className="relative z-10">
+                        <p className="text-white/60 text-sm font-medium">Total Received</p>
+                        <h3 className="text-3xl font-bold text-white mt-1">{stats.totalReceived}</h3>
+                    </div>
+                </div>
+
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="p-2 bg-amber-500/20 rounded-lg">
+                            <Clock className="w-6 h-6 text-amber-400" />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white/60 text-sm font-medium">Pending Output</p>
+                        <h3 className="text-2xl font-bold text-white mt-1">{stats.pendingPayments}</h3>
+                    </div>
+                </div>
+
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="p-2 bg-orange-500/20 rounded-lg">
+                            <ShoppingBag className="w-6 h-6 text-orange-400" />
+                        </div>
+                        <span className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Crucial</span>
+                    </div>
+                    <div>
+                        <p className="text-white/60 text-sm font-medium">COD Pending</p>
+                        <h3 className="text-2xl font-bold text-white mt-1">{stats.codPending}</h3>
+                        <p className="text-xs text-white/40 mt-1">Usually settles in 2-3 days</p>
+                    </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="p-2 bg-white/10 rounded-lg">
+                            <CheckCircle className="w-6 h-6 text-indigo-400" />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-white/60 text-sm font-medium">Last Payout</p>
+                        <h3 className="text-xl font-bold text-white mt-1">{stats.lastPayout}</h3>
+                        <p className="text-xs text-emerald-400 mt-1">Processed successfully</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Placeholder for Recent Transactions */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center text-white/40">
+                <p>Transaction history will appear here.</p>
+            </div>
+        </div>
     );
 }

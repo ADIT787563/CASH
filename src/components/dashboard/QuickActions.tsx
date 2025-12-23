@@ -1,5 +1,5 @@
 
-import { Plus, Megaphone, Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import Link from "next/link";
 
 export function QuickActions() {
@@ -9,11 +9,7 @@ export function QuickActions() {
             label: "Add New Product",
             href: "/catalog/products/new",
         },
-        {
-            icon: Megaphone,
-            label: "Create Campaign",
-            href: "/campaigns/new",
-        },
+
         {
             icon: Users,
             label: "View All Leads",

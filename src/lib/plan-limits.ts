@@ -16,6 +16,7 @@ export interface PlanLimits {
     roleBasedAccess: boolean;
     advancedAnalytics: boolean;
     apiAccess: boolean;
+    aiTemplateGen: number; // -1 for unlimited
     autoReplySuggestions?: boolean;
     autoFollowUp?: boolean;
     customerNotes?: boolean;
@@ -44,6 +45,7 @@ const DEFAULT_LIMITS: PlanLimits = {
     roleBasedAccess: false,
     advancedAnalytics: false,
     apiAccess: false,
+    aiTemplateGen: 0,
 };
 
 /**
@@ -64,6 +66,7 @@ const TRIAL_LIMITS: PlanLimits = {
     roleBasedAccess: false,
     advancedAnalytics: false,
     apiAccess: false,
+    aiTemplateGen: 3,
 };
 
 /**

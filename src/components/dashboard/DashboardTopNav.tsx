@@ -1,130 +1,99 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-    Bell,
-    ChevronDown,
-    LogOut,
-    Settings,
-    User
-} from "lucide-react";
+import { Bell, Search, Menu, HelpCircle, LogOut } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
-import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
-
-const NAV_ITEMS = [
-    { label: "Home", href: "/dashboard" },
-    { label: "Orders", href: "/dashboard/orders" },
-    { label: "Customers", href: "/dashboard/customers" },
-    { label: "Inbox", href: "/dashboard/inbox" },
-    { label: "AI Chatbot", href: "/dashboard/chatbot" },
-    { label: "Leads", href: "/dashboard/leads" },
-    { label: "Catalog", href: "/dashboard/catalog" },
-    { label: "Analytics", href: "/dashboard/analytics" },
-    { label: "Templates", href: "/dashboard/templates" },
-];
+import { useRouter } from "next/navigation";
 
 export function DashboardTopNav() {
-    const pathname = usePathname();
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const router = useRouter();
 
-    // Theme toggle removed
+    const notifications = [
+        { id: 1, title: "New Order #1042", time: "2 min ago", read: false },
+        { id: 2, title: "Payment ₹1,200 Received", time: "1 hour ago", read: false },
+        { id: 3, title: "Low Stock: Red T-Shirt", time: "3 hours ago", read: true },
+    ];
+
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     const handleSignOut = async () => {
         await authClient.signOut();
-        window.location.href = "/";
-    };
+        router.push("/");
+    }
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0518]/80 backdrop-blur-xl border-b border-white/10 z-50 px-4 flex items-center justify-between">
-            {/* Left: Logo & Nav */}
-            <div className="flex items-center gap-8">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary/20 text-primary flex items-center justify-center rounded-md font-bold text-sm tracking-tighter">
-                        WG
-                    </div>
-                    <span className="font-semibold text-white hidden sm:block">WaveGroww</span>
-                </div>
-
-                <nav className="hidden md:flex items-center gap-6">
-                    {NAV_ITEMS.map((item) => {
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`text-sm font-medium transition-colors relative py-4
-                  ${isActive
-                                        ? "text-primary"
-                                        : "text-muted-foreground hover:text-white"
-                                    }
-                `}
-                            >
-                                {item.label}
-                                {isActive && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(192,132,252,0.5)]" />
-                                )}
-                            </Link>
-                        );
-                    })}
-                </nav>
+        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0518]/90 backdrop-blur-md border-b border-white/10 z-30 flex items-center justify-between px-4 md:px-6 lg:pl-72 transition-all duration-300">
+            {/* Left: Mobile Menu Trigger (Visible only on mobile) */}
+            <div className="lg:hidden flex items-center">
+                {/* Placeholder for alignment, actual trigger is in Sidebar */}
+                <div className="w-8" />
             </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center gap-4">
-                {/* Date Range Selector Placeholder */}
-                <button className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-white/5 border border-white/10 rounded-md hover:bg-white/10 hover:text-white transition-colors">
-                    <span>Today, Dec 17</span>
-                    <ChevronDown className="w-3 h-3" />
-                </button>
+            {/* Center/Right: Actions */}
+            <div className="ml-auto flex items-center gap-2 md:gap-4">
+                {/* Help Button */}
+                <Link
+                    href="/dashboard/help"
+                    className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-full transition-colors hidden sm:flex"
+                    title="Help & Support"
+                >
+                    <HelpCircle className="w-5 h-5" />
+                </Link>
 
-                {/* Theme Toggle Removed */}
-
-                <button className="relative p-2 text-muted-foreground hover:text-white transition-colors" aria-label="Notifications">
-                    <Bell className="w-4 h-4" />
-                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full ring-2 ring-[#0f0518]" />
-                </button>
-
-                {/* User Menu */}
+                {/* Notifications */}
                 <div className="relative">
                     <button
-                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                        className="flex items-center gap-2 pl-2 border-l border-white/10 ml-2"
-                        aria-label="User Menu"
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-full transition-colors relative"
                     >
-                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium border border-primary/20">
-                            JD
-                        </div>
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border border-[#0f0518]" />
+                        )}
                     </button>
 
-                    {isUserMenuOpen && (
+                    {/* Notification Dropdown */}
+                    {showNotifications && (
                         <>
                             <div
                                 className="fixed inset-0 z-40"
-                                onClick={() => setIsUserMenuOpen(false)}
+                                onClick={() => setShowNotifications(false)}
                             />
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a0b2e] border border-white/10 rounded-lg shadow-lg py-1 z-50">
-                                <Link
-                                    href="/dashboard/settings"
-                                    onClick={() => setIsUserMenuOpen(false)}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-white/5 hover:text-white"
-                                >
-                                    <Settings className="w-4 h-4" />
-                                    Settings
-                                </Link>
-                                <button
-                                    onClick={handleSignOut}
-                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-500 hover:bg-rose-500/10 text-left"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    Sign Out
-                                </button>
+                            <div className="absolute right-0 top-full mt-2 w-80 bg-[#1a1025] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                <div className="p-3 border-b border-white/5 flex justify-between items-center bg-white/5">
+                                    <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-full">{unreadCount} New</span>
+                                </div>
+                                <div className="max-h-[300px] overflow-y-auto">
+                                    {notifications.map((n) => (
+                                        <div key={n.id} className={`p-3 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors ${!n.read ? 'bg-indigo-500/5' : ''}`}>
+                                            <p className={`text-sm ${!n.read ? 'text-white font-medium' : 'text-white/60'}`}>
+                                                {n.title}
+                                            </p>
+                                            <p className="text-[10px] text-white/40 mt-1">{n.time}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="p-2 text-center border-t border-white/5 bg-white/5">
+                                    <button className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+                                        Mark all as read
+                                    </button>
+                                </div>
                             </div>
                         </>
                     )}
                 </div>
+
+                {/* User Profile / Logout (Mobile/Tablet accessibility) */}
+                <button
+                    onClick={handleSignOut}
+                    className="ml-2 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-lg border border-white/10 hover:opacity-90 transition-opacity"
+                    title="Sign Out"
+                >
+                    M
+                </button>
             </div>
         </header>
     );

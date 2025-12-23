@@ -49,7 +49,7 @@ export function OrderTable({ orders = [] }: OrderTableProps) {
 
                 <div className="flex gap-2 w-full sm:w-auto">
                     <Link href="/dashboard/orders/new">
-                        <button className="flex items-center gap-1 bg-pink-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-pink-600 transition-colors">
+                        <button className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-zinc-200 transition-colors shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                             <Plus className="w-3 h-3" /> Add
                         </button>
                     </Link>

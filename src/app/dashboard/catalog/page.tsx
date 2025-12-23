@@ -14,7 +14,8 @@ import {
     RefreshCw,
     Power,
     AlertCircle,
-    CreditCard, Wallet, Banknote
+    CreditCard, Wallet, Banknote,
+    MessageSquare
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -210,6 +211,13 @@ export default function CatalogPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
+                                            <ActionButton
+                                                variant="ghost"
+                                                className="p-2 h-auto text-green-600 bg-green-50 hover:bg-green-100 border border-green-200"
+                                                icon={<MessageSquare className="w-4 h-4" />}
+                                                onAction={() => { toast.info("Opening WhatsApp Preview..."); }}
+                                                title="See how customer sees this"
+                                            />
                                             <ActionButton
                                                 variant="ghost"
                                                 className="p-2 h-auto"

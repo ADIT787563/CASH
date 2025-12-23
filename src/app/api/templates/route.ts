@@ -68,11 +68,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(template[0]);
     }
 
-    // List all user templates
+    // List all user templates (with optional status filter)
+    const status = searchParams.get('status');
+    const whereConditions: any[] = [eq(templates.userId, user.id)];
+
+    if (status) {
+      whereConditions.push(eq(templates.status, status));
+    }
+
     const userTemplates = await db
       .select()
       .from(templates)
-      .where(eq(templates.userId, user.id));
+      .where(and(...whereConditions));
 
     return NextResponse.json(userTemplates);
 

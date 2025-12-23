@@ -40,12 +40,12 @@ export function CatalogHeader() {
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
                             className={`h-full transition-all ${isAtLimit
-                                    ? 'bg-destructive'
-                                    : isNearLimit
-                                        ? 'bg-yellow-500'
-                                        : 'bg-primary'
+                                ? 'bg-destructive'
+                                : isNearLimit
+                                    ? 'bg-yellow-500'
+                                    : 'bg-primary'
                                 }`}
-                            style={{ width: `${Math.min((used / limit) * 100, 100)}%` }}
+                            style={{ width: `${Math.min((used / limit) * 100, 100)}%` }} // eslint-disable-line react-dom/no-unsafe-inline-style
                         />
                     </div>
                 )}

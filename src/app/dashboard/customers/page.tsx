@@ -32,104 +32,107 @@ export default function CustomersPage() {
 
     return (
         <ProtectedPage>
-            <div className="min-h-screen bg-background p-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold">Customers</h1>
-                        {/* <Link href="/dashboard/customers/new" className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium">Add Customer</Link> */}
+            <div className="w-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-2xl font-semibold text-zinc-900 mb-1">Customers</h1>
+                        <p className="text-sm text-zinc-500">View and manage all your customer contacts.</p>
                     </div>
+                </div>
 
-                    {/* Search */}
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
-                        <div className="relative max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search by name, phone or email..."
-                                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
+                {/* Search */}
+                <div className="bg-white p-4 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-zinc-200 mb-6">
+                    <div className="relative max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Search by name, phone or email..."
+                            className="w-full pl-9 pr-4 py-2 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-zinc-50/50 focus:bg-white transition-all shadow-sm"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
+                </div>
 
-                    {/* Table */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 text-gray-600 font-medium">
+                {/* Table */}
+                <div className="bg-white rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-zinc-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-zinc-50/50 border-b border-zinc-200 text-zinc-500 font-medium">
+                                <tr>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Customer</th>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Contact Info</th>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Orders</th>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Total Spent</th>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Last Active</th>
+                                    <th className="px-6 py-3 text-xs uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-100">
+                                {loading ? (
                                     <tr>
-                                        <th className="px-6 py-4">Customer</th>
-                                        <th className="px-6 py-4">Contact Info</th>
-                                        <th className="px-6 py-4">Orders</th>
-                                        <th className="px-6 py-4">Total Spent</th>
-                                        <th className="px-6 py-4">Last Active</th>
-                                        <th className="px-6 py-4">Action</th>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+                                            <div className="flex justify-center mb-2"><Loader2 className="animate-spin w-6 h-6 text-indigo-500" /></div>
+                                            Loading customers...
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                <div className="flex justify-center mb-2"><Loader2 className="animate-spin w-6 h-6" /></div>
-                                                Loading customers...
-                                            </td>
-                                        </tr>
-                                    ) : customers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                No customers found.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        customers.map((customer) => (
-                                            <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                                            {customer.name?.charAt(0) || <User className="w-5 h-5" />}
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-medium text-gray-900">{customer.name || "Unknown"}</div>
-                                                            <div className="text-gray-500 text-xs">Customer ID: {customer.id}</div>
-                                                        </div>
+                                ) : customers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+                                            <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+                                                <User className="w-6 h-6 text-zinc-300" />
+                                            </div>
+                                            No customers found.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    customers.map((customer) => (
+                                        <tr key={customer.id} className="hover:bg-zinc-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 shadow-sm">
+                                                        {customer.name?.charAt(0) || <User className="w-5 h-5" />}
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-600">
-                                                    <div className="flex flex-col gap-1">
+                                                    <div>
+                                                        <div className="font-medium text-zinc-900">{customer.name || "Unknown"}</div>
+                                                        <div className="text-zinc-500 text-xs font-mono">ID: {customer.id}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-zinc-600">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Phone className="w-3 h-3 text-zinc-400" /> {customer.phone}
+                                                    </div>
+                                                    {customer.email && (
                                                         <div className="flex items-center gap-2">
-                                                            <Phone className="w-3 h-3" /> {customer.phone}
+                                                            <Mail className="w-3 h-3 text-zinc-400" /> {customer.email}
                                                         </div>
-                                                        {customer.email && (
-                                                            <div className="flex items-center gap-2">
-                                                                <Mail className="w-3 h-3" /> {customer.email}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-1.5 align-middle">
-                                                        <ShoppingBag className="w-4 h-4 text-gray-400" />
-                                                        {customer.totalOrders || 0}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 font-medium">
-                                                    ₹{((customer.totalSpent || 0) / 100).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-500">
-                                                    {customer.updatedAt ? new Date(customer.updatedAt).toLocaleDateString() : '-'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <Link href={`/dashboard/inbox`} className="text-primary hover:underline text-xs font-semibold">
-                                                        Message
-                                                    </Link>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-1.5 align-middle">
+                                                    <ShoppingBag className="w-4 h-4 text-zinc-400" />
+                                                    <span className="font-medium text-zinc-900">{customer.totalOrders || 0}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-zinc-900">
+                                                ₹{((customer.totalSpent || 0) / 100).toLocaleString('en-IN')}
+                                            </td>
+                                            <td className="px-6 py-4 text-zinc-500 text-xs">
+                                                {customer.updatedAt ? new Date(customer.updatedAt).toLocaleDateString() : '-'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Link href={`/dashboard/inbox`} className="text-indigo-600 hover:text-indigo-700 text-xs font-semibold px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors inline-block">
+                                                    Message
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

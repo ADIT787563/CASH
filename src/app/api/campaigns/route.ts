@@ -1,19 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { campaigns, templates } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { campaigns, messageQueue, leads } from "@/db/schema";
+import { auth } from "@/lib/auth"; // Assuming auth helper exists
+import { eq, desc } from "drizzle-orm";
+import { headers } from "next/headers";
 
-// GET /api/campaigns - List campaigns
 export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: await headers()
     });
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userCampaigns = await db.select()
@@ -23,53 +22,46 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(userCampaigns);
   } catch (error) {
-    console.error('Fetch Campaigns Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error fetching campaigns:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-// POST /api/campaigns - Create campaign
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: await headers()
     });
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-    const { name, templateId, audienceConfig, scheduledAt } = body;
+    const { name, templateId, audienceConfig, status } = body;
 
-    if (!name || !templateId) {
-      return NextResponse.json({ error: 'Name and Template are required' }, { status: 400 });
+    // Calculate target count based on audience
+    // For 'all', we count all leads for user
+    let targetCount = 0;
+    if (audienceConfig.type === 'all') {
+      const allLeads = await db.select().from(leads).where(eq(leads.userId, session.user.id));
+      targetCount = allLeads.length;
     }
 
-    // Validate template ownership
-    const template = await db.query.templates.findFirst({
-      where: (t, { and, eq }) => and(eq(t.id, templateId), eq(t.userId, session.user.id))
-    });
-
-    if (!template) {
-      return NextResponse.json({ error: 'Invalid Template' }, { status: 400 });
-    }
-
-    const newCampaign = await db.insert(campaigns).values({
+    const [newCampaign] = await db.insert(campaigns).values({
       userId: session.user.id,
       name,
       templateId,
-      audienceConfig: audienceConfig || { type: 'all' },
-      scheduledAt: scheduledAt || null,
-      status: scheduledAt ? 'scheduled' : 'draft', // Logic for 'sending' would be in a background worker
+      status: status || 'draft',
+      audienceConfig,
+      targetCount,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }).returning();
 
-    return NextResponse.json(newCampaign[0]);
-
+    return NextResponse.json(newCampaign);
   } catch (error) {
-    console.error('Create Campaign Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error creating campaign:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

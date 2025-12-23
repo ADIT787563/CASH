@@ -95,7 +95,7 @@ export function BillingSettings() {
                                 <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-500 ${isCritical ? 'bg-rose-500' : 'bg-indigo-500'}`}
-                                        style={{ width: `${Math.min(percent, 100)}%` }}
+                                        style={{ width: `${Math.min(percent, 100)}%` }} // eslint-disable-line react-dom/no-unsafe-inline-style
                                     />
                                 </div>
                                 {isCritical && (

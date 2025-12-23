@@ -433,17 +433,17 @@ export const analytics = sqliteTable('analytics', {
   outboundMessages: integer('outbound_messages').notNull().default(0),
   newLeads: integer('new_leads').notNull().default(0),
   convertedLeads: integer('converted_leads').notNull().default(0),
-  totalRevenue: integer('total_revenue').notNull().default(0), // in paise
-  totalOrders: integer('total_orders').notNull().default(0),
-  paidOrders: integer('paid_orders').notNull().default(0),
-  uniqueConversations: integer('unique_conversations').notNull().default(0),
-  productClicks: integer('product_clicks').notNull().default(0),
-  templateSends: integer('template_sends').notNull().default(0),
+  totalRevenue: integer('total_revenue').default(0), // in paise
+  totalOrders: integer('total_orders').default(0),
+  paidOrders: integer('paid_orders').default(0),
+  uniqueConversations: integer('unique_conversations').default(0),
+  productClicks: integer('product_clicks').default(0),
+  templateSends: integer('template_sends').default(0),
   failureReasons: text('failure_reasons', { mode: 'json' }),
   topProducts: text('top_products', { mode: 'json' }), // [{ id, name, sales, revenue }]
   createdAt: text('created_at').notNull(),
 }, (table) => ({
-  userIdDateIdx: uniqueIndex('analytics_user_id_date_idx').on(table.userId, table.date),
+  //   userIdDateIdx: uniqueIndex('analytics_user_id_date_idx').on(table.userId, table.date),
 }));
 
 // Business Settings table

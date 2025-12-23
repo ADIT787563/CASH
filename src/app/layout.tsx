@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#020617', // Updated to match dark theme background
+  themeColor: '#ffffff', // Forced White Theme
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

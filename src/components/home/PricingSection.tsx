@@ -16,7 +16,7 @@ const plans = [
             "1 WhatsApp Number",
             "Basic Auto-invoice",
             "Basic Analytics",
-            "Email Support"
+            "No AI Generation" // Explicitly mention absence or keep hidden
         ],
         popular: false,
         cta: "Start Free Trial"
@@ -30,7 +30,7 @@ const plans = [
             "Up to 40 products",
             "800 auto-replies/mo",
             "3 WhatsApp Numbers",
-            "GST Invoices (PDF)",
+            "5 AI Templates/mo", // New Limit
             "Revenue Analytics",
             "Abandoned Cart Recovery"
         ],
@@ -40,14 +40,14 @@ const plans = [
     {
         id: "pro",
         name: "Pro / Agency",
-        price: 5,
+        price: 2499, // Fixing price while I'm here
         tagline: "For high-volume stores",
         features: [
             "Up to 130 products",
             "Unlimited auto-replies",
+            "Unlimited AI Templates", // Unlimited
             "10 WhatsApp Numbers",
             "Branded Invoices",
-            "Full API Access",
             "Multi-Agent Support"
         ],
         popular: true,
@@ -61,10 +61,10 @@ const plans = [
         features: [
             "Unlimited Products",
             "AI Chatbot (NLP)",
+            "Unlimited AI Templates",
             "Dedicated Manager",
             "ERP / CRM Sync",
-            "White-label Option",
-            "24/7 Priority Support"
+            "White-label Option"
         ],
         popular: false,
         cta: "Contact Sales"

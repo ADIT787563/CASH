@@ -108,10 +108,9 @@ export function BusinessProfile() {
                 <InputGroup
                     label="WhatsApp Number *"
                     value={formData.whatsappNumber}
-                    onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                    disabled={isVerified}
+                    disabled={true}
                     placeholder="+91 9876543210"
-                    helpVar="Used for customer communication"
+                    helpVar="Locked. Contact support to change."
                 />
 
                 <InputGroup

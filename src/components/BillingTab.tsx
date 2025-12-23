@@ -89,8 +89,8 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                 leads: 2000,
             },
             icon: "TrendingUp",
-            color: "text-accent",
-            bgColor: "bg-accent/10",
+            color: "text-zinc-400",
+            bgColor: "bg-zinc-400/10",
             isPopular: true,
             isActive: true,
             sortOrder: 2,
@@ -116,8 +116,8 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                 leads: 8000,
             },
             icon: "Crown",
-            color: "text-secondary",
-            bgColor: "bg-secondary/10",
+            color: "text-white",
+            bgColor: "bg-white/10",
             isPopular: false,
             isActive: true,
             sortOrder: 3,
@@ -143,8 +143,8 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                 leads: -1,
             },
             icon: "Building2",
-            color: "text-secondary",
-            bgColor: "bg-secondary/10",
+            color: "text-white",
+            bgColor: "bg-white/10",
             isPopular: false,
             isActive: true,
             sortOrder: 4,
@@ -340,7 +340,7 @@ export function BillingTab({ currentPlan = "starter" }: BillingTabProps) {
                                 }
                             }
                         }}
-                        className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                        className="mt-4 px-4 py-2 bg-gradient-to-r from-white via-zinc-200 to-zinc-400 text-black rounded-lg font-bold shadow-lg hover:shadow-xl transition-all"
                     >
                         Start 3-Day Free Trial
                     </button>

@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useAuth } from "@/providers/AuthProvider";
 import { toast } from "sonner";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   MessageCircle,
   Menu,
@@ -133,8 +132,8 @@ export const Header = () => {
 
   // Dynamic header classes based on page and scroll
   const headerClasses = isLandingPage
-    ? "fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-7xl rounded-full border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg transition-all duration-500"
-    : "sticky top-0 z-[100] w-full border-b border-white/5 bg-[#0f0518]/80 backdrop-blur-xl support-[backdrop-filter]:bg-[#0f0518]/60";
+    ? "fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-7xl rounded-full glass-card transition-all duration-500"
+    : "sticky top-0 z-[100] w-full border-b border-slate-200/50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60";
 
   return (
     <header className={headerClasses}>
