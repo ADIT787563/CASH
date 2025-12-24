@@ -286,6 +286,19 @@ export async function POST(request: NextRequest) {
       externalUrl: body.externalUrl?.trim() || null,
       customAttributes: body.customAttributes || null,
       viewTrackingEnabled: body.viewTrackingEnabled !== undefined ? body.viewTrackingEnabled : true,
+
+      // New Inventory & Advanced Fields
+      costPrice: body.costPrice || null,
+      lowStockThreshold: body.lowStockThreshold || 5,
+      outOfStockBehavior: body.outOfStockBehavior || 'stop_selling',
+      supplierName: body.supplierName?.trim() || null,
+      minOrderValueCOD: body.minOrderValueCOD || null,
+      partialPaymentPercentage: body.partialPaymentPercentage || null,
+      requiresCODConfirmation: body.requiresCODConfirmation !== undefined ? body.requiresCODConfirmation : false,
+      visibleToAI: body.visibleToAI !== undefined ? body.visibleToAI : true,
+      aiPriority: body.aiPriority || 0,
+      upsellPriority: body.upsellPriority || 0,
+
       createdAt: now,
       updatedAt: now,
     };

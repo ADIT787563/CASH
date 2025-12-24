@@ -42,6 +42,11 @@ export const businesses = sqliteTable('businesses', {
   gstin: text('gstin'),
   phone: text('phone').notNull(), // Business phone
   email: text('email').notNull(), // Business email
+  description: text('description'),
+  shortBio: text('short_bio'),
+  instagram: text('instagram'),
+  facebook: text('facebook'),
+  website: text('website'),
   timezone: text('timezone').default('Asia/Kolkata'),
   logoUrl: text('logo_url'),
   logoUrlDark: text('logo_url_dark'),
@@ -160,6 +165,7 @@ export const products = sqliteTable('products', {
 
   // Pricing
   price: integer('price', { mode: 'number' }).notNull(),
+  costPrice: integer('cost_price', { mode: 'number' }),
   compareAtPrice: integer('compare_at_price'),
   discountPercentage: integer('discount_percentage'),
   discountValidFrom: text('discount_valid_from'),
@@ -167,13 +173,16 @@ export const products = sqliteTable('products', {
   bulkPricing: text('bulk_pricing', { mode: 'json' }),
   currencyCode: text('currency_code').notNull().default('INR'),
 
-  // Inventory
-  stock: integer('stock').notNull(),
+  // Inventory (Enhanced)
+  stock: integer('stock').notNull().default(0),
+  lowStockThreshold: integer('low_stock_threshold').default(5),
+  outOfStockBehavior: text('out_of_stock_behavior').default('stop_selling'), // 'stop_selling', 'hide', 'preorder', 'switch_to_online'
   sku: text('sku'),
   barcode: text('barcode'),
+  supplierName: text('supplier_name'),
 
   // Categorization
-  category: text('category').notNull(), // Legacy text field, keeping for backward compatibility
+  category: text('category').notNull(), // Legacy text field
   categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
   subcategory: text('subcategory'),
   tags: text('tags', { mode: 'json' }),
@@ -183,7 +192,7 @@ export const products = sqliteTable('products', {
   imageUrl: text('image_url'),
   galleryImages: text('gallery_images', { mode: 'json' }),
 
-  // Variants
+  // Variants (Legacy JSON - Keep for Basic Plan / Migration)
   colors: text('colors', { mode: 'json' }),
   sizes: text('sizes', { mode: 'json' }),
   variants: text('variants', { mode: 'json' }),
@@ -200,9 +209,17 @@ export const products = sqliteTable('products', {
   ageRestricted: integer('age_restricted', { mode: 'boolean' }).notNull().default(false),
   returnPolicy: text('return_policy'),
 
-  // Visibility & Publishing
+  // Advanced Payment Rules (Per product)
+  minOrderValueCOD: integer('min_order_value_cod'),
+  partialPaymentPercentage: integer('partial_payment_percentage'),
+  requiresCODConfirmation: integer('requires_cod_confirmation', { mode: 'boolean' }).default(false),
+
+  // Visibility & AI Intelligence
   status: text('status').notNull().default('active'),
   visibility: text('visibility').notNull().default('draft'),
+  visibleToAI: integer('visible_to_ai', { mode: 'boolean' }).default(true),
+  aiPriority: integer('ai_priority').default(0),
+  upsellPriority: integer('upsell_priority').default(0),
   publishDate: text('publish_date'),
 
   // Sharing
@@ -249,6 +266,10 @@ export const leads = sqliteTable('leads', {
   lastContacted: text('last_contacted'),
   notes: text('notes'),
   createdAt: text('created_at').notNull(),
+
+  // Advanced CRM & AI (Mirrors Customers)
+  aiBehavior: text('ai_behavior').default('standard'), // 'standard', 'aggressive', 'polite', 'human_only'
+  aiConfidenceThreshold: integer('ai_confidence_threshold').default(80),
   updatedAt: text('updated_at').notNull(),
   deletedAt: text('deleted_at'), // Soft delete timestamp
 }, (table) => ({
@@ -295,6 +316,8 @@ export const messages = sqliteTable('messages', {
   // Metadata
   rawPayload: text('raw_payload', { mode: 'json' }),
   mediaUrl: text('media_url'),
+  senderType: text('sender_type').default('human'), // 'bot' or 'human'
+  intent: text('intent'), // 'price_query', 'order_intent', etc.
 
   // Timestamps
   timestamp: text('timestamp').notNull(),
@@ -654,6 +677,12 @@ export const accountSettings = sqliteTable('account_settings', {
   language: text('language').notNull().default('en'),
   logoUrl: text('logo_url'),
   logoUrlDark: text('logo_url_dark'),
+
+  // Payment Settings
+  upiId: text("upi_id"),
+  merchantName: text("merchant_name"),
+  dataRetentionPeriod: integer('data_retention_period').default(30), // days
+
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
@@ -890,6 +919,14 @@ export const customers = sqliteTable('customers', {
   lastMessageTime: text('last_message_time'),
   unreadCount: integer('unread_count').notNull().default(0),
   notes: text('notes'),
+
+  // Advanced CRM & AI
+  aiBehavior: text('ai_behavior').default('standard'), // 'standard', 'aggressive', 'polite', 'human_only'
+  aiConfidenceThreshold: integer('ai_confidence_threshold').default(80),
+  leadSource: text('lead_source'), // Trace back where they came from
+  customerType: text('customer_type').default('lead'), // 'lead', 'customer', 'vip'
+
+  optOut: integer('opt_out', { mode: 'boolean' }).default(false),
   totalOrders: integer('total_orders').notNull().default(0),
   totalSpent: integer('total_spent').notNull().default(0),
   createdAt: text('created_at').notNull(),
@@ -983,6 +1020,13 @@ export const paymentSettings = sqliteTable('payment_settings', {
   razorpayKeyId: text('razorpay_key_id'),
   razorpayKeySecretEncrypted: text('razorpay_key_secret_encrypted'),
   razorpayWebhookSecretEncrypted: text('razorpay_webhook_secret_encrypted'),
+
+  // Advanced Controls
+  confirmationMode: text('confirmation_mode').default('auto_confirm'), // 'auto_confirm', 'manual_approval'
+  partialPaymentAllowed: integer('partial_payment_allowed', { mode: 'boolean' }).default(false),
+  refundPolicy: text('refund_policy').default('no_refunds'), // 'no_refunds', '7_days', 'custom'
+  refundPolicyCustomText: text('refund_policy_custom_text'),
+  codTemplate: text('cod_template'),
 
   updatedAt: text('updated_at').notNull(),
 });
@@ -1344,3 +1388,78 @@ export const reviews = sqliteTable("reviews", {
   status: text("status").default("approved"), // pending, approved, rejected
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
+
+// ============================================
+// BILLING & NOTIFICATIONS
+// ============================================
+
+// Duplicate subscriptions table removed
+
+export const notificationPreferences = sqliteTable('notification_preferences', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'new_order', 'payment_received', 'ai_failure', 'violation', 'expiry', 'low_credits'
+  channel: text('channel').notNull(), // 'whatsapp', 'email', 'in_app'
+  enabled: integer('enabled', { mode: 'boolean' }).default(true),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (table) => ({
+  userTypeChannelIdx: uniqueIndex('notif_pref_unique_idx').on(table.userId, table.type, table.channel),
+}));
+
+export const loginActivity = sqliteTable('login_activity', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  ipAddress: text('ip_address'),
+  device: text('device'),
+  browser: text('browser'),
+  location: text('location'),
+  timestamp: text('timestamp').notNull(),
+});
+
+// ============================================
+// INVENTORY CONTROL TABLES
+// ============================================
+
+export const productVariants = sqliteTable('product_variants', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  productId: integer('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(), // e.g., "Size: XL, Color: Red"
+  sku: text('sku'),
+  price: integer('price', { mode: 'number' }), // Override base price if needed
+  stock: integer('stock').notNull().default(0),
+  status: text('status').notNull().default('active'),
+  attributes: text('attributes', { mode: 'json' }), // e.g., {size: 'XL', color: 'Red'}
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, (table) => ({
+  productIdIdx: index('variant_product_id_idx').on(table.productId),
+}));
+
+export const inventoryLogs = sqliteTable('inventory_logs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  productId: integer('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  variantId: integer('variant_id').references(() => productVariants.id, { onDelete: 'set null' }),
+  userId: text('user_id').references(() => user.id), // Who made the change
+  changeType: text('change_type').notNull(), // 'restock', 'sale', 'adjustment', 'return', 'reservation'
+  previousStock: integer('previous_stock').notNull(),
+  newStock: integer('new_stock').notNull(),
+  reason: text('reason'),
+  createdAt: text('created_at').notNull(),
+}, (table) => ({
+  productIdIdx: index('inv_log_product_id_idx').on(table.productId),
+}));
+
+export const stockReservations = sqliteTable('stock_reservations', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  productId: integer('product_id').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  variantId: integer('variant_id').references(() => productVariants.id, { onDelete: 'cascade' }),
+  orderId: integer('order_id').references(() => orders.id),
+  leadId: integer('lead_id').references(() => leads.id),
+  quantity: integer('quantity').notNull().default(1),
+  status: text('status').notNull().default('active'), // 'active', 'captured', 'released'
+  expiresAt: text('expires_at').notNull(),
+  createdAt: text('created_at').notNull(),
+}, (table) => ({
+  productIdIdx: index('reservation_product_id_idx').on(table.productId),
+}));

@@ -22,7 +22,10 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { businessName, ownerName, category, whatsappNumber, supportNumber, city, state, gst, address, description } = body;
+        const {
+            businessName, ownerName, category, whatsappNumber, supportNumber,
+            city, state, gst, address, description, instagram, facebook, website
+        } = body;
 
         if (!businessName || !category) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -34,56 +37,58 @@ export async function POST(req: NextRequest) {
         const slug = `${baseSlug}-${randomSuffix}`;
         const sellerCode = `WG-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
+        const socialLinks = JSON.stringify({ instagram, facebook, website });
+
         // DB Transaction to update both tables
         await db.transaction(async (tx) => {
             // 1. Create or Update Business
-            // Check if business already exists for user
             const existingBusiness = await tx.select().from(businesses).where(eq(businesses.ownerId, currentUser.id)).get();
 
+            const businessValues = {
+                name: businessName,
+                category: category,
+                gstin: gst,
+                phone: whatsappNumber || (currentUser as any).phone || "PENDING",
+                email: currentUser.email,
+                description,
+                instagram,
+                facebook,
+                website,
+                updatedAt: new Date().toISOString(),
+            };
+
             if (existingBusiness) {
-                await tx.update(businesses).set({
-                    name: businessName,
-                    category: category,
-                    gstin: gst,
-                    phone: whatsappNumber || existingBusiness.phone || (currentUser as any).phone || "PENDING",
-                    email: existingBusiness.email || currentUser.email,
-                    updatedAt: new Date().toISOString(),
-                }).where(eq(businesses.id, existingBusiness.id));
+                await tx.update(businesses).set(businessValues).where(eq(businesses.id, existingBusiness.id));
             } else {
                 await tx.insert(businesses).values({
+                    ...businessValues,
                     ownerId: currentUser.id,
-                    name: businessName,
                     displayName: businessName,
                     slug: slug,
                     sellerCode: sellerCode,
-                    category: category,
-                    gstin: gst,
-                    phone: whatsappNumber || (currentUser as any).phone || "PENDING",
-                    email: currentUser.email,
                     createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
                 });
             }
 
             // 2. Update Business Settings
             const existingSettings = await tx.select().from(businessSettings).where(eq(businessSettings.userId, currentUser.id)).get();
 
+            const settingsValues = {
+                businessName: businessName,
+                businessCategory: category,
+                businessDescription: description,
+                whatsappNumber: whatsappNumber || (currentUser as any).phone || "PENDING",
+                socialLinks,
+                updatedAt: new Date().toISOString(),
+            };
+
             if (existingSettings) {
-                await tx.update(businessSettings).set({
-                    businessName: businessName,
-                    businessCategory: category,
-                    businessDescription: description,
-                    updatedAt: new Date().toISOString(),
-                }).where(eq(businessSettings.id, existingSettings.id));
+                await tx.update(businessSettings).set(settingsValues).where(eq(businessSettings.id, existingSettings.id));
             } else {
                 await tx.insert(businessSettings).values({
+                    ...settingsValues,
                     userId: currentUser.id,
-                    businessName: businessName,
-                    businessCategory: category,
-                    businessDescription: description,
-                    whatsappNumber: (currentUser as any).phone || "PENDING",
                     createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
                 });
             }
 

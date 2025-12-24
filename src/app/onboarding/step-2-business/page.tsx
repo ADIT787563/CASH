@@ -20,6 +20,9 @@ export default function BusinessStep() {
         gst: "",
         address: "",
         description: "",
+        instagram: "",
+        facebook: "",
+        website: "",
     });
 
     const validateField = (name: string, value: string) => {
@@ -229,10 +232,44 @@ export default function BusinessStep() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Business Address (Optional)</label>
+                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Business Description</label>
+                    <textarea
+                        name="description"
+                        placeholder="What do you sell? (Used for AI bot response)"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none h-24"
+                        value={formData.description}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Instagram</label>
+                        <input
+                            name="instagram"
+                            placeholder="@yourbusiness"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            value={formData.instagram}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Website (Optional)</label>
+                        <input
+                            name="website"
+                            placeholder="www.yoursite.com"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            value={formData.website}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Full Business Address</label>
                     <textarea
                         name="address"
-                        placeholder="Full Address"
+                        placeholder="Street, City, Pin Code"
                         className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm sm:text-base text-white placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none h-20"
                         value={formData.address}
                         onChange={handleChange}

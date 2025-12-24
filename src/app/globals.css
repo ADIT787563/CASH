@@ -97,14 +97,14 @@
 @layer utilities {
   .glass-card {
     /* Updated for transparency on White */
-    @apply bg-white/70 backdrop-blur-xl border border-slate-200/50 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300;
+    @apply bg-white border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300;
   }
 
   /* Dark mode override removed */
 
   .glass-panel {
     /* For Sidebars/Modals */
-    @apply bg-white/80 backdrop-blur-xl border-r border-slate-200/60;
+    @apply bg-white border-r border-zinc-200;
   }
 
   /* Dark mode override removed */

@@ -4,10 +4,8 @@ import { getUserPlanLimits, hasExceededLimit } from '@/lib/plan-limits';
 import OpenAI from 'openai';
 import { z } from 'zod';
 
-// Initialize OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI lazily inside handler
+
 
 const generateSchema = z.object({
     prompt: z.string().min(5).max(500),
@@ -54,6 +52,12 @@ export async function POST(req: NextRequest) {
         const { prompt, category, tone, language } = validation.data;
 
         // 2. Call OpenAI
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            return NextResponse.json({ error: 'OpenAI API Key not configured' }, { status: 500 });
+        }
+        const openai = new OpenAI({ apiKey });
+
         const systemPrompt = `You are an expert WhatsApp Marketing copywriter.
 Create a high-converting WhatsApp message template based on the user's request.
 Category: ${category}

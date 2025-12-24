@@ -27,8 +27,8 @@ import { Logo } from "@/components/Logo";
 export const Header = () => {
   const pathname = usePathname();
 
-  // Hide header on store pages
-  if (pathname.startsWith('/shop/')) {
+  // Hide header on store pages and dashboard (dashboard has its own nav)
+  if (pathname.startsWith('/shop/') || pathname.startsWith('/dashboard')) {
     return null;
   }
 

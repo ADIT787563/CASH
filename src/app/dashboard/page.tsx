@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare } from "lucide-react";
-import { StatCards } from "@/components/dashboard/StatCards";
-import InboxClient from "./inbox/InboxClient";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { DashboardBasic } from "@/components/dashboard/DashboardBasic";
+import { DashboardAdvanced } from "@/components/dashboard/DashboardAdvanced";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const userName = session?.user?.name || "Aditya";
+
+  // Determine Plan (Mock logic for now, or use real plan from session)
+  // Default to Basic for new users, assume "pro" or "growth" keywords in plan name mean Advanced
+  const userPlan = (session?.user as any)?.plan || "basic";
+  const isAdvanced = ["pro", "growth", "enterprise", "advanced"].includes(userPlan.toLowerCase());
 
   const [stats, setStats] = useState({
     messages: "0",
@@ -21,17 +24,19 @@ export default function DashboardPage() {
   const [inboxStats, setInboxStats] = useState<any>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchDashboardData = async () => {
     try {
+      setIsLoading(true);
       // Parallel fetch for efficiency
-      const [analyticsRes, ordersRes] = await Promise.all([
-        fetch("/api/analytics?mode=dashboard").catch(() => null),
+      const [statsRes, ordersRes] = await Promise.all([
+        fetch("/api/dashboard/stats").catch(() => null),
         fetch("/api/orders?limit=5").catch(() => null)
       ]);
 
-      if (analyticsRes?.ok) {
-        const data = await analyticsRes.json();
+      if (statsRes?.ok) {
+        const data = await statsRes.json();
         // data structure: { topStats: {...}, inboxStats: {...}, chartData: [...] }
 
         if (data.topStats) {
@@ -62,6 +67,8 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Dashboard data load error", error);
       toast.error("Could not load latest stats");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,54 +76,35 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-zinc-200 rounded-full mb-4"></div>
+          <div className="h-4 w-32 bg-zinc-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="text-zinc-900 font-sans h-[calc(100vh-80px)] flex flex-col">
-
-      {/* HEADER SECTION */}
-      <div className="flex-none mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-zinc-900 mb-1 tracking-tight">
-              Welcome back, {userName.split(' ')[0]}! 👋
-            </h1>
-            <p className="text-zinc-500 text-sm flex items-center gap-2">
-              Here is your daily activity and performance. <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1"></span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* AI Status Pill */}
-            <div className="flex items-center gap-3 bg-white border border-zinc-200 px-4 py-2 rounded-lg shadow-sm">
-              <span className="text-sm font-medium text-zinc-600">AI Status</span>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>
-                <span className="text-emerald-600 font-bold text-sm tracking-wide">ON</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* STATS CARDS (Clickable summary) */}
-      <div className="flex-none mb-8">
-        <StatCards stats={stats} />
-      </div>
-
-      {/* INBOX SECTION (Takes remaining height) */}
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center gap-2 mb-4">
-          <MessageSquare className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-semibold text-zinc-900 tracking-tight">Live Inbox</h2>
-        </div>
-        <div className="flex-1 min-h-0 bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden relative">
-          <InboxClient
-            inboxStats={inboxStats}
-            orders={orders}
-            chartData={chartData}
-          />
-        </div>
-      </div>
-
+    <div className="text-zinc-900 font-sans h-[calc(100vh-80px)] overflow-y-auto p-1 custom-scrollbar">
+      {/* Render appropriate dashboard based on plan */}
+      {isAdvanced ? (
+        <DashboardAdvanced
+          stats={stats}
+          inboxStats={inboxStats}
+          orders={orders}
+          chartData={chartData}
+        />
+      ) : (
+        <DashboardBasic
+          stats={stats}
+          inboxStats={inboxStats}
+          orders={orders}
+          chartData={chartData}
+        />
+      )}
     </div>
   );
 }

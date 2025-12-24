@@ -13,18 +13,14 @@ import {
     LogOut,
     Menu,
     MessageSquare,
-    Megaphone,
 } from "lucide-react";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 const NAV_ITEMS = [
     { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Inbox", href: "/dashboard/inbox", icon: MessageSquare },
     { label: "Leads", href: "/dashboard/leads", icon: Users },
     { label: "Catalog", href: "/dashboard/catalog", icon: ShoppingBag },
-    { label: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone },
-    { label: "Auto Replies", href: "/dashboard/auto-replies", icon: Zap },
     { label: "Templates", href: "/dashboard/templates", icon: FileText },
     { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
     { label: "Settings", href: "/dashboard/settings", icon: Settings },

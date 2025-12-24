@@ -85,7 +85,7 @@ export default function InboxClient({ inboxStats, orders, chartData }: InboxClie
 
             <div className="flex flex-1 gap-4 min-h-0 overflow-hidden">
                 {/* 1. Conversations Sidebar */}
-                <div className={`w-full md:w-[320px] lg:w-[340px] shrink-0 flex flex-col glass-panel rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${selectedId ? 'hidden md:flex' : 'flex'}`}>
+                <div className={`w-full md:w-[320px] lg:w-[340px] shrink-0 flex flex-col bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm transition-all duration-300 ${selectedId ? 'hidden md:flex' : 'flex'}`}>
                     <ConversationList
                         conversations={conversations}
                         selectedId={selectedId}
@@ -95,14 +95,14 @@ export default function InboxClient({ inboxStats, orders, chartData }: InboxClie
                 </div>
 
                 {/* 2. Main Chat Area */}
-                <div className={`flex-1 glass-panel rounded-2xl overflow-hidden shadow-2xl relative flex flex-col ${!selectedId ? 'hidden md:flex' : 'flex'}`}>
+                <div className={`flex-1 bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm relative flex flex-col ${!selectedId ? 'hidden md:flex' : 'flex'}`}>
                     {selectedId && selectedLead ? (
                         <div className="flex-1 flex flex-col relative min-h-0">
                             {/* Back Button for Mobile */}
                             <div className="md:hidden absolute top-4 left-2 z-50">
                                 <button
                                     onClick={() => setSelectedId(null)}
-                                    className="p-2 bg-black/50 text-white rounded-full backdrop-blur-md"
+                                    className="p-2 bg-white/50 text-zinc-900 border border-zinc-200 rounded-full backdrop-blur-md shadow-sm"
                                 >
                                     ← Back
                                 </button>
@@ -116,9 +116,9 @@ export default function InboxClient({ inboxStats, orders, chartData }: InboxClie
                             />
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-                            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 rotate-12">
-                                <MessageSquare className="w-8 h-8 opacity-50" />
+                        <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
+                            <div className="w-16 h-16 rounded-2xl bg-zinc-50 flex items-center justify-center mb-4 rotate-12 border border-zinc-100">
+                                <MessageSquare className="w-8 h-8 text-zinc-300" />
                             </div>
                             <p>Select a conversation to start chatting</p>
                         </div>

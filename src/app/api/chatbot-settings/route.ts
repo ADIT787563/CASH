@@ -92,6 +92,12 @@ export async function POST(request: NextRequest) {
       businessHoursOnly = false,
       welcomeMessage,
       awayMessage,
+      businessContext,
+      handoverRule,
+      confidenceThreshold,
+      businessHoursConfig,
+      fallbackMode,
+      fallbackMessage,
     } = body;
 
     // Validate language
@@ -143,6 +149,12 @@ export async function POST(request: NextRequest) {
         businessHoursOnly: businessHoursOnly ?? false,
         welcomeMessage: welcomeMessage ?? null,
         awayMessage: awayMessage ?? null,
+        businessContext: businessContext ?? null,
+        handoverRule: handoverRule ?? null,
+        confidenceThreshold: confidenceThreshold ?? 85,
+        businessHoursConfig: businessHoursConfig ?? null,
+        fallbackMode: fallbackMode ?? 'template',
+        fallbackMessage: fallbackMessage ?? null,
         createdAt: now,
         updatedAt: now,
       })
@@ -257,6 +269,13 @@ export async function PUT(request: NextRequest) {
     if (businessHoursOnly !== undefined) updateData.businessHoursOnly = businessHoursOnly;
     if (welcomeMessage !== undefined) updateData.welcomeMessage = welcomeMessage;
     if (awayMessage !== undefined) updateData.awayMessage = awayMessage;
+    // Added support for businessContext and new automation fields
+    if (body.businessContext !== undefined) updateData.businessContext = body.businessContext;
+    if (body.handoverRule !== undefined) updateData.handoverRule = body.handoverRule;
+    if (body.confidenceThreshold !== undefined) updateData.confidenceThreshold = body.confidenceThreshold;
+    if (body.businessHoursConfig !== undefined) updateData.businessHoursConfig = body.businessHoursConfig;
+    if (body.fallbackMode !== undefined) updateData.fallbackMode = body.fallbackMode;
+    if (body.fallbackMessage !== undefined) updateData.fallbackMessage = body.fallbackMessage;
 
     const updated = await db
       .update(chatbotSettings)

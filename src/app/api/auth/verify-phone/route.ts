@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { phone, otp } = await req.json();
+        const { phone, otp, name } = await req.json();
 
         if (!phone || !otp) {
             return NextResponse.json({ error: "Phone and OTP are required" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         // Update User
         await db.update(user)
             .set({
+                name: name || session.user.name,
                 phone: phone,
                 phoneVerified: true,
                 onboardingStep: 2, // Move to next step (Business Profile)

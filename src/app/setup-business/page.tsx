@@ -16,6 +16,10 @@ export default function SetupBusinessPage() {
         category: 'Retail',
         phone: '',
         email: '',
+        description: '',
+        instagram: '',
+        facebook: '',
+        website: '',
         gstin: '',
         addressLine1: '',
         city: '',
@@ -190,12 +194,60 @@ export default function SetupBusinessPage() {
                             required
                         />
                     </div>
+                    <div className="md:col-span-2 mt-4">
+                        <label className="block text-sm font-bold text-white mb-2">About Your Business</label>
+                        <textarea
+                            title="Business Description"
+                            placeholder="Describe what you sell, your specialties, or your story... (Used for AI Context)"
+                            value={formData.description}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all min-h-[100px]"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-muted-foreground">Instagram Handle</label>
+                            <div className="flex items-center">
+                                <span className="bg-white/10 p-2 border border-white/10 border-r-0 rounded-l-lg text-muted-foreground text-xs">@</span>
+                                <input
+                                    value={formData.instagram}
+                                    onChange={e => setFormData({ ...formData, instagram: e.target.value })}
+                                    className="w-full p-2 bg-white/5 border border-white/10 rounded-r-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    placeholder="mybusiness"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1 text-muted-foreground">Facebook Page Link</label>
+                            <input
+                                value={formData.facebook}
+                                onChange={e => setFormData({ ...formData, facebook: e.target.value })}
+                                className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                placeholder="facebook.com/mybusiness"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium mb-1 text-muted-foreground">External Website (Optional)</label>
+                        <input
+                            value={formData.website}
+                            onChange={e => setFormData({ ...formData, website: e.target.value })}
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                            placeholder="www.mybusiness.com"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2 border-t border-white/5 my-4"></div>
+
                     <div>
                         <label className="block text-sm font-medium mb-1 text-muted-foreground">GSTIN (Optional)</label>
                         <input
+                            title="GSTIN"
                             value={formData.gstin}
                             onChange={e => setFormData({ ...formData, gstin: e.target.value })}
-                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                            className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all uppercase"
                             placeholder="22AAAAA0000A1Z5"
                         />
                     </div>

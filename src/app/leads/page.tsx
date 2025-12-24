@@ -13,9 +13,17 @@ import {
   MessageCircle,
   TrendingUp,
   Clock,
+  Shield,
+  Zap,
+  Bot,
+  MoreVertical,
+  CheckCircle,
+  XCircle,
+  BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 import { Footer } from "@/components/home/Footer";
+import Link from "next/link";
 
 interface Lead {
   id: number;
@@ -28,6 +36,9 @@ interface Lead {
   last_message: string | null;
   created_at: string;
   updated_at: string;
+  // Advanced fields
+  ai_behavior?: string;
+  lead_source?: string;
 }
 
 export default function LeadsPage() {
@@ -37,6 +48,11 @@ export default function LeadsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+
+  // Plan Check
+  const userPlan = (session?.user as any)?.plan || "starter";
+  const isAdvanced = userPlan.includes("pro") || userPlan.includes("enterprise") || userPlan.includes("growth");
 
   useEffect(() => {
     if (!isPending && !session?.user) {
@@ -59,16 +75,24 @@ export default function LeadsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setLeads(data.data || []);
+        setLeads(data || []); // API might return array directly or { data: [] }
       }
     } catch (error) {
       console.error("Error fetching leads:", error);
+      toast.error("Failed to load leads");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleExportCSV = () => {
+    if (!isAdvanced) {
+      toast.error("Export is available on Pro plans", {
+        description: "Upgrade to export your leads data."
+      });
+      return;
+    }
+
     const csv = [
       ["Name", "Phone", "Email", "Source", "Status", "Interest", "Created"],
       ...filteredLeads.map((lead) => [
@@ -98,11 +122,16 @@ export default function LeadsPage() {
       lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.phone.includes(searchTerm) ||
       (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()));
+
     const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSource = sourceFilter === "all" || lead.source === sourceFilter;
+
+    return matchesSearch && matchesStatus && (isAdvanced ? matchesSource : true);
   });
 
-  const statuses = ["all", ...Array.from(new Set(leads.map((l) => l.status)))];
+  const statuses = isAdvanced
+    ? ["all", "new", "contacted", "qualified", "converted", "lost", "follow_up"]
+    : ["all", "new", "interested", "converted", "not_interested"];
 
   const stats = {
     total: leads.length,
@@ -113,10 +142,8 @@ export default function LeadsPage() {
 
   if (isPending || isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -125,146 +152,248 @@ export default function LeadsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <main className="container mx-auto px-6 py-10">
+
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-              <Users className="w-8 h-8 text-primary" />
-              Lead Management
-            </h1>
-            <p className="text-muted-foreground">
-              Track and manage your customer leads
+            <div className="flex items-center gap-4 mb-3">
+              <h1 className="text-4xl font-extrabold flex items-center gap-3 text-zinc-900 tracking-tight">
+                <Users className="w-10 h-10 text-primary" />
+                {isAdvanced ? "Customers & Leads" : "My Contacts"}
+              </h1>
+              {!isAdvanced && (
+                <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-bold uppercase tracking-wide">
+                  Basic
+                </span>
+              )}
+              {isAdvanced && (
+                <span className="px-4 py-1.5 bg-gradient-to-r from-primary/20 to-secondary/20 text-primary rounded-full text-sm font-bold uppercase tracking-wide flex items-center gap-1.5">
+                  <Zap className="w-4 h-4" /> Pro
+                </span>
+              )}
+            </div>
+            <p className="text-lg text-muted-foreground">
+              {isAdvanced
+                ? "Manage relationships, track AI interactions, and drive conversions."
+                : "Keep track of people who message you on WhatsApp."}
             </p>
           </div>
-          <button
-            onClick={handleExportCSV}
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all flex items-center gap-2"
-          >
-            <Download className="w-5 h-5" />
-            Export CSV
-          </button>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="glass-card p-6 rounded-2xl">
-            <Users className="w-6 h-6 text-primary mb-2" />
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Total Leads</div>
-          </div>
-          <div className="glass-card p-6 rounded-2xl">
-            <TrendingUp className="w-6 h-6 text-accent mb-2" />
-            <div className="text-2xl font-bold">{stats.new}</div>
-            <div className="text-sm text-muted-foreground">New</div>
-          </div>
-          <div className="glass-card p-6 rounded-2xl">
-            <MessageCircle className="w-6 h-6 text-secondary mb-2" />
-            <div className="text-2xl font-bold">{stats.contacted}</div>
-            <div className="text-sm text-muted-foreground">Contacted</div>
-          </div>
-          <div className="glass-card p-6 rounded-2xl">
-            <Clock className="w-6 h-6 text-success mb-2" />
-            <div className="text-2xl font-bold">{stats.converted}</div>
-            <div className="text-sm text-muted-foreground">Converted</div>
+          <div className="flex items-center gap-4">
+            {/* New Contact - Available to all */}
+            <button className="px-6 py-3 bg-background border border-input rounded-xl hover:bg-muted transition-colors font-bold text-base flex items-center gap-2 shadow-sm">
+              <Phone className="w-5 h-5" /> Add Contact
+            </button>
+
+            {/* Export - Advanced Only */}
+            <button
+              onClick={handleExportCSV}
+              className={`px-6 py-3 rounded-xl font-bold text-base flex items-center gap-2 transition-all shadow-sm ${isAdvanced
+                ? "bg-muted hover:bg-muted/80 text-foreground"
+                : "opacity-50 cursor-not-allowed bg-muted text-muted-foreground"
+                }`}
+              title={!isAdvanced ? "Upgrade to Pro to export" : "Export to csv"}
+            >
+              <Download className="w-5 h-5" />
+              <span className="hidden sm:inline">Export</span>
+              {!isAdvanced && <Shield className="w-4 h-4 ml-1" />}
+            </button>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="glass-card p-6 rounded-2xl mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        {/* Upgrade Banner for Basic Users */}
+        {!isAdvanced && (
+          <div className="mb-10 p-6 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/10 to-background border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/20 rounded-xl text-primary">
+                <Bot className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-lg">Unlock AI Auto-Selling</h3>
+                <p className="text-base text-muted-foreground">Get order history, auto-followups, and smart tags.</p>
+              </div>
+            </div>
+            <Link href="/pricing" className="px-6 py-3 bg-primary text-primary-foreground text-base font-bold rounded-xl whitespace-nowrap shadow-md hover:scale-105 transition-transform">
+              Upgrade to Pro
+            </Link>
+          </div>
+        )}
+
+        {/* Stats - Upscaled */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="glass-card p-6 rounded-2xl border border-border/50 shadow-sm min-h-[140px] flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-2">
+              <Users className="w-6 h-6 text-primary" />
+              {isAdvanced && <span className="text-sm font-bold text-success bg-success/10 px-2 py-0.5 rounded-lg">+12%</span>}
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold">{stats.total}</div>
+              <div className="text-base text-muted-foreground font-medium">Total Contacts</div>
+            </div>
+          </div>
+
+          <div className="glass-card p-6 rounded-2xl border border-border/50 shadow-sm min-h-[140px] flex flex-col justify-between">
+            <div className="flex justify-between items-start mb-2">
+              <TrendingUp className="w-6 h-6 text-accent" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold">{stats.new}</div>
+              <div className="text-base text-muted-foreground font-medium">New Opportunities</div>
+            </div>
+          </div>
+
+          {isAdvanced ? (
+            // Advanced Stats
+            <>
+              <div className="glass-card p-6 rounded-2xl border border-border/50 shadow-sm min-h-[140px] flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-2">
+                  <Bot className="w-6 h-6 text-secondary" />
+                  <span className="text-sm font-medium text-muted-foreground">AI Active</span>
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold">{stats.contacted}</div>
+                  <div className="text-base text-muted-foreground font-medium">In Conversation</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-border/50 shadow-sm min-h-[140px] flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-2">
+                  <BarChart3 className="w-6 h-6 text-success" />
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold">{stats.converted}</div>
+                  <div className="text-base text-muted-foreground font-medium">Converted Orders</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            // Basic Stats
+            <>
+              <div className="glass-card p-6 rounded-2xl border border-border/50 opacity-60 min-h-[140px] flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-2">
+                  <Bot className="w-6 h-6 text-muted-foreground" />
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold">--</div>
+                  <div className="text-base text-muted-foreground font-medium">AI Conversions</div>
+                </div>
+              </div>
+              <div className="glass-card p-6 rounded-2xl border border-border/50 opacity-60 min-h-[140px] flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-2">
+                  <BarChart3 className="w-6 h-6 text-muted-foreground" />
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-3xl font-extrabold">--</div>
+                  <div className="text-base text-muted-foreground font-medium">Revenue Tracked</div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Filters & Controls */}
+        <div className="glass-card p-6 rounded-2xl mb-8 space-y-4 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search leads by name, phone, or email..."
+                placeholder="Search by name or number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full pl-12 pr-6 py-3 bg-background border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-base shadow-sm"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {status === "all" ? "All Status" : status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
+
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-3 bg-background border border-input rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 min-w-[160px] shadow-sm"
+              >
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status === "all" ? "All Status" : status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
+                  </option>
+                ))}
+              </select>
+
+              {isAdvanced && (
+                <select
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value)}
+                  className="px-4 py-3 bg-background border border-input rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-primary/20 min-w-[160px] shadow-sm"
+                >
+                  <option value="all">All Sources</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="website">Website</option>
+                  <option value="referral">Referral</option>
+                </select>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Leads Table */}
-        <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="glass-card rounded-2xl overflow-hidden border border-border shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-muted/50">
+              <thead className="bg-muted/30 border-b border-border">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Contact</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Source</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Interest</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                  <th className="px-8 py-5 text-left text-sm font-extrabold text-muted-foreground uppercase tracking-wider">Customer</th>
+                  {isAdvanced && <th className="px-8 py-5 text-left text-sm font-extrabold text-muted-foreground uppercase tracking-wider">Source</th>}
+                  <th className="px-8 py-5 text-left text-sm font-extrabold text-muted-foreground uppercase tracking-wider">Status</th>
+                  {isAdvanced && <th className="px-8 py-5 text-left text-sm font-extrabold text-muted-foreground uppercase tracking-wider">AI Status</th>}
+                  <th className="px-8 py-5 text-right text-sm font-extrabold text-muted-foreground uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/50">
                 {filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{lead.name}</div>
-                      {lead.last_message && (
-                        <div className="text-sm text-muted-foreground line-clamp-1">
-                          {lead.last_message}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
+                  <tr key={lead.id} className="hover:bg-muted/30 transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-base text-foreground">{lead.name}</span>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <Phone className="w-4 h-4" />
                           {lead.phone}
                         </div>
-                        {lead.email && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="w-4 h-4" />
-                            {lead.email}
-                          </div>
-                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                        {lead.source}
-                      </span>
+
+                    {isAdvanced && (
+                      <td className="px-8 py-5">
+                        <span className="px-3 py-1 rounded-lg bg-muted text-sm font-semibold border border-border">
+                          {lead.source || "Direct"}
+                        </span>
+                      </td>
+                    )}
+
+                    <td className="px-8 py-5">
+                      <StatusBadge status={lead.status} />
                     </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm ${lead.status === "new"
-                            ? "bg-accent/10 text-accent"
-                            : lead.status === "contacted"
-                              ? "bg-secondary/10 text-secondary"
-                              : lead.status === "converted"
-                                ? "bg-success/10 text-success"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                      >
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm">{lead.interest_category || "-"}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className="p-2 hover:bg-primary/10 rounded-lg transition-colors">
-                        <MessageCircle className="w-5 h-5 text-primary" />
+
+                    {isAdvanced && (
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2.5 h-2.5 rounded-full ${lead.ai_behavior === 'human_only' ? 'bg-orange-500' : 'bg-green-500 animate-pulse'}`} />
+                          <span className="text-sm font-medium">
+                            {lead.ai_behavior === 'human_only' ? 'Paused' : 'Active'}
+                          </span>
+                        </div>
+                      </td>
+                    )}
+
+                    <td className="px-8 py-5 text-right">
+                      <button className="p-2.5 hover:bg-primary/10 rounded-xl text-primary transition-colors" title="Chat">
+                        <MessageCircle className="w-5 h-5" />
                       </button>
+                      {isAdvanced && (
+                        <button className="p-2.5 hover:bg-muted rounded-xl text-muted-foreground transition-colors ml-2">
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -273,13 +402,15 @@ export default function LeadsPage() {
           </div>
 
           {filteredLeads.length === 0 && (
-            <div className="p-12 text-center">
-              <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">No leads found</h3>
-              <p className="text-muted-foreground">
+            <div className="p-20 text-center">
+              <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-10 h-10 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">No contacts found</h3>
+              <p className="text-lg text-muted-foreground max-w-sm mx-auto">
                 {searchTerm || statusFilter !== "all"
-                  ? "Try adjusting your filters"
-                  : "Your leads will appear here once customers start messaging"}
+                  ? "Try adjusting your filters to see more results."
+                  : "Your contacts will appear here automatically when they message you."}
               </p>
             </div>
           )}
@@ -287,5 +418,39 @@ export default function LeadsPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    new: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    contacted: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    interested: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+    qualified: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+    converted: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+    lost: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+    not_interested: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  };
+
+  const label = status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1);
+
+  return (
+    <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${styles[status] || styles.not_interested}`}>
+      {label}
+    </span>
+  );
+}
+
+function Lock({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24" height="24" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
   );
 }

@@ -14,6 +14,13 @@ import {
   Package,
   Settings,
   Upload,
+  Lock,
+  Info,
+  TrendingUp,
+  History,
+  ShieldAlert,
+  BrainCircuit,
+  Smartphone
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,11 +37,15 @@ interface ProductFormData {
   // Required fields
   name: string;
   price: number | "";
+  costPrice: number | "";
   imageUrl: string;
   inStock: boolean;
   stock: number | "";
+  lowStockThreshold: number | "";
+  outOfStockBehavior: string;
   category: string;
   shortDescription: string;
+  longDescription: string;
 
   // Size variants
   sizesEnabled: boolean;
@@ -45,10 +56,22 @@ interface ProductFormData {
   compareAtPrice: number | "";
   barcode: string;
   vendor: string;
+  supplierName: string;
   template: string;
   returnPolicy: string;
   ageRestricted: boolean;
   viewTrackingEnabled: boolean;
+
+  // Payment Rules
+  minOrderValueCOD: number | "";
+  partialPaymentPercentage: number | "";
+  requiresCODConfirmation: boolean;
+
+  // AI Intelligence
+  visibleToAI: boolean;
+  aiPriority: number | "";
+  upsellPriority: number | "";
+  tags: string[];
 }
 
 export default function NewProductPage() {
@@ -68,22 +91,63 @@ export default function NewProductPage() {
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     price: "",
+    costPrice: "",
     imageUrl: "",
     inStock: true,
     stock: "",
+    lowStockThreshold: 5,
+    outOfStockBehavior: "stop_selling",
     category: "",
     shortDescription: "",
+    longDescription: "",
     sizesEnabled: false,
     selectedSizes: [],
     sizeStocks: [],
     compareAtPrice: "",
     barcode: "",
     vendor: "",
+    supplierName: "",
     template: "basic",
     returnPolicy: "",
     ageRestricted: false,
     viewTrackingEnabled: true,
+    minOrderValueCOD: "",
+    partialPaymentPercentage: "",
+    requiresCODConfirmation: false,
+    visibleToAI: true,
+    aiPriority: 0,
+    upsellPriority: 0,
+    tags: [],
   });
+
+  const [userPlan, setUserPlan] = useState("starter_999");
+  const isAdvanced = userPlan.includes("pro") || userPlan.includes("enterprise") || userPlan.includes("growth");
+  const [tagInput, setTagInput] = useState("");
+
+  // Fetch plan info
+  useEffect(() => {
+    if (session?.user) {
+      const plan = (session.user as any).planId;
+      if (plan) setUserPlan(plan);
+    }
+  }, [session]);
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, tagInput.trim()],
+      }));
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tag),
+    }));
+  };
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -205,9 +269,19 @@ export default function NewProductPage() {
         barcode: formData.barcode.trim() || null,
         vendor: formData.vendor.trim() || null,
         template: formData.template,
-        returnPolicy: formData.returnPolicy.trim() || null,
         ageRestricted: formData.ageRestricted,
         viewTrackingEnabled: formData.viewTrackingEnabled,
+        costPrice: formData.costPrice || null,
+        lowStockThreshold: formData.lowStockThreshold || 5,
+        outOfStockBehavior: formData.outOfStockBehavior,
+        supplierName: formData.supplierName || null,
+        minOrderValueCOD: formData.minOrderValueCOD || null,
+        partialPaymentPercentage: formData.partialPaymentPercentage || null,
+        requiresCODConfirmation: formData.requiresCODConfirmation,
+        visibleToAI: formData.visibleToAI,
+        aiPriority: formData.aiPriority || 0,
+        upsellPriority: formData.upsellPriority || 0,
+        tags: formData.tags,
       };
 
       // Handle stock based on size variants
@@ -735,105 +809,355 @@ export default function NewProductPage() {
                   </p>
                 </div>
 
-                {/* Sizes (variants) */}
-                <div className="border-t border-border pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-sm font-semibold">
-                      Sizes (variants)
+                {/* Long Description (NEW) */}
+                <div>
+                  <label htmlFor="long-description" className="block text-sm font-semibold mb-2">
+                    Full Description (AI & Details)
+                  </label>
+                  <textarea
+                    id="long-description"
+                    value={formData.longDescription}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, longDescription: e.target.value }))
+                    }
+                    placeholder="Detailed product specifications, benefits, and sales copy. AI uses this for complex queries."
+                    rows={5}
+                    className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+              </div>
+
+              {/* Pricing & Advanced Options */}
+              <div className="glass-card rounded-xl p-6 space-y-6">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Pricing & Financials
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label htmlFor="price" className="block text-sm font-semibold mb-2">
+                      Selling Price (₹) <span className="text-destructive">*</span>
                     </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <input
+                        id="price"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData(p => ({ ...p, price: e.target.value === "" ? "" : Number(e.target.value) }))}
+                        className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="compare-at" className="block text-sm font-semibold mb-2">Compare at (₹)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <input
+                        id="compare-at"
+                        type="number"
+                        value={formData.compareAtPrice}
+                        onChange={(e) => setFormData(p => ({ ...p, compareAtPrice: e.target.value === "" ? "" : Number(e.target.value) }))}
+                        className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                        placeholder="MSRP"
+                      />
+                    </div>
+                  </div>
+
+                  <div className={!isAdvanced ? "opacity-60 relative" : ""}>
+                    <label htmlFor="cost-price" className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      Cost Price (₹)
+                      {!isAdvanced && <Lock className="w-3 h-3" />}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                      <input
+                        id="cost-price"
+                        disabled={!isAdvanced}
+                        type="number"
+                        value={formData.costPrice}
+                        onChange={(e) => setFormData(p => ({ ...p, costPrice: e.target.value === "" ? "" : Number(e.target.value) }))}
+                        className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary disabled:cursor-not-allowed"
+                        placeholder="Your cost"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inventory Control */}
+              <div className="glass-card rounded-xl p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <History className="w-5 h-5 text-primary" />
+                    Inventory & Stock
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="inStock-chk"
+                      checked={formData.inStock}
+                      onChange={(e) => setFormData(p => ({ ...p, inStock: e.target.checked }))}
+                      className="w-4 h-4 rounded border-border text-primary"
+                    />
+                    <label htmlFor="inStock-chk" className="text-sm font-medium">Product is In-Stock</label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="stock-main" className="block text-sm font-semibold mb-2">Total Units Available</label>
+                    <input
+                      id="stock-main"
+                      type="number"
+                      value={formData.stock}
+                      onChange={(e) => setFormData(p => ({ ...p, stock: e.target.value === "" ? "" : Number(e.target.value) }))}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className={!isAdvanced ? "opacity-60" : ""}>
+                    <label htmlFor="low-threshold" className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      Low Stock Alert Threshold
+                      {!isAdvanced && <Lock className="w-3 h-3 text-amber-500" />}
+                    </label>
+                    <input
+                      id="low-threshold"
+                      disabled={!isAdvanced}
+                      type="number"
+                      value={formData.lowStockThreshold}
+                      onChange={(e) => setFormData(p => ({ ...p, lowStockThreshold: e.target.value === "" ? "" : Number(e.target.value) }))}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                      placeholder="e.g., 5"
+                    />
+                  </div>
+
+                  <div className={!isAdvanced ? "opacity-60" : ""}>
+                    <label htmlFor="out-behavior" className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      Out of Stock Strategy
+                      {!isAdvanced && <Lock className="w-3 h-3 text-amber-500" />}
+                    </label>
+                    <select
+                      id="out-behavior"
+                      title="Out of Stock Behavior"
+                      disabled={!isAdvanced}
+                      value={formData.outOfStockBehavior}
+                      onChange={(e) => setFormData(p => ({ ...p, outOfStockBehavior: e.target.value }))}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="stop_selling">Stop Selling</option>
+                      <option value="hide">Hide from Store</option>
+                      <option value="preorder">Allow Pre-Orders</option>
+                      <option value="switch_to_online">Online Only (UPI/Razorpay)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="sku-code" className="block text-sm font-semibold mb-2">SKU / Barcode (Optional)</label>
+                    <input
+                      id="sku-code"
+                      type="text"
+                      value={formData.barcode}
+                      onChange={(e) => setFormData(p => ({ ...p, barcode: e.target.value }))}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                      placeholder="Internal ID"
+                    />
+                  </div>
+                </div>
+
+                {!isAdvanced && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
+                    <Info className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                    <p className="text-xs text-amber-800">
+                      <strong>Pro Inventory:</strong> Low stock alerts and behavior rules are available on Growth and higher plans.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Advanced Payment Rules */}
+              {isAdvanced && (
+                <div className="glass-card rounded-xl p-6 space-y-6 border-l-4 border-l-primary/30">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5 text-primary" />
+                    Checkout Rules
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="min-cod" className="block text-sm font-semibold mb-2">Min Order for COD (₹)</label>
+                      <input
+                        id="min-cod"
+                        type="number"
+                        value={formData.minOrderValueCOD}
+                        onChange={(e) => setFormData(p => ({ ...p, minOrderValueCOD: e.target.value === "" ? "" : Number(e.target.value) }))}
+                        className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                        placeholder="e.g. 1000"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="partial" className="block text-sm font-semibold mb-2">Partial Payment Required (%)</label>
+                      <input
+                        id="partial"
+                        type="number"
+                        value={formData.partialPaymentPercentage}
+                        onChange={(e) => setFormData(p => ({ ...p, partialPaymentPercentage: e.target.value === "" ? "" : Number(e.target.value) }))}
+                        className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                        placeholder="e.g. 10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Intelligence */}
+              <div className="glass-card rounded-xl p-6 space-y-6 relative overflow-hidden">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <BrainCircuit className="w-5 h-5 text-primary" />
+                  AI Intelligence
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10">
+                    <label htmlFor="visibleToAI-chk">
+                      <p className="font-semibold text-sm">Enable AI Recommendations</p>
+                      <p className="text-xs text-muted-foreground">Allow the bot to suggest this item.</p>
+                    </label>
+                    <input
+                      type="checkbox"
+                      id="visibleToAI-chk"
+                      title="Visible to AI"
+                      checked={formData.visibleToAI}
+                      onChange={(e) => setFormData(p => ({ ...p, visibleToAI: e.target.checked }))}
+                      className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                    />
+                  </div>
+
+                  <div className={!isAdvanced ? "opacity-60" : ""}>
+                    <label htmlFor="ai-priority" className="flex items-center gap-2 text-sm font-semibold mb-2">
+                      Priority Level
+                      {!isAdvanced && <Lock className="w-3 h-3 text-primary" />}
+                    </label>
+                    <input
+                      id="ai-priority"
+                      disabled={!isAdvanced}
+                      type="number"
+                      value={formData.aiPriority}
+                      onChange={(e) => setFormData(p => ({ ...p, aiPriority: e.target.value === "" ? "" : Number(e.target.value) }))}
+                      className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                      placeholder="0-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Size Variations */}
+              <div className="glass-card rounded-xl p-6 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Smartphone className="w-5 h-5 text-primary" />
+                    Product Variations
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(p => ({ ...p, sizesEnabled: !p.sizesEnabled }))}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${formData.sizesEnabled ? "bg-primary text-white" : "bg-muted"}`}
+                  >
+                    {formData.sizesEnabled ? "Enabled" : "Disabled"}
+                  </button>
+                </div>
+
+                {formData.sizesEnabled && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex flex-wrap gap-2">
+                      {AVAILABLE_SIZES.map(size => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => handleSizeToggle(size)}
+                          className={`w-12 h-12 rounded-xl border flex items-center justify-center font-bold text-sm transition-all ${formData.selectedSizes.includes(size) ? "bg-primary text-white border-primary shadow-lg" : "bg-background border-input hover:border-primary/50"}`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+
+                    {formData.selectedSizes.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {formData.selectedSizes.map(size => (
+                          <div key={size} className="p-3 bg-muted/30 rounded-xl border border-border space-y-2">
+                            <span className="text-xs font-bold text-muted-foreground uppercase">Size {size}</span>
+                            <input
+                              type="number"
+                              title={`Stock for size ${size}`}
+                              placeholder="Stock"
+                              value={formData.sizeStocks.find(ss => ss.size === size)?.stock}
+                              onChange={(e) => handleSizeStockChange(size, e.target.value === "" ? "" : Number(e.target.value))}
+                              className="w-full bg-transparent border-0 border-b border-border focus:ring-0 focus:border-primary text-sm p-0"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Search & Indexing (Tags) */}
+              <div className="glass-card rounded-xl p-6 space-y-6">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Package className="w-5 h-5 text-primary" />
+                  Search & Indexing
+                </h2>
+
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="tag-input"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      className="flex-1 px-4 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary"
+                      placeholder="Add tags (e.g. Summer, Men, Sale)"
+                    />
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          sizesEnabled: !prev.sizesEnabled,
-                          selectedSizes: [],
-                          sizeStocks: [],
-                        }))
-                      }
-                      className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${formData.sizesEnabled
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-input hover:bg-muted"
-                        }`}
+                      onClick={handleAddTag}
+                      className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
                     >
-                      {formData.sizesEnabled ? "Disable Sizes" : "Enable Sizes"}
+                      Add
                     </button>
                   </div>
 
-                  {formData.sizesEnabled && (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Select which sizes apply to this product and set stock for each size.
-                      </p>
-
-                      {/* Size Checkboxes */}
-                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                        {AVAILABLE_SIZES.map((size) => (
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20"
+                        >
+                          {tag}
                           <button
-                            key={size}
                             type="button"
-                            onClick={() => handleSizeToggle(size)}
-                            className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${formData.selectedSizes.includes(size)
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-background border-input hover:bg-muted"
-                              }`}
-                            aria-pressed={formData.selectedSizes.includes(size) ? "true" : "false"}
+                            onClick={() => handleRemoveTag(tag)}
+                            className="hover:text-primary transition-colors"
+                            aria-label={`Remove tag ${tag}`}
                           >
-                            {size}
+                            <X className="w-3 h-3" />
                           </button>
-                        ))}
-                      </div>
-
-                      {/* Stock per Size */}
-                      {formData.selectedSizes.length > 0 && (
-                        <div className="space-y-3 pt-3 border-t border-border">
-                          <p className="text-sm font-medium">Stock per size:</p>
-                          <div className="grid sm:grid-cols-2 gap-3">
-                            {formData.selectedSizes.map((size) => {
-                              const sizeStock = formData.sizeStocks.find((ss) => ss.size === size);
-                              return (
-                                <div key={size} className="flex items-center gap-3">
-                                  <label htmlFor={`size-stock-${size}`} className="text-sm font-medium w-16">
-                                    {size}:
-                                  </label>
-                                  <input
-                                    id={`size-stock-${size}`}
-                                    type="number"
-                                    value={sizeStock?.stock ?? ""}
-                                    onChange={(e) =>
-                                      handleSizeStockChange(
-                                        size,
-                                        e.target.value === "" ? "" : Number(e.target.value)
-                                      )
-                                    }
-                                    placeholder="Qty"
-                                    min="0"
-                                    className="flex-1 px-3 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {validationErrors.sizes && (
-                        <p className="text-sm text-destructive" role="alert">
-                          {validationErrors.sizes}
-                        </p>
-                      )}
-                      {validationErrors.sizeStocks && (
-                        <p className="text-sm text-destructive" role="alert">
-                          {validationErrors.sizeStocks}
-                        </p>
-                      )}
+                        </span>
+                      ))}
                     </div>
-                  )}
-
-                  {!formData.sizesEnabled && (
-                    <p className="text-sm text-muted-foreground">
-                      If no size is selected, product will be treated as single-size controlled by main stock field.
-                    </p>
                   )}
                 </div>
               </div>
@@ -844,7 +1168,7 @@ export default function NewProductPage() {
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="w-full flex items-center justify-between group"
-                  aria-expanded={showAdvanced}
+                  aria-expanded={showAdvanced ? "true" : "false"}
                 >
                   <h2 className="text-xl font-bold flex items-center gap-2 group-hover:text-primary transition-colors">
                     <Settings className="w-5 h-5 text-primary" />
@@ -902,7 +1226,7 @@ export default function NewProductPage() {
                         placeholder="Enter barcode"
                         maxLength={30}
                         className="w-full px-4 py-2.5 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                        aria-invalid={!!validationErrors.barcode}
+                        aria-invalid={validationErrors.barcode ? "true" : "false"}
                         aria-describedby={validationErrors.barcode ? "barcode-error" : "barcode-hint"}
                       />
                       {validationErrors.barcode && (
@@ -976,14 +1300,14 @@ export default function NewProductPage() {
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, ageRestricted: e.target.checked }))
                         }
-                        className="w-4 h-4 mt-0.5 rounded border-input"
+                        className="w-4 h-4 mt-1 rounded border-input"
                       />
                       <div>
                         <label htmlFor="age-restricted" className="text-sm font-medium">
                           Age Restricted Product
                         </label>
                         {formData.ageRestricted && (
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-amber-600 mt-1">
                             ⚠️ Manual verification required at checkout
                           </p>
                         )}
@@ -1002,7 +1326,7 @@ export default function NewProductPage() {
                             viewTrackingEnabled: e.target.checked,
                           }))
                         }
-                        className="w-4 h-4 mt-0.5 rounded border-input"
+                        className="w-4 h-4 mt-1 rounded border-input"
                       />
                       <label htmlFor="view-tracking" className="text-sm font-medium">
                         Enable View Tracking & Analytics

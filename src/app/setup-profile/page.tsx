@@ -40,7 +40,8 @@ export default function SetupProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: formData.phone,
-          otp: formData.otp
+          otp: formData.otp,
+          name: formData.name
         })
       });
 

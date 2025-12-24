@@ -28,28 +28,28 @@ export default function InboxStats({ stats }: InboxStatsProps) {
             label: "Total Orders",
             value: data.totalOrders.toLocaleString(),
             icon: Package,
-            iconClass: "text-blue-400 bg-blue-400/10",
+            iconClass: "text-indigo-600 bg-indigo-50",
             trend: null
         },
         {
             label: "Messages Automated",
             value: data.messagesAutomated,
             icon: MessageSquare,
-            iconClass: "text-emerald-400 bg-emerald-400/10",
+            iconClass: "text-emerald-600 bg-emerald-50",
             trend: null
         },
         {
             label: "Payments Received",
             value: data.paymentsReceived,
             icon: DollarSign,
-            iconClass: "text-green-400 bg-green-400/10",
+            iconClass: "text-amber-600 bg-amber-50",
             trend: null
         },
         {
             label: "Conversion Rate",
             value: data.conversionRate,
             icon: TrendingUp,
-            iconClass: "text-green-400 bg-green-400/10",
+            iconClass: "text-emerald-600 bg-emerald-50",
             trend: "up"
         },
         {
@@ -62,24 +62,24 @@ export default function InboxStats({ stats }: InboxStatsProps) {
     ];
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             {items.map((item, idx) => (
-                <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between backdrop-blur-md">
-                    <div className="flex items-start justify-between mb-2">
+                <div key={idx} className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col justify-between shadow-sm min-h-[110px]">
+                    <div className="flex items-start justify-between mb-3">
                         {item.icon ? (
-                            <div className={`p-1.5 rounded-lg ${item.iconClass}`}>
-                                <item.icon className="w-4 h-4" />
+                            <div className={`p-2.5 rounded-xl ${item.iconClass}`}>
+                                <item.icon className="w-5 h-5" />
                             </div>
                         ) : (
-                            <span className="text-sm font-medium text-white/60">{item.label}</span>
+                            <span className="text-base font-medium text-zinc-500">{item.label}</span>
                         )}
-                        {item.trend === "up" && <TrendingUp className="w-4 h-4 text-green-400" />}
-                        {item.trend === "verified" && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                        {item.trend === "up" && <TrendingUp className="w-5 h-5 text-emerald-500" />}
+                        {item.trend === "verified" && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
                     </div>
 
                     <div>
-                        {item.icon && <span className="text-xs text-white/50 block mb-0.5">{item.label}</span>}
-                        <div className="text-lg font-bold text-white flex items-center gap-2">
+                        {item.icon && <span className="text-sm text-zinc-500 block mb-1">{item.label}</span>}
+                        <div className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
                             {item.value}
                         </div>
                     </div>

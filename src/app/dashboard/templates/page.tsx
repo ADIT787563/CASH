@@ -41,16 +41,48 @@ export default function TemplatesPage() {
     const [content, setContent] = useState("");
     const [category, setCategory] = useState("marketing");
 
+    // Mock Data
+    const DEMO_TEMPLATES: Template[] = [
+        {
+            id: 1,
+            name: "Order Confirmation",
+            category: "UTILITY",
+            status: "APPROVED",
+            content: "Hi {{1}}, your order #{{2}} has been confirmed! We will update you once it ships. Thank you for shopping with us!"
+        },
+        {
+            id: 2,
+            name: "Diwali Sale",
+            category: "MARKETING",
+            status: "APPROVED",
+            content: "Happy Diwali {{1}}! 🪔 Get 50% OFF on our new collection. Offer valid till Sunday. Shop now: {{2}}"
+        },
+        {
+            id: 3,
+            name: "Feedback Request",
+            category: "UTILITY",
+            status: "APPROVED",
+            content: "Hello {{1}}, how was your experience with our product? Please rate us here: {{2}}. Your feedback helps us improve!"
+        }
+    ];
+
     // Fetch Templates
     const fetchTemplates = async () => {
         try {
             const res = await fetch("/api/templates");
             if (res.ok) {
                 const data = await res.json();
-                setTemplates(data);
+                if (Array.isArray(data) && data.length > 0) {
+                    setTemplates(data);
+                } else {
+                    setTemplates(DEMO_TEMPLATES);
+                }
+            } else {
+                setTemplates(DEMO_TEMPLATES);
             }
         } catch (error) {
             console.error("Failed to fetch templates", error);
+            setTemplates(DEMO_TEMPLATES);
         } finally {
             setLoading(false);
         }
@@ -156,13 +188,13 @@ export default function TemplatesPage() {
 
     return (
         <div className="space-y-6 text-foreground">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col items-center text-center gap-4 py-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Message Templates</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Ready-to-use messages for your customers.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 italic">Message Templates</h1>
+                    <p className="text-sm text-zinc-500 mt-1 font-medium">Ready-to-use WhatsApp broadcast messages for your customers.</p>
                 </div>
-                <Button onClick={() => setOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Plus className="w-4 h-4 mr-2" /> New Template
+                <Button onClick={() => setOpen(true)} className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-md transition-all px-10 py-6 h-auto text-base">
+                    <Plus className="w-5 h-5 mr-2" /> New Template
                 </Button>
             </div>
 

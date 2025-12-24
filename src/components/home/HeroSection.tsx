@@ -64,7 +64,7 @@ export function HeroSection() {
             </div>
           </Link>
 
-          <Link href="/manual">
+          <Link href="/product">
             <div className="inline-flex h-14 items-center justify-center rounded-full border border-zinc-200 bg-white px-10 font-medium text-zinc-700 transition-colors hover:bg-zinc-50 text-lg hover:border-zinc-300">
               See How It Works
             </div>
@@ -92,15 +92,7 @@ export function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Made with Badge - Bottom Right */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-zinc-100 flex items-center gap-2">
-            <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center">
-              <span className="text-white text-[10px]">E</span>
-            </div>
-            Made with Emergent
-          </div>
-        </div>
+
 
       </div>
     </section>

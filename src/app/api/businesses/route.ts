@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { businesses, user, orderSequences } from "@/db/schema";
+import { businesses, user, orderSequences, businessSettings, businessProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, slug, type, category, phone, email, address, gstin } = body;
+        const {
+            name, slug, type, category, phone, email, address, gstin,
+            description, instagram, facebook, website
+        } = body;
 
         // Validation
         if (!name || !slug || !email || !phone) {
@@ -38,22 +41,85 @@ export async function POST(req: NextRequest) {
         const codeSuffix = nanoid();
         const sellerCode = `WG-${codeSuffix}`;
 
+        const now = new Date().toISOString();
+
         // Create Business
         const [newBusiness] = await db.insert(businesses).values({
             ownerId: session.user.id,
             name,
-            displayName: name, // Default
+            displayName: name,
             slug,
             sellerCode,
             type,
             category,
             phone,
             email,
-            address, // JSON
+            address,
             gstin,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            description,
+            instagram,
+            facebook,
+            website,
+            createdAt: now,
+            updatedAt: now,
         }).returning();
+
+        // SYNC: Create/Update Business Settings
+        await db.insert(businessSettings).values({
+            userId: session.user.id,
+            businessName: name,
+            whatsappNumber: phone,
+            businessCategory: category,
+            businessDescription: description,
+            storeUrl: slug,
+            socialLinks: JSON.stringify({ instagram, facebook, website }),
+            createdAt: now,
+            updatedAt: now,
+        }).onConflictDoUpdate({
+            target: businessSettings.userId,
+            set: {
+                businessName: name,
+                whatsappNumber: phone,
+                businessCategory: category,
+                businessDescription: description,
+                storeUrl: slug,
+                socialLinks: JSON.stringify({ instagram, facebook, website }),
+                updatedAt: now,
+            }
+        });
+
+        // SYNC: Create/Update Business Profile
+        await db.insert(businessProfiles).values({
+            userId: session.user.id,
+            fullName: session.user.name || "Business Owner",
+            businessName: name,
+            businessCategory: category || "Retail",
+            phoneNumber: phone,
+            businessEmail: email,
+            street: address?.line1 || "",
+            city: address?.city || "",
+            state: address?.state || "",
+            pincode: address?.pincode || "",
+            gstNumber: gstin,
+            isComplete: true,
+            createdAt: now,
+            updatedAt: now,
+        }).onConflictDoUpdate({
+            target: businessProfiles.userId,
+            set: {
+                businessName: name,
+                businessCategory: category || "Retail",
+                phoneNumber: phone,
+                businessEmail: email,
+                street: address?.line1 || "",
+                city: address?.city || "",
+                state: address?.state || "",
+                pincode: address?.pincode || "",
+                gstNumber: gstin,
+                isComplete: true,
+                updatedAt: now,
+            }
+        });
 
         // Initialize Order Sequence
         await db.insert(orderSequences).values({

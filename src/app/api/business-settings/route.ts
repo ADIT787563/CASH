@@ -32,11 +32,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({}, { status: 200 });
     }
 
-    // Merge data
+    // Merge data with profile fallback
     const mergedData = {
       ...(settings || {}),
+      // Fallback to profile data if settings are empty
+      businessName: settings?.businessName || profile?.businessName || "",
+      whatsappNumber: settings?.whatsappNumber || profile?.phoneNumber || "",
+
+      // Profile specific fields
       gstin: profile?.gstNumber || null,
-      address: profile?.street || null, // Mapping single address field to street
+      address: profile?.street || null,
       businessEmail: profile?.businessEmail || null,
     };
 
@@ -93,6 +98,14 @@ export async function PUT(request: NextRequest) {
       themeConfig: themeConfig ? (typeof themeConfig === 'string' ? themeConfig : JSON.stringify(themeConfig)) : null,
       logoUrl: logoUrl?.trim() || null,
       logoUrlDark: logoUrlDark?.trim() || null,
+      upiId: body.upiId?.trim() || null,
+      merchantName: body.merchantName?.trim() || null,
+      // Advanced Controls
+      confirmationMode: body.confirmationMode || 'auto_confirm',
+      partialPaymentAllowed: body.partialPaymentAllowed ?? false,
+      refundPolicy: body.refundPolicy || 'no_refunds',
+      refundPolicyCustomText: body.refundPolicyCustomText || null,
+      codTemplate: body.codTemplate || null,
       updatedAt: now,
     };
 

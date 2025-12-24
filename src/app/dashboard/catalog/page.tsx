@@ -15,7 +15,7 @@ import {
     Power,
     AlertCircle,
     CreditCard, Wallet, Banknote,
-    MessageSquare
+    MessageSquare, Eye, Share2, Stars, MoreVertical
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -27,11 +27,15 @@ interface Product {
     id: number;
     name: string;
     price: number;
+    originalPrice?: number;
     category: string;
     stock: number;
     imageUrl: string | null;
     status: "ACTIVE" | "DISABLED" | "DRAFT";
     paymentMode: "ALL" | "ONLINE_ONLY" | "COD_ONLY";
+    featured?: boolean;
+    discount?: string;
+    description?: string;
 }
 
 // Mock Data because existing API might be empty
@@ -43,49 +47,83 @@ const initialProducts: Product[] = [
 
 export default function CatalogPage() {
     const router = useRouter();
-    const { checkPermission, isPending: roleLoading } = useRole();
-    const [products, setProducts] = useState(initialProducts); // Using local state for logic demo
+    const { checkPermission } = useRole();
     const [searchTerm, setSearchTerm] = useState("");
     const [filter, setFilter] = useState("ALL");
 
-    // --- Logic Implementations ---
+    // Enhanced Mock Data
+    const products: Product[] = [
+        {
+            id: 101,
+            name: "Premium Wireless Earbuds",
+            price: 1499,
+            originalPrice: 2999,
+            category: "Electronics",
+            stock: 45,
+            imageUrl: "https://images.unsplash.com/photo-1572569028738-411a09774e1c?w=800&q=80",
+            status: "ACTIVE",
+            paymentMode: "ALL",
+            featured: true,
+            discount: "50% OFF",
+            description: "High-quality sound with active noise cancellation, 24-hour battery life."
+        },
+        {
+            id: 102,
+            name: "Smart Watch Pro",
+            price: 2999,
+            originalPrice: 4999,
+            category: "Electronics",
+            stock: 8,
+            imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+            status: "ACTIVE",
+            paymentMode: "ONLINE_ONLY",
+            featured: true,
+            discount: "40% OFF",
+            description: "Track your fitness and stay connected with notifications."
+        },
+        {
+            id: 103,
+            name: "Portable Bluetooth Speaker",
+            price: 999,
+            originalPrice: 1499,
+            category: "Audio",
+            stock: 120,
+            imageUrl: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80",
+            status: "ACTIVE",
+            paymentMode: "ALL",
+            featured: false,
+            discount: "33% OFF",
+            description: "Powerful bass with 12-hour battery life, waterproof design."
+        },
+        {
+            id: 104,
+            name: "Ergonomic Office Chair",
+            price: 5499,
+            originalPrice: 8999,
+            category: "Furniture",
+            stock: 15,
+            imageUrl: "https://images.unsplash.com/photo-1592078615290-033ee584e267?w=800&q=80",
+            status: "ACTIVE",
+            paymentMode: "COD_ONLY",
+            featured: false,
+            discount: "Save ₹3500",
+            description: "Comfortable mesh back with lumbar support and adjustable height."
+        },
+        {
+            id: 105,
+            name: "Noise Cancelling Headphones",
+            price: 8999,
+            originalPrice: 12999,
+            category: "Audio",
+            stock: 0,
+            imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+            status: "DISABLED",
+            paymentMode: "ALL",
+            featured: false,
+            description: "Over-ear headphones with premium sound quality and plush comfort."
+        }
+    ];
 
-    const toggleStatus = async (id: number) => {
-        // Simulate API delay
-        await new Promise(r => setTimeout(r, 600));
-        setProducts(prev => prev.map(p => {
-            if (p.id === id) {
-                const newStatus = p.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-                return { ...p, status: newStatus };
-            }
-            return p;
-        }));
-    };
-
-    const togglePaymentMode = (id: number) => {
-        setProducts(prev => prev.map(p => {
-            if (p.id === id) {
-                const modes: Product["paymentMode"][] = ["ALL", "ONLINE_ONLY", "COD_ONLY"];
-                const currentIndex = modes.indexOf(p.paymentMode);
-                const nextMode = modes[(currentIndex + 1) % modes.length];
-                toast.info(`Payment Mode updated to: ${nextMode}`);
-                return { ...p, paymentMode: nextMode };
-            }
-            return p;
-        }));
-    };
-
-    const updateStock = (id: number, delta: number) => {
-        setProducts(prev => prev.map(p => {
-            if (p.id === id) {
-                const newStock = Math.max(0, p.stock + delta);
-                return { ...p, stock: newStock };
-            }
-            return p;
-        }));
-    };
-
-    // Filter Logic
     const filteredProducts = products.filter(p => {
         const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchFilter = filter === "ALL"
@@ -96,48 +134,47 @@ export default function CatalogPage() {
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Inventory Control</h1>
-                    <p className="text-sm text-slate-500 mt-1 font-medium">
-                        Manage stock, logic, and payment rules.
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Product Catalog</h1>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                        Manage your products, prices, and inventory.
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <ActionButton icon={<RefreshCw className="w-4 h-4" />} variant="secondary" onClick={() => window.location.reload()} />
+                <div className="flex gap-3">
                     <ActionButton
-                        onAction={() => router.push("/catalog/products/new")}
+                        onAction={() => router.push("/dashboard/catalog/products/new")}
                         icon={checkPermission("manage:catalog") ? <Plus className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                         disabled={!checkPermission("manage:catalog")}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 px-6 h-10 rounded-full font-medium transition-all"
                     >
                         Add Product
                     </ActionButton>
                 </div>
             </div>
 
-            {/* Toolbar */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col sm:flex-row gap-4 justify-between items-center shadow-sm">
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white dark:bg-zinc-900/50 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <div className="relative w-full sm:max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input
                         type="text"
-                        placeholder="Search SKU or Name..."
+                        placeholder="Search products..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                        className="w-full pl-10 pr-4 py-2 bg-transparent text-sm focus:outline-none text-zinc-900 dark:text-white"
                     />
                 </div>
-
+                <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800 hidden sm:block"></div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Filter className="w-4 h-4 text-slate-500" />
                     <select
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                        className="bg-transparent text-sm font-medium text-zinc-600 dark:text-zinc-300 focus:outline-none cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
-                        <option value="ALL">All Products</option>
+                        <option value="ALL">All Status</option>
                         <option value="LOW_STOCK">Low Stock</option>
                         <option value="OUT_OF_STOCK">Out of Stock</option>
                         <option value="DISABLED">Disabled</option>
@@ -145,99 +182,90 @@ export default function CatalogPage() {
                 </div>
             </div>
 
-            {/* Product Logic Table */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-xs">
-                            <tr>
-                                <th className="px-6 py-4 w-16">Img</th>
-                                <th className="px-6 py-4">Product</th>
-                                <th className="px-6 py-4">Stock</th>
-                                <th className="px-6 py-4">Payment Logic</th>
-                                <th className="px-6 py-4">State</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {filteredProducts.map((product) => (
-                                <tr key={product.id} className={`transition-colors ${product.status === 'DISABLED' ? 'bg-slate-50 opacity-75' : 'hover:bg-slate-50'}`}>
-                                    <td className="px-6 py-4">
-                                        <div className="relative w-10 h-10 rounded bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
-                                            {product.imageUrl ? (
-                                                <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
-                                            ) : (
-                                                <ImageIcon className="w-5 h-5 text-slate-300" />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-900 dark:text-white">{product.name}</div>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs text-slate-500 px-1.5 py-0.5 rounded bg-slate-100">{product.category}</span>
-                                            <span className="text-xs font-mono font-bold text-slate-700">₹{product.price}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`font-mono font-bold ${product.stock === 0 ? 'text-rose-500' : 'text-slate-900'}`}>
-                                                {product.stock}
-                                            </span>
-                                            <div className="flex gap-1">
-                                                <button onClick={() => updateStock(product.id, -1)} className="w-6 h-6 flex items-center justify-center border rounded hover:bg-slate-100">-</button>
-                                                <button onClick={() => updateStock(product.id, 1)} className="w-6 h-6 flex items-center justify-center border rounded hover:bg-slate-100">+</button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => togglePaymentMode(product.id)}
-                                            className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[10px] font-bold text-slate-600 hover:bg-slate-100 hover:border-indigo-300 transition-all uppercase tracking-wide"
-                                        >
-                                            {product.paymentMode === "ALL" && <><Wallet className="w-3 h-3" /> All Methods</>}
-                                            {product.paymentMode === "ONLINE_ONLY" && <><CreditCard className="w-3 h-3 text-indigo-500" /> Online Only</>}
-                                            {product.paymentMode === "COD_ONLY" && <><Banknote className="w-3 h-3 text-emerald-600" /> COD Only</>}
-                                        </button>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <ActionButton
-                                            variant={product.status === 'ACTIVE' ? 'secondary' : 'ghost'}
-                                            className={`h-6 text-[10px] px-2 uppercase tracking-wider ${product.status === 'ACTIVE' ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-slate-500'}`}
-                                            onAction={() => toggleStatus(product.id)}
-                                            successMessage={product.status === "ACTIVE" ? "Product Disabled" : "Product Enabled"}
-                                        >
-                                            {product.status}
-                                        </ActionButton>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <ActionButton
-                                                variant="ghost"
-                                                className="p-2 h-auto text-green-600 bg-green-50 hover:bg-green-100 border border-green-200"
-                                                icon={<MessageSquare className="w-4 h-4" />}
-                                                onAction={() => { toast.info("Opening WhatsApp Preview..."); }}
-                                                title="See how customer sees this"
-                                            />
-                                            <ActionButton
-                                                variant="ghost"
-                                                className="p-2 h-auto"
-                                                icon={<Edit className="w-4 h-4" />}
-                                            />
-                                            <ActionButton
-                                                variant="ghost"
-                                                requiresConfirm
-                                                confirmMessage="Delete?"
-                                                icon={checkPermission("delete:product") ? <Trash2 className="w-4 h-4 text-rose-400" /> : <Lock className="w-4 h-4 text-slate-300" />}
-                                                disabled={!checkPermission("delete:product")}
-                                                onAction={() => { toast.info("Delete simulated"); }}
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                    <div key={product.id} className="group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-zinc-500/10 dark:hover:shadow-black/40 transition-all duration-300 flex flex-col">
+
+                        {/* Image Area */}
+                        <div className="relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                            {product.imageUrl ? (
+                                <Image
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-zinc-300">
+                                    <ImageIcon className="w-12 h-12" />
+                                </div>
+                            )}
+
+                            {/* Badges */}
+                            <div className="absolute top-3 left-3 flex flex-col gap-2">
+                                {product.discount && (
+                                    <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-rose-500 rounded-md shadow-sm">
+                                        {product.discount}
+                                    </span>
+                                )}
+                            </div>
+                            {product.featured && (
+                                <div className="absolute top-3 right-3">
+                                    <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-950 bg-amber-400 rounded-md shadow-sm">
+                                        <Stars className="w-3 h-3" /> Featured
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Hover Overlay Actions */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-[2px]">
+                                <button
+                                    onClick={() => router.push(`/dashboard/catalog/products/edit/${product.id}`)}
+                                    className="w-10 h-10 rounded-full bg-white/10 text-white backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white hover:text-zinc-900 transition-all transform hover:scale-110"
+                                    title="Edit Product"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 flex flex-col flex-1">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 line-clamp-1 group-hover:text-indigo-500 transition-colors">
+                                    {product.name}
+                                </h3>
+                                <button className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200" aria-label="Product Options">
+                                    <MoreVertical className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-4 h-8">
+                                {product.description || `Premium quality ${product.category} item.`}
+                            </p>
+
+                            <div className="mt-auto flex items-end justify-between">
+                                <div>
+                                    <p className="text-xs text-zinc-400 font-medium mb-0.5">Price</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-lg font-bold text-emerald-500">₹{product.price}</span>
+                                        {product.originalPrice && (
+                                            <span className="text-xs text-zinc-400 line-through">₹{product.originalPrice}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className={`text-xs font-bold px-2 py-1 rounded-full ${product.stock > 10 ? 'bg-emerald-500/10 text-emerald-500' :
+                                        product.stock > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-rose-500/10 text-rose-500'
+                                        }`}>
+                                        {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
