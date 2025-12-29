@@ -102,7 +102,8 @@ function EditProductContent() {
     const [imagePreview, setImagePreview] = useState("");
     const [userPlan, setUserPlan] = useState("starter_999"); // Default to starter
 
-    const isAdvanced = userPlan.includes("pro") || userPlan.includes("enterprise") || userPlan.includes("growth");
+    // MVP: All users can access all edit features regardless of plan
+    const isAdvanced = true;
 
     useUnsavedChanges(hasUnsavedChanges);
 
