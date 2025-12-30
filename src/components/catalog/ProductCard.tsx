@@ -115,6 +115,22 @@ export function ProductCard({
                 ) : (
                     <ImageIcon className="w-12 h-12 text-muted-foreground/50" />
                 )}
+
+                {/* Centered Edit Action Overlay */}
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+                    <Button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        size="icon"
+                        className="h-12 w-12 rounded-full shadow-xl bg-primary hover:bg-primary/90 text-primary-foreground transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
+                        aria-label="Edit Product"
+                    >
+                        <Edit className="h-5 w-5" />
+                    </Button>
+                </div>
+
                 {!hasStock && (
                     <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-center backdrop-blur-sm">
                         <span className="text-xs font-bold text-white uppercase tracking-wider">Out of Stock</span>
