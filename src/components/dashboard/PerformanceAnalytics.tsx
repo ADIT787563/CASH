@@ -1,9 +1,10 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Calendar } from "lucide-react";
+import { Calendar, BarChart3 } from "lucide-react";
 import { ConversionFunnel } from "@/components/dashboard/ConversionFunnel";
 import { Button } from "@/components/ui/button";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 
 interface PerformanceAnalyticsProps {
     chartData: any[];
@@ -23,9 +24,14 @@ export function PerformanceAnalytics({ chartData, funnelData }: PerformanceAnaly
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Revenue/Activity Chart */}
-                <div className="bg-card border rounded-xl p-6 h-[400px] flex flex-col">
-                    <h4 className="font-medium mb-6">Revenue & Activity</h4>
-                    <div className="flex-1 w-full min-h-0">
+                <CollapsibleCard
+                    title="Revenue & Activity"
+                    subtitle="Daily revenue and order volume"
+                    icon={<BarChart3 className="w-5 h-5" />}
+                    storageKey="revenue_chart"
+                    className="h-fit"
+                >
+                    <div className="h-[300px] w-full min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -61,10 +67,10 @@ export function PerformanceAnalytics({ chartData, funnelData }: PerformanceAnaly
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
+                </CollapsibleCard>
 
-                {/* Conversion Funnel */}
-                <div className="h-[400px]">
+                {/* Conversion Funnel - Internally collapsible */}
+                <div className="h-fit">
                     <ConversionFunnel />
                 </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { TrendingUp, ArrowRight } from "lucide-react";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 
 export function ConversionFunnel() {
     // Mock funnel data
@@ -20,27 +20,31 @@ export function ConversionFunnel() {
         { label: "Confirmed Orders", value: "180", drop: "42%" },
     ];
 
-    return (
-        <div className="glass-card p-8 rounded-xl border border-border h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h3 className="text-xl font-bold flex items-center gap-3">
-                        <TrendingUp className="w-6 h-6 text-accent" />
-                        Conversion Funnel
-                    </h3>
-                    <p className="text-base text-muted-foreground mt-1">Chat to Order Journey</p>
-                </div>
-            </div>
+    const HeaderStats = (
+        <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground hidden sm:inline">Conversion Rate:</span>
+            <span className="font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">15%</span>
+        </div>
+    );
 
-            <div className="flex-1 space-y-5">
+    return (
+        <CollapsibleCard
+            title="Conversion Funnel"
+            subtitle="Chat to Order Journey"
+            icon={<TrendingUp className="w-5 h-5" />}
+            storageKey="conversion_funnel"
+            headerAction={HeaderStats}
+            className="h-fit"
+        >
+            <div className="space-y-5">
                 {steps.map((step, idx) => (
                     <div key={idx} className="relative">
                         {idx > 0 && (
                             <div className="absolute left-7 -top-5 h-5 w-0.5 bg-border -z-10" />
                         )}
-                        <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl hover:bg-muted/40 transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl hover:bg-muted/40 transition-colors border border-transparent hover:border-border">
                             <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${idx === 3 ? "bg-green-100 text-green-700" : "bg-primary/10 text-primary"
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${idx === 3 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-primary/10 text-primary"
                                     }`}>
                                     {idx + 1}
                                 </div>
@@ -55,17 +59,16 @@ export function ConversionFunnel() {
                         </div>
                     </div>
                 ))}
-            </div>
 
-            <div className="mt-8 pt-6 border-t border-border">
-                <div className="flex items-center justify-between text-base">
-                    <span className="text-muted-foreground">Overall Conversion Rate</span>
-                    <span className="font-bold text-xl text-primary">15%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2 mt-3">
-                    <div className="bg-primary h-2 rounded-full w-[15%]" />
+                <div className="mt-6 pt-4 border-t border-border">
+                    <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full w-[15%]" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                        15% of total chats resulted in a confirmed order.
+                    </p>
                 </div>
             </div>
-        </div>
+        </CollapsibleCard>
     );
 }

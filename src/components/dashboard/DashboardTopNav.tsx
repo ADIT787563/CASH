@@ -1,12 +1,12 @@
 "use client";
 
-import { Bell, Search, HelpCircle, LogOut, LayoutDashboard, MessageSquare, Users, ShoppingBag, Zap, FileText, BarChart3, Settings, Sun, Moon } from "lucide-react";
+import { Bell, Search, HelpCircle, LogOut, LayoutDashboard, MessageSquare, Users, ShoppingBag, Zap, FileText, BarChart3, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { authClient, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { ModeToggle } from "@/components/ui/ModeToggle";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,7 +29,7 @@ export function DashboardTopNav() {
     const { data: session } = useSession();
     const pathname = usePathname();
     const router = useRouter();
-    const { theme, setTheme } = useTheme();
+
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -114,17 +114,7 @@ export function DashboardTopNav() {
                 </nav>
 
                 <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                    <button
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
-                        title="Toggle Theme"
-                    >
-                        {mounted && theme === "dark" ? (
-                            <Sun className="w-5 h-5" />
-                        ) : (
-                            <Moon className="w-5 h-5" />
-                        )}
-                    </button>
+                    <ModeToggle />
 
                     <div className="relative">
                         <DropdownMenu>

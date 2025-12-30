@@ -2,6 +2,7 @@
 
 import { BrainCircuit, Lightbulb, TrendingUp, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CollapsibleCard } from "@/components/ui/CollapsibleCard";
 
 interface AIInsight {
     type: "trend" | "suggestion" | "insight";
@@ -35,37 +36,43 @@ export function AIInsightsPanel({ insights, isLocked = false }: AIInsightsPanelP
         );
     }
 
+    const hasInsights = insights.length > 0;
+
     return (
-        <div className="bg-gradient-to-br from-primary/5 via-card to-card border rounded-xl p-6 shadow-sm animate-in fade-in slide-in-from-bottom-10 duration-700">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                    <BrainCircuit className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-lg">AI Business Insights</h3>
-                    <p className="text-xs text-muted-foreground">Real-time analysis of your store performance</p>
-                </div>
-            </div>
+        <CollapsibleCard
+            title="AI Business Insights"
+            subtitle={hasInsights ? "Real-time analysis of your store performance" : "No insights available yet"}
+            icon={<BrainCircuit className="w-5 h-5" />}
+            storageKey="ai_insights"
+            defaultExpanded={hasInsights}
+            className="bg-gradient-to-br from-primary/5 via-card to-card border-none ring-1 ring-border shadow-sm h-fit"
+        >
+            {hasInsights ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {insights.map((insight, idx) => (
+                        <div key={idx} className="bg-card/50 border p-4 rounded-lg hover:shadow-md transition-shadow">
+                            <div className="flex items-start gap-3">
+                                {insight.type === "trend" && <TrendingUp className="w-5 h-5 text-blue-500 mt-0.5" />}
+                                {insight.type === "suggestion" && <Lightbulb className="w-5 h-5 text-yellow-500 mt-0.5" />}
+                                {insight.type === "insight" && <BrainCircuit className="w-5 h-5 text-purple-500 mt-0.5" />}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {insights.map((insight, idx) => (
-                    <div key={idx} className="bg-card/50 border p-4 rounded-lg hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-3">
-                            {insight.type === "trend" && <TrendingUp className="w-5 h-5 text-blue-500 mt-0.5" />}
-                            {insight.type === "suggestion" && <Lightbulb className="w-5 h-5 text-yellow-500 mt-0.5" />}
-                            {insight.type === "insight" && <BrainCircuit className="w-5 h-5 text-purple-500 mt-0.5" />}
-
-                            <div>
-                                <p className="text-sm font-medium leading-normal">{insight.text}</p>
-                                <span className={`text-[10px] uppercase font-bold tracking-wider mt-2 block ${insight.sentiment === "positive" ? "text-green-600" : "text-muted-foreground"
-                                    }`}>
-                                    {insight.type}
-                                </span>
+                                <div>
+                                    <p className="text-sm font-medium leading-normal">{insight.text}</p>
+                                    <span className={`text-[10px] uppercase font-bold tracking-wider mt-2 block ${insight.sentiment === "positive" ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+                                        }`}>
+                                        {insight.type}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                    <BrainCircuit className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                    <p>AI is analyzing your data. Check back later.</p>
+                </div>
+            )}
+        </CollapsibleCard>
     );
 }
